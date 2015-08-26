@@ -1,0 +1,177 @@
+package sample.model.asset;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+import lombok.*;
+import sample.ActionStatusType;
+import sample.context.Dto;
+import sample.context.orm.*;
+import sample.model.asset.type.CashflowType;
+import sample.model.constraints.*;
+import sample.model.constraints.Currency;
+import sample.util.*;
+
+/**
+ * 入出金キャッシュフローを表現します。
+ * キャッシュフローは振込/振替といったキャッシュフローアクションから生成される確定状態(依頼取消等の無い)の入出金情報です。
+ * low: 概念を伝えるだけなので必要最低限の項目で表現しています。
+ * low: 検索関連は主に経理確認や帳票等での利用を想定します
+ */
+@Entity
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
+
+	private static final long serialVersionUID = 1L;
+
+	/** ID */
+	@Id
+	@GeneratedValue
+	private Long id;
+	/** 口座ID */
+	@IdStr
+	private String accountId;
+	/** 通貨 */
+	@Currency
+	private String currency;
+	/** 金額 */
+	@Amount
+	private BigDecimal amount;
+	/** 入出金 */
+	@Enumerated(EnumType.STRING)
+	@NotNull
+	private CashflowType cashflowType;
+	/** 摘要 */
+	@Category
+	private String remark;
+	/** 発生日/日時 */
+	@Day
+	private String eventDay;
+	@NotNull
+	private Date eventDate;
+	/** 受渡日 */
+	@Day
+	private String valueDay;
+	/** 処理種別 */
+	@Enumerated(EnumType.STRING)
+	@NotNull
+	private ActionStatusType statusType;
+	/** 登録日時 */
+	private Date createDate;
+	/** 登録者ID */
+	@IdStr
+	private String createId;
+	/** 更新日時 */
+	private Date updateDate;
+	/** 更新者ID */
+	@IdStr
+	private String updateId;
+
+	/**
+	 * キャッシュフローを処理済みにして残高へ反映します。
+	 */
+	public Cashflow realize(final OrmRepository rep) {
+		validate((v) -> {
+			v.verify(canRealize(rep), "error.Cashflow.realizeDay");
+			v.verify(statusType.isUnprocessing(), "error.ActionStatusType.unprocessing"); // 「既に処理中/処理済です」
+		});
+
+		setStatusType(ActionStatusType.PROCESSED);
+		update(rep);
+		CashBalance.getOrNew(rep, accountId, currency).add(rep, amount);
+		return this;
+	}
+	
+	/**
+	 * キャッシュフローをエラー状態にします。
+	 * <p>処理中に失敗した際に呼び出してください。
+	 * low: 実際はエラー事由などを引数に取って保持する
+	 */
+	public Cashflow error(final OrmRepository rep) {
+		validate((v) -> v.verify(statusType.isUnprocessed(), "error.ActionStatusType.unprocessing"));
+
+		setStatusType(ActionStatusType.ERROR);
+		return update(rep);
+	}
+
+	/**
+	 * キャッシュフローを実現(受渡)可能か判定します。
+	 */
+	public boolean canRealize(final OrmRepository rep) {
+		return rep.dh().time().tp().afterEqualsDay(valueDay);
+	}
+
+	public static Cashflow load(final OrmRepository rep, Long id) {
+		return rep.load(Cashflow.class, id);
+	}
+	
+	/**
+	 * 指定受渡日時点で未実現のキャッシュフロー一覧を検索します。
+	 */
+	public static List<Cashflow> findUnrealize(final OrmRepository rep, String valueDay) {
+		return rep.tmpl().find("from Cashflow c where c.valueDay<=?1 and c.statusType in ?2 order by c.id", valueDay, ActionStatusType.unprocessingTypes);
+	}
+
+	/**
+	 * 指定受渡日で実現対象となるキャッシュフロー一覧を検索します。
+	 */
+	public static List<Cashflow> findDoRealize(final OrmRepository rep, String valueDay) {
+		return rep.tmpl().find("from Cashflow c where c.valueDay=?1 and c.statusType in ?2 order by c.id", valueDay, ActionStatusType.unprocessedTypes);
+	}
+	
+	/**
+	 * キャッシュフローを登録します。
+	 * 受渡日を迎えていた時はそのまま残高へ反映します。
+	 */
+	public static Cashflow register(final OrmRepository rep, final RegCashflow p) {
+		TimePoint now = rep.dh().time().tp();
+		Validator.validate((v) ->
+			v.checkField(now.beforeEqualsDay(p.getValueDay()),
+				"valueDay", "error.Cashflow.beforeEqualsDay"));
+		Cashflow cf = p.create(now).save(rep);
+		return cf.canRealize(rep) ? cf.realize(rep) : cf;
+	}
+
+	/** 入出金キャッシュフローの登録パラメタ。  */
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RegCashflow implements Dto {
+		private static final long serialVersionUID = 1L;
+		@IdStr
+		private String accountId;
+		@Currency
+		private String currency;
+		@Amount
+		private BigDecimal amount;
+		@NotNull
+		private CashflowType cashflowType;
+		@Category
+		private String remark;
+		/** 未設定時は営業日を設定 */
+		@DayEmpty
+		private String eventDay;
+		@Day
+		private String valueDay;
+
+		public Cashflow create(final TimePoint now) {
+			TimePoint eventDate = eventDay == null ? now : new TimePoint(eventDay, now.getDate());
+			Cashflow m = new Cashflow();
+			m.setAccountId(accountId);
+			m.setCurrency(currency);
+			m.setAmount(amount);
+			m.setCashflowType(cashflowType);
+			m.setRemark(remark);
+			m.setEventDay(eventDate.getDay());
+			m.setEventDate(eventDate.getDate());
+			m.setValueDay(valueDay);
+			m.setStatusType(ActionStatusType.UNPROCESSED);
+			return m;
+		}
+	}
+
+}
