@@ -53,7 +53,7 @@ extension:
       createDrop: true
   security:
     auth:
-      enabled: false
+      enabled: true
       admin: false
     cors.enabled: true
   mail.enabled: false
