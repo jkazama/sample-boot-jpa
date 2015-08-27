@@ -3,21 +3,13 @@ package sample.context.orm;
 import java.util.*;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.NonUniqueResultException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.springframework.orm.hibernate5.HibernateCallback;
-import org.springframework.orm.hibernate5.HibernateTemplate;
-import org.springframework.orm.hibernate5.SessionHolder;
+import org.hibernate.*;
+import org.hibernate.criterion.*;
+import org.springframework.orm.hibernate5.*;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import sample.ValidationException;
+import sample.ValidationException.ErrorKeys;
 import sample.context.orm.Sort.SortOrder;
 
 /**
@@ -57,7 +49,7 @@ public class OrmTemplate {
 	public <T> T load(final DetachedCriteria criteria) {
 		try {
 			Optional<T> v = get(criteria);
-			return v.orElseThrow(() -> new ValidationException("error.EntityNotFoundException"));
+			return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
 		} catch (NonUniqueResultException e) {
 			return null;
 		}
@@ -122,7 +114,7 @@ public class OrmTemplate {
 	public <T> T load(final String hql, final Object... args) {
 		try {
 			Optional<T> v = get(hql, args);
-			return v.orElseThrow(() -> new ValidationException("error.EntityNotFoundException"));
+			return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
 		} catch (NonUniqueResultException e) {
 			return null;
 		}
@@ -189,7 +181,7 @@ public class OrmTemplate {
 	 */
 	public <T> T loadNamed(final String queryName, final Object... args) {
 		Optional<T> v = getNamed(queryName, args);
-		return v.orElseThrow(() -> new ValidationException("error.EntityNotFoundException"));
+		return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
 	}
 
 	/**

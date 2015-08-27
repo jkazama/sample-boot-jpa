@@ -53,13 +53,13 @@ public class RestErrorAdvice {
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<Map<String, String[]>> handleAccessDeniedException(AccessDeniedException e) {
 		log.warn(e.getMessage());
-		return new ErrorHolder(msg, "error.AccessDeniedException").result(HttpStatus.UNAUTHORIZED);
+		return new ErrorHolder(msg, ErrorKeys.AccessDenied).result(HttpStatus.UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<Map<String, String[]>> handleEntityNotFoundException(EntityNotFoundException e) {
 		log.warn(e.getMessage(), e);
-		return new ErrorHolder(msg, "error.EntityNotFoundException").result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, ErrorKeys.EntityNotFound).result(HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)

@@ -55,3 +55,54 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = "2.6"
 }
+
+// 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
+// 「 gradlew copyProject 」を実行してください。
+def yourProjectName = "sample"
+def yourProjectPackage = "your.sample"
+def yourProjectPath = "../${yourProjectName}"
+task copyProject << {
+    def projectPath = yourProjectPath
+    def packagePath = yourProjectPackage.replaceAll(/\./, "/")
+    def javaPath = "${projectPath}/src/main/java/${packagePath}"
+    def testPath = "${projectPath}/src/test/java/${packagePath}"
+    def replacePackage = {line ->
+        def v = line.replaceFirst(/^package sample/, "package ${yourProjectPackage}")
+        v.replaceFirst(/^import sample/, "import ${yourProjectPackage}")
+    }
+    copy {
+        from (".") {
+            exclude ".*", "bin", "build", "LICENSE", "src/main/java", "src/test/java"
+        }
+        into projectPath
+    }
+    copy {
+        from ("README.md", "settings.gradle")
+        into projectPath
+        filter {line -> line.replaceFirst(/sample-boot-hibernate/, "${yourProjectName}")}
+    }
+    copy {
+        from ("src/main/resources/application.yml")
+        into "${projectPath}/src/main/resources"
+        filter {line ->
+            def v = line.replaceFirst(/sample-boot-hibernate/, "${yourProjectName}")
+            v.replaceFirst(/packageToScan: sample/, "packageToScan: ${yourProjectPackage}")
+        }
+    }
+    copy {
+        from ("src/main/resources/logback.xml")
+        into "${projectPath}/src/main/resources"
+        filter {line -> line.replaceFirst(/logger name="sample"/, "logger name=\"${yourProjectPackage}\"") }
+    }
+    copy {
+        from ("src/main/java/sample")
+        into javaPath
+        filter replacePackage
+    }
+    copy {
+        from ("src/test/java/sample")
+        into testPath
+        filter replacePackage
+    }
+    
+}

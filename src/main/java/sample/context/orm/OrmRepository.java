@@ -15,6 +15,7 @@ import org.springframework.orm.hibernate5.*;
 
 import lombok.*;
 import sample.ValidationException;
+import sample.ValidationException.ErrorKeys;
 import sample.context.*;
 
 /**
@@ -62,7 +63,7 @@ public abstract class OrmRepository implements Repository {
 		try {
 			return tmpl().origin().load(clazz, id);
 		} catch (HibernateObjectRetrievalFailureException e) {
-			throw new ValidationException("error.EntityNotFoundException");
+			throw new ValidationException(ErrorKeys.EntityNotFound);
 		}
 	}
 
@@ -71,7 +72,7 @@ public abstract class OrmRepository implements Repository {
 		try {
 			return tmpl().origin().load(clazz, id, LockMode.UPGRADE_NOWAIT);
 		} catch (HibernateObjectRetrievalFailureException e) {
-			throw new ValidationException("error.EntityNotFoundException");
+			throw new ValidationException(ErrorKeys.EntityNotFound);
 		}
 	}
 

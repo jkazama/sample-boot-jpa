@@ -143,4 +143,11 @@ public class ValidationException extends RuntimeException {
 		}
 	}
 
+	/** 審査例外で用いるメッセージキー定数 */
+	public static interface ErrorKeys {
+		String EntityNotFound = "error.EntityNotFoundException";
+		String Authentication = "error.Authentication";
+		String AccessDenied = "error.AccessDeniedException";
+	}
+	
 }

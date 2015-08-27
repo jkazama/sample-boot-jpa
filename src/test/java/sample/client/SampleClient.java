@@ -9,7 +9,7 @@ import org.springframework.http.client.*;
 
 /**
  * 単純なHTTP経由の実行検証。
- * <p>SpringがサポートするWebTestSupportでの検証で良いのですが、コンテナ立ち上げたまま叩く確認用に作りました。
+ * <p>SpringがサポートするWebTestSupportでの検証で良いのですが、コンテナ立ち上げた後に叩く単純確認用に作りました。
  */
 public class SampleClient {
 	private static final String ROOT_PATH = "http://localhost:8080/api";

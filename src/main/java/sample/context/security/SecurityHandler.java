@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import lombok.*;
+import sample.ValidationException.ErrorKeys;
 import sample.context.actor.ActorSession;
 import sample.context.security.SecurityActorFinder.*;
 import sample.context.security.SecurityHandler.SecurityProperties;
@@ -227,9 +228,9 @@ public class SecurityHandler extends WebSecurityConfigurerAdapter {
 		@Override
 		public void commence(HttpServletRequest request, HttpServletResponse response,
 				AuthenticationException authException) throws IOException, ServletException {
-			String message = msg.getMessage("error.Authentication", new Object[0], "ログイン状態が有効ではありません。", Locale.getDefault());
+			String message = msg.getMessage(ErrorKeys.Authentication, new Object[0], Locale.getDefault());
 			if (authException instanceof InsufficientAuthenticationException) {
-				message = msg.getMessage("error.AccessDeniedException", new Object[0], "対象機能の利用が認められていません。", Locale.getDefault());
+				message = msg.getMessage(ErrorKeys.AccessDenied, new Object[0], Locale.getDefault());
 			}
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
 		}

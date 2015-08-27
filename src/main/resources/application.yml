@@ -1,6 +1,6 @@
 ---
 spring:
-  application.name: ddd-java
+  application.name: sample-boot-hibernate
   aop.proxy-target-class: true
   messages.basename: messages-validation, messages
   jackson:
