@@ -5,8 +5,6 @@ import java.util.*;
 
 import lombok.Value;
 
-import org.springframework.util.Assert;
-
 /**
  * 審査例外を表現します。
  * <p>ValidationExceptionは入力例外や状態遷移例外等の復旧可能な審査例外です。
@@ -20,55 +18,38 @@ public class ValidationException extends RuntimeException {
 
 	private final Warns warns;
 
-	/**
-	 * フィールドに従属しないグローバルな審査例外を通知するケースで利用してください。
-	 * @param message
-	 */
+	/** フィールドに従属しないグローバルな審査例外を通知するケースで利用してください。 */
 	public ValidationException(String message) {
 		super(message);
 		warns = Warns.init(message);
 	}
 
-	/**
-	 * フィールドに従属する審査例外を通知するケースで利用してください。
-	 * @param field
-	 * @param message
-	 */
+	/** フィールドに従属する審査例外を通知するケースで利用してください。 */
 	public ValidationException(String field, String message) {
 		super(message);
 		warns = Warns.init(field, message);
 	}
 
-	/**
-	 * フィールドに従属する審査例外を通知するケースで利用してください。
-	 * @param field
-	 * @param message
-	 * @param messageArgs
-	 */
+	/** フィールドに従属する審査例外を通知するケースで利用してください。 */
 	public ValidationException(String field, String message, String[] messageArgs) {
 		super(message);
 		warns = Warns.init(field, message, messageArgs);
 	}
 
-	/**
-	 * 複数件の審査例外を通知するケースで利用してください。
-	 * @param warns
-	 */
+	/** 複数件の審査例外を通知するケースで利用してください。 */
 	public ValidationException(final Warns warns) {
-		super(warns.head().getMessage());
+		super(warns.head().map((v) -> v.getMessage()).orElse(ErrorKeys.Exception));
 		this.warns = warns;
 	}
 
-	/**
-	 * @return 発生した審査例外一覧を返します。
-	 */
+	/** 発生した審査例外一覧を返します。*/
 	public List<Warn> list() {
 		return warns.list();
 	}
 
 	@Override
 	public String getMessage() {
-		return warns.head().getMessage();
+		return warns.head().map((v) -> v.getMessage()).orElse(ErrorKeys.Exception);
 	}
 
 	/** 審査例外情報です。  */
@@ -94,9 +75,8 @@ public class ValidationException extends RuntimeException {
 			return this;
 		}
 
-		public Warn head() {
-			Assert.notEmpty(list);
-			return list.get(0);
+		public Optional<Warn> head() {
+			return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
 		}
 
 		public List<Warn> list() {
@@ -125,19 +105,18 @@ public class ValidationException extends RuntimeException {
 
 	}
 
-	/**
-	 * フィールドスコープの審査例外トークン。
-	 */
+	/** フィールドスコープの審査例外トークンを表現します。 */
 	@Value
 	public static class Warn implements Serializable {
 		private static final long serialVersionUID = 1L;
+		/** 審査例外フィールドキー */
 		private String field;
+		/** 審査例外メッセージ */
 		private String message;
+		/** 審査例外メッセージ引数 */
 		private String[] messageArgs;
 
-		/**
-		 * @return フィールドに従属しないグローバル例外時はtrue
-		 */
+		/** フィールドに従属しないグローバル例外時はtrue */
 		public boolean global() {
 			return field == null;
 		}
@@ -145,6 +124,7 @@ public class ValidationException extends RuntimeException {
 
 	/** 審査例外で用いるメッセージキー定数 */
 	public static interface ErrorKeys {
+		String Exception = "error.Exception";
 		String EntityNotFound = "error.EntityNotFoundException";
 		String Authentication = "error.Authentication";
 		String AccessDenied = "error.AccessDeniedException";

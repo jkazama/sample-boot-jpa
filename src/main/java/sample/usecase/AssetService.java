@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import sample.context.actor.Actor;
 import sample.context.lock.IdLockHandler.LockType;
 import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.RegCashOut;
@@ -13,6 +14,12 @@ import sample.model.asset.CashInOut.RegCashOut;
  */
 @Service
 public class AssetService extends ServiceSupport {
+	
+	/** 匿名を除くActorを返します。 */
+	@Override
+	protected Actor actor() {
+		return ServiceUtils.actorUser(super.actor());
+	}
 
 	/**
 	 * 未処理の振込依頼情報を検索します。

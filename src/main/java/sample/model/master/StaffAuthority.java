@@ -13,11 +13,12 @@ import sample.model.constraints.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class StaffAuthority extends OrmActiveRecord<Staff> {
+public class StaffAuthority extends OrmActiveRecord<StaffAuthority> {
 	private static final long serialVersionUID = 1l;
 
 	/** ID */
 	@Id
+	@GeneratedValue
 	private Long id;
 	/** 社員ID */
 	@IdStr

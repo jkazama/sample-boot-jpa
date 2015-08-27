@@ -1,11 +1,13 @@
 package sample.model;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -20,15 +22,15 @@ import sample.model.account.type.AccountStatusType;
 import sample.model.asset.*;
 import sample.model.asset.Cashflow.RegCashflow;
 import sample.model.asset.type.CashflowType;
-import sample.model.master.SelfFiAccount;
+import sample.model.master.*;
 import sample.util.*;
 
 /**
  * データ生成用のサポートコンポーネント。
  * <p>テストや開発時の簡易マスタデータ生成を目的としているため本番での利用は想定していません。
- * low: 実際の開発では開発/テスト環境のみ有効となるよう細かなプロファイル指定が必要となります。
  */
 @Component
+@ConditionalOnProperty(prefix = "extension.datafixture", name = "enabled", matchIfMissing = false)
 @Setter
 public class DataFixtures {
 
@@ -70,6 +72,9 @@ public class DataFixtures {
 		String ccy = "JPY";
 		String baseDay = businessDay.day();
 
+		// 社員: admin (passも同様)
+		staff("admin").save(rep);
+		
 		// 自社金融機関
 		selfFiAcc(Remarks.CashOut, ccy).save(rep);
 
@@ -123,7 +128,7 @@ public class DataFixtures {
 		return new RegCashflow(accountId, "JPY", new BigDecimal(amount), CashflowType.CashIn, "cashIn", null, valueDay);
 	}
 
-	/** 振込入出金依頼の簡易生成。 [発生日(T+1)/受渡日(T+3)] */
+	/** 振込入出金依頼の簡易生成 [発生日(T+1)/受渡日(T+3)] */
 	public CashInOut cio(String accountId, String absAmount, boolean withdrawal) {
 		TimePoint now = time.tp();
 		CashInOut m = new CashInOut();
@@ -145,6 +150,21 @@ public class DataFixtures {
 
 	// master
 
+	/** 社員の簡易生成 */
+	public Staff staff(String id) {
+		Staff m = new Staff();
+		m.setId(id);
+		m.setName(id);
+		m.setPassword(encoder.encode(id));
+		return m;
+	}
+	
+	/** 社員権限の簡易生成 */
+	public List<StaffAuthority> staffAuth(String id, String... authority) {
+		return Arrays.stream(authority).map((auth) ->
+			new StaffAuthority(null, id, auth)).collect(Collectors.toList());
+	}
+	
 	/** 自社金融機関口座の簡易生成 */
 	public SelfFiAccount selfFiAcc(String category, String currency) {
 		return new SelfFiAccount(null, category, currency, category + "-" + currency, "xxxxxx");

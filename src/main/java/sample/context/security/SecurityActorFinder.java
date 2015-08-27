@@ -13,13 +13,13 @@ import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Component;
 
 import sample.context.actor.Actor;
-import sample.context.security.SecurityHandler.SecurityProperties;
+import sample.context.security.SecurityConfig.SecurityProperties;
 
 /**
  * Spring Securityで利用される認証/認可対象となるユーザ情報を提供します。
  */
 @Component
-@ConditionalOnBean(SecurityHandler.class)
+@ConditionalOnBean(SecurityAuthConfig.class)
 public class SecurityActorFinder {
 	
 	@Autowired
@@ -33,7 +33,12 @@ public class SecurityActorFinder {
 	
 	/** 現在のプロセス状態に応じたUserDetailServiceを返します。 */
 	public SecurityActorService detailsService() {
-		return props.isAdmin() ? adminService : userService;
+		return props.auth().isAdmin() ? adminService() : userService;
+	}
+	
+	private SecurityAdminService adminService() {
+		if (adminService == null) throw new IllegalStateException("SecurityAdminServiceをコンテナへBean登録してください。");
+		return adminService;
 	}
 	
 	/**

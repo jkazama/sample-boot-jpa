@@ -36,12 +36,24 @@ public abstract class WebTestSupport extends UnitTestSupport {
 		return "/";
 	}
 	
+	/** 指定したパスをGET実行して結果を取得します。(status: 200) */
 	protected MvcResult performGet(String path) throws Exception {
 		return mockMvc.perform(get(url(path))).andExpect(status().isOk()).andReturn();
 	}
 	
+	/** 指定したパスをGET実行して結果を取得します。(status: 400) */
+	protected MvcResult performGetWarn(String path) throws Exception {
+		return mockMvc.perform(get(url(path))).andExpect(status().isBadRequest()).andReturn();
+	}
+	
+	/** 指定したパスをPOST実行して結果を取得します。(status: 200) */
 	protected MvcResult performPost(String path) throws Exception {
 		return mockMvc.perform(post(url(path))).andExpect(status().isOk()).andReturn();
+	}
+	
+	/** 指定したパスをPOST実行して結果を取得します。(status: 400) */
+	protected MvcResult performPostWarn(String path) throws Exception {
+		return mockMvc.perform(post(url(path))).andExpect(status().isBadRequest()).andReturn();
 	}
 	
 }

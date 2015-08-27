@@ -112,33 +112,29 @@ Windows/Macのコンソールから実行するにはGradleのコンソールコ
 1. 「gradlew bootRun」を実行
 1. コンソールに「Started Application」という文字列が出力されればポート8080で起動が完了
 
-### ブラウザ
+### 動作確認
 
-> 以降は修正中です。`sample.client.SampleClient`の各メソッド単位でテスト確認していく想定。
-
-Eclipseまたはコンソールで8080ポートでサーバを立ち上げた後、ブラウザから下記URLへアクセスする事でRESTfulAPIの実行テストを実施可能です。  
-※本来なら情報更新系処理はPOSTで取り扱うべきですが、UIの無いデモ用にGETでのアクセスを許容しています。  
-※パラメタは?key=valueで繋げて渡してください。
+Eclipseまたはコンソールでサーバを立ち上げた後、testパッケージ配下にある`SampleClient`の各検証メソッドをユニットテストで実行してください。
 
 顧客向けユースケース
 
-- http://localhost:8080/asset/cio/withdraw  
+- /api/asset/cio/withdraw  
 振込出金依頼 [accountId: sample, currency: JPY, absAmount: 出金依頼金額]
-- http://localhost:8080/asset/cio/unprocessedOut  
+- /api/asset/cio/unprocessedOut  
 振込出金依頼未処理検索
 
 社内向けユースケース
 
-- http://localhost:8080/admin/asset/cio  
+- /api/admin/asset/cio  
 振込入出金依頼検索 [updFromDay: 更新From(yyyyMMdd), updToDay: 更新To(yyyyMMdd)]
 
 バッチ向けユースケース
 
-- http://localhost:8080/system/job/daily/processDay  
+- /api/system/job/daily/processDay  
 営業日を進める(単純日回しのみ)
-- http://localhost:8080/system/job/daily/closingCashOut  
+- /api/system/job/daily/closingCashOut  
 当営業日の出金依頼を締める
-- http://localhost:8080/system/job/daily/realizeCashflow  
+- /api/system/job/daily/realizeCashflow  
 入出金キャッシュフローを実現する(受渡日に残高へ反映)
 
 ## 本サンプルを元にしたプロジェクトの作成

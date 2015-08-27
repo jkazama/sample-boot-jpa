@@ -1,5 +1,6 @@
 package sample.context.rest;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -113,6 +114,16 @@ public class RestErrorAdvice {
 		return new ErrorHolder(msg, e).result(HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(IOException.class)
+	public ResponseEntity<Map<String, String[]>> handleIOException(IOException e) {
+		if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
+			log.info("クライアント事由で処理が打ち切られました。");
+			return new ResponseEntity<>(HttpStatus.OK);
+		} else {
+			return handleException(e);
+		}
+	}
+	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, String[]>> handleException(Exception e) {
 		log.error("予期せぬ例外が発生しました。", e);

@@ -3,14 +3,9 @@ package sample;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.cors.*;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
@@ -30,28 +25,6 @@ public class ApplicationConfig {
 	public static class WebMvcConfig extends WebMvcConfigurerAdapter {
 		@Autowired
 		private MessageSource message;
-
-		/** CORS全体適用 */
-		@Bean
-		@ConditionalOnProperty(prefix = "extension.security", name = "cors", matchIfMissing = false)
-		public CorsFilter corsFilter() {
-		    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		    CorsConfiguration config = new CorsConfiguration();
-		    config.setAllowCredentials(true);
-		    config.addAllowedOrigin("*");
-		    config.addAllowedHeader("*");
-		    config.addAllowedMethod("*");
-		    config.setMaxAge(3600L);
-		    source.registerCorsConfiguration("/**", config);
-		    return new CorsFilter(source);
-		}
-		
-		/** パスワード用のハッシュ(BCrypt)エンコーダー。 */
-		@Bean
-		public PasswordEncoder passwordEncoder() {
-			//low: きちんとやるのであれば、strengthやSecureRandom使うなど外部切り出し含めて検討してください
-			return new BCryptPasswordEncoder();
-		}
         
 		/** HibernateのLazyLoading回避対応。  see JacksonAutoConfiguration */
 		@Bean

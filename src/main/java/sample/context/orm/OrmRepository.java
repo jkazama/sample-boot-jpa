@@ -61,7 +61,9 @@ public abstract class OrmRepository implements Repository {
 	@Override
 	public <T extends Entity> T load(Class<T> clazz, Serializable id) {
 		try {
-			return tmpl().origin().load(clazz, id);
+			T m = tmpl().origin().load(clazz, id);
+			m.hashCode(); // force loading
+			return m;
 		} catch (HibernateObjectRetrievalFailureException e) {
 			throw new ValidationException(ErrorKeys.EntityNotFound);
 		}
@@ -70,7 +72,9 @@ public abstract class OrmRepository implements Repository {
 	@Override
 	public <T extends Entity> T loadForUpdate(Class<T> clazz, Serializable id) {
 		try {
-			return tmpl().origin().load(clazz, id, LockMode.UPGRADE_NOWAIT);
+			T m = tmpl().origin().load(clazz, id, LockMode.UPGRADE_NOWAIT);
+			m.hashCode(); // force loading
+			return m;
 		} catch (HibernateObjectRetrievalFailureException e) {
 			throw new ValidationException(ErrorKeys.EntityNotFound);
 		}

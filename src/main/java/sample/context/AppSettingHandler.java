@@ -31,9 +31,7 @@ public class AppSettingHandler {
 		this.mockMap = Optional.of(mockMap);
 	}
 	
-	/**
-	 * @return アプリケーション設定情報
-	 */
+	/** アプリケーション設定情報を取得します。 */
 	@Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
 	@Transactional(value = SystemRepository.beanNameTx)
 	public AppSetting setting(String id) {

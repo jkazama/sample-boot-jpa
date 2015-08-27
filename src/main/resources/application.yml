@@ -51,7 +51,11 @@ extension:
       packageToScan: sample.context
       showSql: true
       createDrop: true
-  security.enabled: false
+  security:
+    auth:
+      enabled: false
+      admin: false
+    cors.enabled: true
   mail.enabled: false
   datafixture.enabled: true
 
@@ -76,7 +80,22 @@ extension:
   hibernate:
     default:
       dialect: org.hibernate.dialect.Oracle10gDialect
+      showSql: false
+      createDrop: false
     system:
       dialect: org.hibernate.dialect.Oracle10gDialect
-  security.cors: false
+      showSql: false
+      createDrop: false
+  security:
+    auth.enabled: true
+    cors.enabled: false
   datafixture.enabled: false
+
+---
+spring:
+  profiles: admin
+
+server.port: 8081
+
+extension: 
+  security.auth.admin: true
