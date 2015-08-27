@@ -27,6 +27,7 @@ public class DefaultRepository extends OrmRepository {
 		return sessionFactory;
 	}
 
+	/** 標準スキーマのHibernateコンポーネントを生成します。 */
 	@ConfigurationProperties(prefix = "extension.hibernate.default")
 	public static class DefaultRepositoryConfig extends OrmRepositoryConfig {
 		@Bean(name = beanNameSf)
@@ -44,6 +45,7 @@ public class DefaultRepository extends OrmRepository {
 		}
 	}
 	
+	/** 標準スキーマのDataSourceを生成します。 */
 	@ConfigurationProperties(prefix = "extension.datasource.default")
 	public static class DefaultDataSourceConfig extends OrmDataSourceConfig {
 		@Bean(name = beanNameDs, destroyMethod = "shutdown")

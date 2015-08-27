@@ -71,7 +71,7 @@ public class ValidationException extends RuntimeException {
 		return warns.head().getMessage();
 	}
 
-	/** 審査例外情報  */
+	/** 審査例外情報です。  */
 	public static class Warns implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private List<Warn> list = new ArrayList<>();

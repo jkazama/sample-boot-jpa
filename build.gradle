@@ -7,7 +7,7 @@ buildscript {
     }
 }
 
-apply plugin: "scala"
+apply plugin: "java"
 apply plugin: "spring-boot"
 
 version = "0.1.0"
@@ -19,7 +19,11 @@ def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
 
 javadoc {
-    options.encoding = "UTF-8"
+    options.encoding = defaultEncoding
+}
+
+test {
+    include "**/model/**", "**/controller/**"
 }
 
 repositories {

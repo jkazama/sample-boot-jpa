@@ -180,7 +180,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "greater than or equal"【[フィールド]>=[値]】条件を付与します。 */
+	/** "greater than or equal"【[フィールド]&gt;=[値]】条件を付与します。 */
 	public OrmCriteria<T> gte(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.ge(field, value));
@@ -188,7 +188,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "greater than"【[フィールド]>[値]】条件を付与します。 */
+	/** "greater than"【[フィールド]&gt;[値]】条件を付与します。 */
 	public OrmCriteria<T> gt(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.gt(field, value));
@@ -196,7 +196,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "less than or equal"【[フィールド]<=[値]】条件を付与します。 */
+	/** "less than or equal"【[フィールド]&lt;=[値]】条件を付与します。 */
 	public OrmCriteria<T> lte(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.le(field, value));
@@ -204,7 +204,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "less than"【[フィールド]<[値]】条件を付与します。 */
+	/** "less than"【[フィールド]&lt;[値]】条件を付与します。 */
 	public OrmCriteria<T> lt(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.lt(field, value));

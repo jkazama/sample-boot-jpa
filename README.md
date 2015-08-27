@@ -93,7 +93,7 @@ main
 
 次の手順で本サンプルをプロジェクト化してください。  
 
-1. パッケージエクスプローラから「右クリック -> New -> Project」で*Gradle Project*を選択して*Next*を押下
+1. パッケージエクスプローラから「右クリック -> Import -> Project」で*Gradle Project*を選択して*Next*を押下
 1. *Root folder:*にダウンロードした*sample-boot-hibernate*ディレクトリを指定して*Build Model*を押下
 1. *Project*で*sample-boot-hibernate*を選択後、*Finish*を押下(依存ライブラリダウンロードがここで行われます)
 

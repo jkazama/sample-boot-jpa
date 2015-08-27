@@ -26,7 +26,7 @@ public class Asset {
 
 	/**
 	 * 振込出金可能か判定します。
-	 * <p>0 <= 口座残高 + 未実現キャッシュフロー - (出金依頼拘束額 + 出金依頼額) 
+	 * <p>0 &lt;= 口座残高 + 未実現キャッシュフロー - (出金依頼拘束額 + 出金依頼額) 
 	 * low: 判定のみなのでscale指定は省略。余力金額を返す時はきちんと指定する
 	 */
 	public boolean canWithdraw(final OrmRepository rep, String currency, BigDecimal absAmount, String valueDay) {

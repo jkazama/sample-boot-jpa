@@ -30,6 +30,7 @@ public class SystemRepository extends OrmRepository {
 		return sessionFactory;
 	}
 
+	/** システムスキーマのHibernateコンポーネントを生成します。 */
 	@ConfigurationProperties(prefix = "extension.hibernate.system")
 	public static class SystemRepositoryConfig extends OrmRepositoryConfig {
 		@Bean(name = beanNameSf)
@@ -45,6 +46,7 @@ public class SystemRepository extends OrmRepository {
 		}
 	}
 
+	/** システムスキーマのDataSourceを生成します。 */
 	@ConfigurationProperties(prefix = "extension.datasource.system")
 	public static class SystemDataSourceConfig extends OrmDataSourceConfig {
 		@Bean(name = beanNameDs, destroyMethod = "shutdown")

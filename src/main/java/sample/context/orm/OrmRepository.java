@@ -129,6 +129,7 @@ public abstract class OrmRepository implements Repository {
 		return this;
 	}
 
+	/** Hibernateコンポーネントを生成するための設定情報を表現します。 */
 	@Data
 	public static class OrmRepositoryConfig {
 		private String dialect = "org.hibernate.dialect.H2Dialect";
@@ -165,10 +166,7 @@ public abstract class OrmRepository implements Repository {
 		}
 	}
 	
-	/**
-	 * Hibernate5用のPhysicalNamingStrategy。
-	 * see 
-	 */
+	/** Hibernate5用のPhysicalNamingStrategy。 */
 	public static class OrmNamingStrategy implements PhysicalNamingStrategy {
 		private SpringNamingStrategy strategy = new SpringNamingStrategy();
 

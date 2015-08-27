@@ -59,6 +59,7 @@ public class Sort implements Dto {
 		return new Sort().desc(property);
 	}
 
+	/** フィールド単位のソート情報を表現します。 */
 	@Value
 	public static class SortOrder implements Serializable {
 		private static final long serialVersionUID = 1L;

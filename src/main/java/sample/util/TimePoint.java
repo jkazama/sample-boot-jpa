@@ -32,22 +32,22 @@ public class TimePoint {
 		return day.equals(targetDay);
 	}
 	
-	/** 指定日付よりも前か。(day < targetDay) */
+	/** 指定日付よりも前か。(day &lt; targetDay) */
 	public boolean beforeDay(String targetDay) {
 		return DateUtils.date(day).before(DateUtils.date(targetDay));
 	}
 	
-	/** 指定日付以前か。(day <= targetDay) */
+	/** 指定日付以前か。(day &lt;= targetDay) */
 	public boolean beforeEqualsDay(String targetDay) {
 		return equalsDay(targetDay) || beforeDay(targetDay);
 	}
 
-	/** 指定日付よりも後か。(targetDay < day) */
+	/** 指定日付よりも後か。(targetDay &lt; day) */
 	public boolean afterDay(String targetDay) {
 		return DateUtils.date(day).after(DateUtils.date(targetDay));
 	}
 	
-	/** 指定日付以降か。(targetDay <= day) */
+	/** 指定日付以降か。(targetDay &lt;= day) */
 	public boolean afterEqualsDay(String targetDay) {
 		return equalsDay(targetDay) || afterDay(targetDay);
 	}

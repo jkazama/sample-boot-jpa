@@ -90,6 +90,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		return tmpl.find(criteria.result(), p.page);
 	}
 
+	/** 検索パラメタ */
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
@@ -108,6 +109,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		private Pagination page = new Pagination();
 	}
 	
+	/** 登録パラメタ */
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor

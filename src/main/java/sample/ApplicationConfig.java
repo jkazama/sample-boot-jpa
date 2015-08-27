@@ -67,12 +67,14 @@ public class ApplicationConfig {
 			return factory;
 		}
 		
+		/** 標準Validatorの差し替えをします。 */
 		@Override
 		public org.springframework.validation.Validator getValidator() {
 			return validator();
 		}
 	}
 	
+	/** 拡張ヘルスチェック定義を表現します。 */
 	@Configuration
 	public static class HealthCheckConfig {
 		/** 営業日チェック */

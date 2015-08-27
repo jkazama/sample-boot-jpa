@@ -6,6 +6,9 @@ import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.*;
 
+/**
+ * 日時ユーティリティを表現します。low: java8で追加されたクラスで書き換え予定
+ */
 public abstract class DateUtils {
 
 	/**

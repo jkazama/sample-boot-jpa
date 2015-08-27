@@ -99,6 +99,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		return tmpl.find(criteria.result(), p.page);
 	}
 
+	/** 検索パラメタ */
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
@@ -119,6 +120,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		private Pagination page = new Pagination();
 	}
 	
+	/** 登録パラメタ */
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor

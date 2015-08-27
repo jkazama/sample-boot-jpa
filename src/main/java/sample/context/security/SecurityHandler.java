@@ -37,6 +37,9 @@ import sample.context.security.SecurityHandler.SecurityProperties;
 
 /**
  * Spring Security(認証/認可)全般の設定を行います。
+ * <p>認証はベーシック認証ではなく、HttpSessionを用いた従来型のアプローチで定義しています。
+ * <p>設定はパターンを決め打ちしている関係上、既存の定義ファイルをラップしています。
+ * securityプリフィックスではなくextension.securityプリフィックスのものを利用してください。
  */
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)

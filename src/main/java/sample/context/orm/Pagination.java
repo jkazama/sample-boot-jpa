@@ -7,6 +7,9 @@ import lombok.Data;
 import sample.context.Dto;
 import sample.util.Calculator;
 
+/**
+ * ページング情報を表現します。
+ */
 @Data
 @AllArgsConstructor
 public class Pagination implements Dto {

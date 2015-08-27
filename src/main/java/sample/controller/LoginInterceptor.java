@@ -9,7 +9,6 @@ import sample.context.actor.Actor.ActorRoleType;
 
 /**
  * スレッドローカルに利用者を紐付けるAOPInterceptor。
- * low: 今回は認証機能を用意していないのでダミーです。
  */
 @Aspect
 @Component

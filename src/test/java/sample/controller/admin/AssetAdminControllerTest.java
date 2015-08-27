@@ -19,7 +19,7 @@ public class AssetAdminControllerTest extends WebTestSupport {
 		// low: JSONの値検証は省略
 		String day = time.day();
 		String query = "updFromDay=" + day + "&updToDay=" + day;
-		logger.info(performGet("/cio?" + query).getResponse().getContentAsString());
+		logger.info(performGet("/cio/?" + query).getResponse().getContentAsString());
 	}
 
 }
