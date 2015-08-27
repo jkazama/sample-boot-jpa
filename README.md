@@ -112,7 +112,7 @@ Windows/Macのコンソールから実行するにはGradleのコンソールコ
 1. 「gradlew bootRun」を実行
 1. コンソールに「Started Application」という文字列が出力されればポート8080で起動が完了
 
-### 動作確認
+### クライアント検証
 
 Eclipseまたはコンソールでサーバを立ち上げた後、testパッケージ配下にある`SampleClient`の各検証メソッドをユニットテストで実行してください。
 
@@ -137,6 +137,16 @@ Eclipseまたはコンソールでサーバを立ち上げた後、testパッケ
 - /api/system/job/daily/realizeCashflow  
 入出金キャッシュフローを実現する(受渡日に残高へ反映)
 
+## 配布用jarの作成
+
+Spring BootではFat Jar(ライブラリなども内包するjar)を作成する事で単一の配布ファイルで実行可能な状態にできます。
+
+1. コンソールから「gradlew build」を実行
+1. `build/libs`直下にjarが出力されるのでJava8以降の実行環境へ配布
+1. 実行環境でコンソールから「java -jar xxx.jar」を実行して起動
+
+※実行引数に「-Dspring.profiles.active=[プロファイル名]」を追加する事でapplication.ymlの設定値を変更できます。
+
 ## 本サンプルを元にしたプロジェクトの作成
 
 本プロジェクトを元にしてプロジェクトベースを作成したい場合は以下の手順を実行してください。
@@ -145,6 +155,12 @@ Eclipseまたはコンソールでサーバを立ち上げた後、testパッケ
 1. コンソールから「gradlew copyProject」を実行
 
 以降のプロジェクトインポート手順は前述のものと同様となります。
+
+## TODO
+
+- Java8ベースにリファクタ
+- adminモードでの権限不具合修正
+- ドキュメントの追記
 
 ## License
 
