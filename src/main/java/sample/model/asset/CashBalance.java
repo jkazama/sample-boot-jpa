@@ -1,15 +1,14 @@
 package sample.model.asset;
 
 import java.math.*;
-import java.util.*;
+import java.time.*;
+import java.util.Optional;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 import lombok.*;
 import sample.context.orm.*;
 import sample.model.constraints.*;
-import sample.model.constraints.Currency;
 import sample.util.*;
 
 /**
@@ -31,8 +30,8 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
 	@IdStr
 	private String accountId;
 	/** 基準日 */
-	@Day
-	private String baseDay;
+	@ISODate
+	private LocalDate baseDay;
 	/** 通貨 */
 	@Currency
 	private String currency;
@@ -40,8 +39,8 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
 	@Amount
 	private BigDecimal amount;
 	/** 更新日 */
-	@NotNull
-	private Date updateDate;
+	@ISODateTime
+	private LocalDateTime updateDate;
 
 	/**
 	 * 残高へ指定した金額を反映します。
@@ -59,7 +58,7 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
 	 * low: 複数通貨の適切な考慮や細かい審査は本筋でないので割愛。
 	 */
 	public static CashBalance getOrNew(final OrmRepository rep, String accountId, String currency) {
-		String baseDay = rep.dh().time().day();
+		LocalDate baseDay = rep.dh().time().day();
 		Optional<CashBalance> m =
 				rep.tmpl().get("from CashBalance c where c.accountId=?1 and c.currency=?2 and c.baseDay=?3 order by c.baseDay desc", accountId, currency, baseDay);
 		return m.orElseGet(() -> create(rep, accountId, currency));

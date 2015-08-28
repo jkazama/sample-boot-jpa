@@ -38,8 +38,8 @@ public class Account extends OrmActiveRecord<Account> {
 	@Email
 	private String mail;
 	/** 口座状態 */
-	@Enumerated(EnumType.STRING)
 	@NotNull
+	@Enumerated(EnumType.STRING)
 	private AccountStatusType statusType;
 
 	public Actor actor() {

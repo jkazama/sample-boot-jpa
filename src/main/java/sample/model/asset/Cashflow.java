@@ -1,7 +1,8 @@
 package sample.model.asset;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.time.*;
+import java.util.List;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,7 +13,6 @@ import sample.context.Dto;
 import sample.context.orm.*;
 import sample.model.asset.type.CashflowType;
 import sample.model.constraints.*;
-import sample.model.constraints.Currency;
 import sample.util.*;
 
 /**
@@ -42,38 +42,38 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 	@Amount
 	private BigDecimal amount;
 	/** 入出金 */
-	@Enumerated(EnumType.STRING)
 	@NotNull
+	@Enumerated(EnumType.STRING)
 	private CashflowType cashflowType;
 	/** 摘要 */
 	@Category
 	private String remark;
 	/** 発生日/日時 */
-	@Day
-	private String eventDay;
-	@NotNull
-	private Date eventDate;
+	@ISODate
+	private LocalDate eventDay;
+	@ISODateTime
+	private LocalDateTime eventDate;
 	/** 受渡日 */
-	@Day
-	private String valueDay;
+	@ISODate
+	private LocalDate valueDay;
 	/** 処理種別 */
-	@Enumerated(EnumType.STRING)
 	@NotNull
+	@Enumerated(EnumType.STRING)
 	private ActionStatusType statusType;
 	/** 登録日時 */
-	private Date createDate;
+	@ISODateTime
+	private LocalDateTime createDate;
 	/** 登録者ID */
 	@IdStr
 	private String createId;
 	/** 更新日時 */
-	private Date updateDate;
+	@ISODateTime
+	private LocalDateTime updateDate;
 	/** 更新者ID */
 	@IdStr
 	private String updateId;
 
-	/**
-	 * キャッシュフローを処理済みにして残高へ反映します。
-	 */
+	/** キャッシュフローを処理済みにして残高へ反映します。 */
 	public Cashflow realize(final OrmRepository rep) {
 		validate((v) -> {
 			v.verify(canRealize(rep), "error.Cashflow.realizeDay");
@@ -112,14 +112,14 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 	/**
 	 * 指定受渡日時点で未実現のキャッシュフロー一覧を検索します。
 	 */
-	public static List<Cashflow> findUnrealize(final OrmRepository rep, String valueDay) {
+	public static List<Cashflow> findUnrealize(final OrmRepository rep, LocalDate valueDay) {
 		return rep.tmpl().find("from Cashflow c where c.valueDay<=?1 and c.statusType in ?2 order by c.id", valueDay, ActionStatusType.unprocessingTypes);
 	}
 
 	/**
 	 * 指定受渡日で実現対象となるキャッシュフロー一覧を検索します。
 	 */
-	public static List<Cashflow> findDoRealize(final OrmRepository rep, String valueDay) {
+	public static List<Cashflow> findDoRealize(final OrmRepository rep, LocalDate valueDay) {
 		return rep.tmpl().find("from Cashflow c where c.valueDay=?1 and c.statusType in ?2 order by c.id", valueDay, ActionStatusType.unprocessedTypes);
 	}
 	
@@ -153,10 +153,10 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 		@Category
 		private String remark;
 		/** 未設定時は営業日を設定 */
-		@DayEmpty
-		private String eventDay;
-		@Day
-		private String valueDay;
+		@ISODateEmpty
+		private LocalDate eventDay;
+		@ISODate
+		private LocalDate valueDay;
 
 		public Cashflow create(final TimePoint now) {
 			TimePoint eventDate = eventDay == null ? now : new TimePoint(eventDay, now.getDate());

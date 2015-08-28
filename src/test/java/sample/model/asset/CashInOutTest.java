@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class CashInOutTest extends EntityTestSupport {
 	@Override
 	public void before() {
 		// 残高1000円の口座(test)を用意
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			fixtures.selfFiAcc(Remarks.CashOut, ccy).save(rep);
 			fixtures.acc(accId).save(rep);
@@ -39,9 +40,9 @@ public class CashInOutTest extends EntityTestSupport {
 	
 	@Test
 	public void find() {
-		String baseDay = businessDay.day();
-		String basePlus1Day = businessDay.day(1);
-		String basePlus2Day = businessDay.day(2);
+		LocalDate baseDay = businessDay.day();
+		LocalDate basePlus1Day = businessDay.day(1);
+		LocalDate basePlus2Day = businessDay.day(2);
 		tx(() -> {
 			fixtures.cio(accId, "300", true).save(rep);
 			//low: ちゃんとやると大変なので最低限の検証
@@ -60,15 +61,15 @@ public class CashInOutTest extends EntityTestSupport {
 		});
 	}
 	
-	private FindCashInOut findParam(String fromDay, String toDay, ActionStatusType... statusTypes) {
+	private FindCashInOut findParam(LocalDate fromDay, LocalDate toDay, ActionStatusType... statusTypes) {
 		return new FindCashInOut(ccy, statusTypes, fromDay, toDay);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void withdrawal() {
-		String baseDay = businessDay.day();
-		String basePlus3Day = businessDay.day(3);
+		LocalDate baseDay = businessDay.day();
+		LocalDate basePlus3Day = businessDay.day(3);
 		tx(() -> {
 			// 超過の出金依頼 [例外]
 			try {
@@ -113,7 +114,7 @@ public class CashInOutTest extends EntityTestSupport {
 
 	@Test
 	public void cancel() {
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			// CF未発生の依頼を取消
 			CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
@@ -134,7 +135,7 @@ public class CashInOutTest extends EntityTestSupport {
 
 	@Test
 	public void error() {
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
 			assertThat(normal.error(rep), hasProperty("statusType", is(ActionStatusType.ERROR)));
@@ -156,8 +157,8 @@ public class CashInOutTest extends EntityTestSupport {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void process() {
-		String baseDay = businessDay.day();
-		String basePlus3Day = businessDay.day(3);
+		LocalDate baseDay = businessDay.day();
+		LocalDate basePlus3Day = businessDay.day(3);
 		tx(() -> {
 			// 発生日未到来の処理 [例外]
 			CashInOut future = fixtures.cio(accId, "300", true).save(rep);

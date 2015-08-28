@@ -1,7 +1,7 @@
 package sample.context.orm;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import sample.context.Entity;
 
@@ -20,9 +20,9 @@ public abstract class OrmActiveMetaRecord<T extends Entity> extends OrmActiveRec
 	public abstract void setCreateId(String createId);
 	
 	/** 登録日時 */
-	public abstract Date getCreateDate();
+	public abstract LocalDateTime getCreateDate();
 	
-	public abstract void setCreateDate(Date createDate);
+	public abstract void setCreateDate(LocalDateTime createDate);
 	
 	/** 更新利用者ID */
 	public abstract String getUpdateId();
@@ -30,8 +30,8 @@ public abstract class OrmActiveMetaRecord<T extends Entity> extends OrmActiveRec
 	public abstract void setUpdateId(String updateId);
 	
 	/** 更新日時 */
-	public abstract Date getUpdateDate();
+	public abstract LocalDateTime getUpdateDate();
 	
-	public abstract void setUpdateDate(Date updateDate);
+	public abstract void setUpdateDate(LocalDateTime updateDate);
 
 }

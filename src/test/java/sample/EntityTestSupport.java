@@ -1,6 +1,7 @@
 package sample;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -13,7 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import sample.context.*;
-import sample.context.actor.*;
+import sample.context.actor.ActorSession;
 import sample.context.orm.*;
 import sample.context.orm.DefaultRepository.DefaultRepositoryConfig;
 import sample.model.*;
@@ -24,6 +25,7 @@ import sample.support.MockDomainHelper;
  * <p>modelパッケージでのみ利用してください。
  */
 public class EntityTestSupport {
+	protected Clock clock = Clock.systemDefaultZone();
 	protected Timestamper time;
 	protected BusinessDayHandler businessDay;
 	protected ActorSession session;
@@ -43,7 +45,7 @@ public class EntityTestSupport {
 	@Before
 	public final void setup() {
 		setupPreset();	
-		dh = new MockDomainHelper();
+		dh = new MockDomainHelper(clock);
 		time = dh.time();
 		session = dh.actorSession();
 		businessDay = new BusinessDayHandler();
@@ -79,6 +81,13 @@ public class EntityTestSupport {
 		if (list != null) {
 			this.targetEntities = Arrays.asList(list);
 		}
+	}
+
+	/**
+	 * {@link #setupPreset()}内で利用したいClockを指定してください。
+	 */
+	protected void clock(Clock clock) {
+		this.clock = clock;
 	}
 	
 	/**

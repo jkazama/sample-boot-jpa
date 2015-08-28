@@ -30,10 +30,11 @@ public class SecurityService {
 				if (username == null) {
 					throw new UsernameNotFoundException("error.Login");
 				}
-				String accountId = ConvertUtils.zenkakuToHan(username);
-				Account account = service.getAccount(accountId).orElseThrow(() ->
+				String loginId = ConvertUtils.zenkakuToHan(username);
+				Login login = service.getLoginByLoginId(loginId).orElseThrow(() ->
 					new UsernameNotFoundException("error.Login"));
-				Login login = service.loadLogin(accountId);
+				Account account = service.getAccount(login.getId()).orElseThrow(() ->
+					new UsernameNotFoundException("error.Login"));
 				List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
 						new SimpleGrantedAuthority("ROLE_USER") });
 				return new ActorDetails(account.actor(), login.getPassword(), authorities);

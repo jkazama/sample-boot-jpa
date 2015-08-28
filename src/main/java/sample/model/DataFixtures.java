@@ -1,6 +1,7 @@
 package sample.model;
 
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,13 +65,13 @@ public class DataFixtures {
 	}
 
 	public void initializeInTxSystem() {
-		String day = DateUtils.dayFormat(new Date());
+		String day = DateUtils.dayFormat(LocalDate.now());
 		new AppSetting(Timestamper.KEY_DAY, "system", "営業日", day).save(repSystem);
 	}
 	
 	public void initializeInTx() {
 		String ccy = "JPY";
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 
 		// 社員: admin (passも同様)
 		staff("admin").save(rep);
@@ -114,17 +115,17 @@ public class DataFixtures {
 	// asset
 
 	/** 口座残高の簡易生成 */
-	public CashBalance cb(String accountId, String baseDay, String currency, String amount) {
-		return new CashBalance(null, accountId, baseDay, currency, new BigDecimal(amount), new Date());
+	public CashBalance cb(String accountId, LocalDate baseDay, String currency, String amount) {
+		return new CashBalance(null, accountId, baseDay, currency, new BigDecimal(amount), LocalDateTime.now());
 	}
 
 	/** キャッシュフローの簡易生成 */
-	public Cashflow cf(String accountId, String amount, String eventDay, String valueDay) {
-		return cfReg(accountId, amount, valueDay).create(TimePoint.by(eventDay));
+	public Cashflow cf(String accountId, String amount, LocalDate eventDay, LocalDate valueDay) {
+		return cfReg(accountId, amount, valueDay).create(TimePoint.of(eventDay));
 	}
 
 	/** キャッシュフロー登録パラメタの簡易生成 */
-	public RegCashflow cfReg(String accountId, String amount, String valueDay) {
+	public RegCashflow cfReg(String accountId, String amount, LocalDate valueDay) {
 		return new RegCashflow(accountId, "JPY", new BigDecimal(amount), CashflowType.CashIn, "cashIn", null, valueDay);
 	}
 

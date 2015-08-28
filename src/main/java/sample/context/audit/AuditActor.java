@@ -1,6 +1,6 @@
 package sample.context.audit;
 
-import java.util.Date;
+import java.time.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -48,36 +48,37 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 	/** 処理時間(msec) */
 	private Long time;
 	/** 開始日時 */
-	private Date startDate;
+	@NotNull
+	private LocalDateTime startDate;
 	/** 終了日時(未完了時はnull) */
-	private Date endDate;
+	private LocalDateTime endDate;
 
 	/** 利用者監査ログを完了状態にします。 */
 	public AuditActor finish(final SystemRepository rep) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.PROCESSED);
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 
 	/** 利用者監査ログを取消状態にします。 */
 	public AuditActor cancel(final SystemRepository rep, String errorReason) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.CANCELLED);
 		setErrorReason(StringUtils.abbreviate(errorReason, 250));
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 	
 	/** 利用者監査ログを例外状態にします。 */
 	public AuditActor error(final SystemRepository rep, String errorReason) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.ERROR);
 		setErrorReason(StringUtils.abbreviate(errorReason, 250));
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 
@@ -94,7 +95,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		criteria.equal("category", p.category);
 		criteria.equal("statusType", p.statusType);
 		criteria.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE);
-		criteria.between("startDate", DateUtils.date(p.fromDay), DateUtils.dateTo(p.toDay));
+		criteria.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
         p.page.getSort().desc("startDate");
 		return tmpl.find(criteria.result(), p.page);
 	}
@@ -112,10 +113,10 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		@DescriptionEmpty
 		private String keyword;
 		private ActionStatusType statusType;
-		@Day
-		private String fromDay;
-		@Day
-		private String toDay;
+		@NotNull
+		private LocalDate fromDay;
+		@NotNull
+		private LocalDate toDay;
 		@NotNull
 		private Pagination page = new Pagination();
 	}
@@ -129,7 +130,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		private String category;
 		private String message;
 
-		public AuditActor create(final Actor actor, Date now) {
+		public AuditActor create(final Actor actor, LocalDateTime now) {
 			AuditActor audit = new AuditActor();
 			audit.setActorId(actor.getId());
 			audit.setSource(actor.getSource());

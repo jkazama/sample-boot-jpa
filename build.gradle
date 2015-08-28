@@ -39,10 +39,12 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework:spring-orm:4.2.0.RELEASE"
     compile "org.hibernate:hibernate-core:5.0.0.Final"
+    compile "org.hibernate:hibernate-java8:5.0.0.Final"
     compile "org.hibernate:hibernate-ehcache:5.0.0.Final"
     compile "net.sf.ehcache:ehcache-core:2.6.11"
     compile "com.zaxxer:HikariCP-java6:2.3.7"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.1"
+    compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.6.1"
     compile "commons-io:commons-io:2.4"
     compile "commons-collections:commons-collections:3.2.+"
     compile "org.apache.commons:commons-lang3:3.3.+"
@@ -58,8 +60,8 @@ task wrapper(type: Wrapper) {
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
 // 「 gradlew copyProject 」を実行してください。
-def yourProjectName = "sample"
-def yourProjectPackage = "your.sample"
+def yourProjectName = "hoge"
+def yourProjectPackage = "hoge.sample"
 def yourProjectPath = "../${yourProjectName}"
 task copyProject << {
     def projectPath = yourProjectPath

@@ -1,5 +1,6 @@
 package sample.model.master;
 
+import java.time.*;
 import java.util.*;
 
 import javax.persistence.*;
@@ -9,6 +10,7 @@ import lombok.*;
 import sample.context.Dto;
 import sample.context.orm.*;
 import sample.model.constraints.*;
+import sample.model.constraints.Year;
 
 /**
  * 祝日マスタを表現します。
@@ -28,39 +30,41 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@Category
 	private String category;
 	/** 祝日 */
-	@Day
-	private String day;
+	@ISODate
+	private LocalDate day;
 	/** 祝日名称 */
 	@Name(max = 40)
 	private String name;
-	private Date createDate;
+	@ISODateTime
+	private LocalDateTime createDate;
 	@IdStr
 	private String createId;
-	private Date updateDate;
+	@ISODateTime
+	private LocalDateTime updateDate;
 	@IdStr
 	private String updateId;
 
 	/** 祝日マスタを取得します。 */
-	public static Optional<Holiday> get(final OrmRepository rep, String day) {
+	public static Optional<Holiday> get(final OrmRepository rep, LocalDate day) {
 		return get(rep, day, CATEGORY_DEFAULT);
 	}
-	public static Optional<Holiday> get(final OrmRepository rep, String day, String category) {
+	public static Optional<Holiday> get(final OrmRepository rep, LocalDate day, String category) {
 		return rep.tmpl().get("from Holiday h where h.category=?1 and h.day=?2", category, day);
 	}
 
 	/** 祝日マスタを取得します。(例外付) */
-	public static Holiday load(final OrmRepository rep, String day) {
+	public static Holiday load(final OrmRepository rep, LocalDate day) {
 		return load(rep, day, CATEGORY_DEFAULT);
 	}
-	public static Holiday load(final OrmRepository rep, String day, String category) {
+	public static Holiday load(final OrmRepository rep, LocalDate day, String category) {
 		return rep.tmpl().load("from Holiday h where h.category=?1 and h.day=?2", category, day);
 	}
 
 	/** 祝日情報を検索します。 */
-	public static List<Holiday> find(final OrmRepository rep, final String year) {
+	public static List<Holiday> find(final OrmRepository rep, final int year) {
 		return find(rep, year, CATEGORY_DEFAULT);
 	}
-	public static List<Holiday> find(final OrmRepository rep, final String year, final String category) {
+	public static List<Holiday> find(final OrmRepository rep, final int year, final String category) {
 		return rep.tmpl().find("from Holiday h where h.category=?1 and h.day like ?2 order by h.day", category, year + "%");
 	}
 
@@ -79,7 +83,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 		@Category
 		private String category;
 		@Year
-		private String year;
+		private int year;
 		@Valid
 		private List<RegisterHolidayItem> list;
 	}
@@ -90,8 +94,8 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@AllArgsConstructor
 	public static class RegisterHolidayItem implements Dto {
 		private static final long serialVersionUID = 1l;
-		@Day
-		private String day;
+		@ISODate
+		private LocalDate day;
 		@Name(max = 40)
 		private String name;
 

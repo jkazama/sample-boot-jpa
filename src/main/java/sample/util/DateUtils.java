@@ -1,180 +1,117 @@
 package sample.util;
 
-import java.text.ParseException;
-import java.util.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.*;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.*;
+import org.springframework.util.Assert;
 
 /**
- * 日時ユーティリティを表現します。low: java8で追加されたクラスで書き換え予定
+ * 頻繁に利用される日時ユーティリティを表現します。
  */
 public abstract class DateUtils {
+	
+	private static WeekendQuery weekendQuery = new WeekendQuery();
 
-	/**
-	 * 指定された文字列を日時へ変換します。(文字列は8/12/14桁に対応しています)
-	 */
-	public static Date date(String dateStr) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		int size = dateStr.length();
-		if (size == 8) {
-			return date("yyyyMMdd", dateStr);
-		} else if (size == 12) {
-			return date("yyyyMMddHHmm", dateStr);
-		} else if (size == 14) {
-			return date("yyyyMMddHHmmss", dateStr);
-		} else {
-			throw new IllegalArgumentException("サポートされない桁数の日時文字列です。[" + dateStr
-					+ "]");
-		}
+	/** 指定された文字列(YYYY-MM-DD)を元に日付へ変換します。 */
+	public static LocalDate day(String dayStr) {
+		return dayOpt(dayStr).orElse(null);
 	}
-
-	/**
-	 * 指定されたフォーマットと文字列を元に日時へ変換します。
-	 */
-	public static Date date(String format, String dateStr) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		try {
-			return FastDateFormat.getInstance(format).parse(dateStr);
-		} catch (ParseException e) {
-			throw new IllegalArgumentException("日時指定に誤りがあります。[format: "
-					+ format + "] [dateStr: " + dateStr + "]");
-		}
+	public static Optional<LocalDate> dayOpt(String dayStr) {
+		if (StringUtils.isBlank(dayStr)) return Optional.empty();
+		return Optional.of(LocalDate.parse(dayStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE));
+	}
+	
+	/** 指定された文字列とフォーマット型を元に日時へ変換します。 */
+	public static LocalDateTime date(String dateStr, DateTimeFormatter formatter) {
+		return dateOpt(dateStr, formatter).orElse(null);
+	}
+	public static Optional<LocalDateTime> dateOpt(String dateStr, DateTimeFormatter formatter) {
+		if (StringUtils.isBlank(dateStr)) return Optional.empty();
+		return Optional.of(LocalDateTime.parse(dateStr.trim(), formatter));
+	}
+	
+	/** 指定された文字列とフォーマット文字列を元に日時へ変換します。 */
+	public static LocalDateTime date(String dateStr, String format) {
+		return date(dateStr, DateTimeFormatter.ofPattern(format));
+	}
+	public static Optional<LocalDateTime> dateOpt(String dateStr, String format) {
+		return dateOpt(dateStr, DateTimeFormatter.ofPattern(format));
+	}
+	
+	/** 指定された日付を日時へ変換します。*/
+	public static LocalDateTime dateByDay(LocalDate day) {
+		return dateByDayOpt(day).orElse(null);
+	}
+	public static Optional<LocalDateTime> dateByDayOpt(LocalDate day) {
+		if (day == null) return Optional.empty();
+		return Optional.of(day.atStartOfDay());
 	}
 
 	/** 指定した日付の翌日から1msec引いた日時を返します。 */
-	public static Date dateTo(String day) {
-		if (StringUtils.isBlank(day)) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date(day));
-		cal.add(Calendar.DAY_OF_MONTH, 1);
-		cal.add(Calendar.MILLISECOND, -1);
-		return cal.getTime();
+	public static LocalDateTime dateTo(LocalDate day) {
+		if (day == null) return null;
+		return day.atTime(23, 59, 59);
+	}
+	public static Optional<LocalDateTime> dateToOpt(LocalDate day) {
+		if (day == null) return Optional.empty();
+		return Optional.of(day.atTime(23, 59, 59));
 	}
 
-	/** 指定した日付の日付を加算または減算して返します。 */
-	public static Date calcDay(String dateStr, int amount) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		return calcDay(date(dateStr), amount);
+	/** 指定された日時型とフォーマット型を元に文字列(YYYY-MM-DD)へ変更します。 */
+	public static String dayFormat(LocalDate day) {
+		return dayFormatOpt(day).orElse(null);
+	}
+	public static Optional<String> dayFormatOpt(LocalDate day) {
+		if (day == null) return Optional.empty();
+		return Optional.of(day.format(DateTimeFormatter.ISO_LOCAL_DATE));
 	}
 
-	public static String calcDayStr(String dateStr, int amount) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		return dayFormat(calcDay(date(dateStr), amount));
+	/** 指定された日時型とフォーマット型を元に文字列へ変更します。 */
+	public static String dateFormat(LocalDateTime date, DateTimeFormatter formatter) {
+		return dateFormatOpt(date, formatter).orElse(null);
+	}
+	public static Optional<String> dateFormatOpt(LocalDateTime date, DateTimeFormatter formatter) {
+		if (date == null) return Optional.empty();
+		return Optional.of(date.format(formatter));
+	}
+
+	/** 指定された日時型とフォーマット文字列を元に文字列へ変更します。 */
+	public static String dateFormat(LocalDateTime date, String format) {
+		return dateFormatOpt(date, format).orElse(null);
+	}
+	public static Optional<String> dateFormatOpt(LocalDateTime date, String format) {
+		if (date == null) return Optional.empty();
+		return Optional.of(date.format(DateTimeFormatter.ofPattern(format)));
 	}
 	
-	/** 指定した日付の日付を加算または減算して返します。 */
-	public static Date calcDay(Date date, int amount) {
-		if (date == null) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.DAY_OF_MONTH, amount);
-		return cal.getTime();
-	}
-
-	/** 指定した日付の月を加算または減算して返します。 */
-	public static Date calcMonth(String dateStr, int amount) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		return calcMonth(date(dateStr), amount);
-	}
-
-	/** 指定した日付の月を加算または減算して返します。 */
-	public static Date calcMonth(Date date, int amount) {
-		if (date == null) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.MONTH, amount);
-		return cal.getTime();
-	}
-
-	/** 指定した日付の年を加算または減算して返します。 */
-	public static Date calcYear(String dateStr, int amount) {
-		if (StringUtils.isBlank(dateStr)) {
-			return null;
-		}
-		return calcYear(date(dateStr), amount);
-	}
-
-	/** 指定した日付の年を加算または減算して返します。 */
-	public static Date calcYear(Date date, int amount) {
-		if (date == null) {
-			return null;
-		}
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.YEAR, amount);
-		return cal.getTime();
-	}
-
-	/** 日時型を文字列へ変更します。 */
-	public static String dateFormat(String format, Date date) {
-		return DateFormatUtils.format(date, format);
-	}
-
-	/** 日時型を文字列へ変更します。 */
-	public static String dayFormat(Date date) {
-		return DateFormatUtils.format(date, "yyyyMMdd");
-	}
-
-	/** 日時型を文字列へ変更します。 */
-	public static String monthFormat(Date date) {
-		return DateFormatUtils.format(date, "yyyyMM");
-	}
-
-	/** 日付の間隔（日数）を取得します。（dateTo - dateFrom） */
-	public static Long diffDay(String dateFrom, String dateTo) {
-		return diffDay(date(dateFrom), date(dateTo));
-	}
-
-	public static Long diffDay(Date dateFrom, Date dateTo) {
-		long timeFrom = dateFrom.getTime();
-		long timeTo = dateTo.getTime();
-		long diffTime = timeTo - timeFrom;
-		return diffTime / 1000 / 60 / 60/ 24;
-	}
-
-	/** 基準日時に時分(HHmm)を設定して返します。 */
-	public static Date replaceTime(Date baseDate, String timeHHmm) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(baseDate);
-		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeHHmm.substring(0, 2)));
-		cal.set(Calendar.MINUTE, Integer.parseInt(timeHHmm.substring(2, 4)));
-		cal.set(Calendar.SECOND, Integer.parseInt(timeHHmm.substring(4, 6)));
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
+	/** 日付の間隔を取得します。 */
+	public static Optional<Period> between(LocalDate start, LocalDate end) {
+		if (start == null || end == null) return Optional.empty();
+		return Optional.of(Period.between(start, end));
 	}
 	
-	/** 指定営業日が週末(土日)か判定します。 */
-	public static boolean isWeekday(String day) {
-		return isWeekday(date(day));
+	/** 日時の間隔を取得します。 */
+	public static Optional<Duration> between(LocalDateTime start, LocalDateTime end) {
+		if (start == null || end == null) return Optional.empty();
+		return Optional.of(Duration.between(start, end));
+	}
+
+	/** 指定営業日が週末(土日)か判定します。(引数は必須) */
+	public static boolean isWeekend(LocalDate day) {
+		Assert.notNull(day);
+		return day.query(weekendQuery);
 	}
 	
-	public static boolean isWeekday(Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-		return (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY);
+	/** 週末判定用のTemporalQuery<Boolean>を表現します。 */
+	public static class WeekendQuery implements TemporalQuery<Boolean> {
+		@Override
+		public Boolean queryFrom(TemporalAccessor temporal) {
+	        DayOfWeek dayOfWeek = DayOfWeek.of(temporal.get(ChronoField.DAY_OF_WEEK));
+	        return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
+		}
 	}
-	
-	/** 営業日時(from/to)に含めるか。（同値は含めます） */
-	public static boolean contains(Date from, Date to, Date baseDate) {
-		return (from.getTime() <= baseDate.getTime() && baseDate.getTime() <= to.getTime());
-	}
-	
+
 }

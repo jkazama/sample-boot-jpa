@@ -4,8 +4,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
-import org.junit.*;
+import org.junit.Test;
 
 import sample.*;
 
@@ -19,9 +20,9 @@ public class CashflowTest extends EntityTestSupport {
 	
 	@Test
 	public void register() {
-		String baseDay = businessDay.day();
-		String baseMinus1Day = businessDay.day(-1);
-		String basePlus1Day = businessDay.day(1);
+		LocalDate baseDay = businessDay.day();
+		LocalDate baseMinus1Day = businessDay.day(-1);
+		LocalDate basePlus1Day = businessDay.day(1);
 		tx(() -> {
 			// 過去日付の受渡でキャッシュフロー発生 [例外]
 			try {
@@ -42,10 +43,10 @@ public class CashflowTest extends EntityTestSupport {
 
 	@Test
 	public void realize() {
-		String baseDay = businessDay.day();
-		String baseMinus1Day = businessDay.day(-1);
-		String baseMinus2Day = businessDay.day(-2);
-		String basePlus1Day = businessDay.day(1);
+		LocalDate baseDay = businessDay.day();
+		LocalDate baseMinus1Day = businessDay.day(-1);
+		LocalDate baseMinus2Day = businessDay.day(-2);
+		LocalDate basePlus1Day = businessDay.day(1);
 		tx(() -> {
 			CashBalance.getOrNew(rep, "test1", "JPY");
 			
@@ -82,7 +83,7 @@ public class CashflowTest extends EntityTestSupport {
 	
 	@Test
 	public void registerWithRealize() {
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashBalance.getOrNew(rep, "test1", "JPY");
 			// 発生即実現

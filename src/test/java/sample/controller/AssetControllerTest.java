@@ -17,7 +17,7 @@ public class AssetControllerTest extends WebTestSupport {
 		fixtures.cio("sample", "3000", true).save(rep);
 		fixtures.cio("sample", "8000", true).save(rep);
 		// low: JSONの値検証は省略
-		logger.info(performGet("/cio/unprocessedOut").getResponse().getContentAsString());
+		logger.info(performGet("/cio/unprocessedOut/").getResponse().getContentAsString());
 	}
 
 	@Test

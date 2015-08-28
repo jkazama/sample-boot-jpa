@@ -1,6 +1,6 @@
 package sample.context.audit;
 
-import java.util.Date;
+import java.time.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -39,42 +39,42 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 	/** 処理時間(msec) */
 	private Long time;
 	/** 開始日時 */
-	private Date startDate;
+	@NotNull
+	private LocalDateTime startDate;
 	/** 終了日時(未完了時はnull) */
-	private Date endDate;
+	private LocalDateTime endDate;
 
 	/** イベント監査ログを完了状態にします。 */
 	public AuditEvent finish(final SystemRepository rep) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.PROCESSED);
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 
 	/** イベント監査ログを取消状態にします。 */
 	public AuditEvent cancel(final SystemRepository rep, String errorReason) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.CANCELLED);
 		setErrorReason(StringUtils.abbreviate(errorReason, 250));
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 	
 	/** イベント監査ログを例外状態にします。 */
 	public AuditEvent error(final SystemRepository rep, String errorReason) {
-		Date now = rep.dh().time().date();
+		LocalDateTime now = rep.dh().time().date();
 		setStatusType(ActionStatusType.ERROR);
 		setErrorReason(StringUtils.abbreviate(errorReason, 250));
 		setEndDate(now);
-		setTime(endDate.getTime() - startDate.getTime());
+		setTime(DateUtils.between(startDate, endDate).get().toMillis());
 		return update(rep);
 	}
 
 	/** イベント監査ログを登録します。 */
-	public static AuditEvent register(final SystemRepository rep,
-			final RegAuditEvent p) {
+	public static AuditEvent register(final SystemRepository rep, final RegAuditEvent p) {
 		return p.create(rep.dh().time().date()).save(rep);
 	}
 
@@ -85,7 +85,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		criteria.equal("category", p.category);
 		criteria.equal("statusType", p.statusType);
 		criteria.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE);
-		criteria.between("startDate", DateUtils.date(p.fromDay), DateUtils.dateTo(p.toDay));
+		criteria.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
 		p.page.getSort().desc("startDate");
 		return tmpl.find(criteria.result(), p.page);
 	}
@@ -101,10 +101,10 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		@DescriptionEmpty
 		private String keyword;
 		private ActionStatusType statusType;
-		@Day
-		private String fromDay;
-		@Day
-		private String toDay;
+		@NotNull
+		private LocalDate fromDay;
+		@NotNull
+		private LocalDate toDay;
 		@NotNull
 		private Pagination page = new Pagination();
 	}
@@ -119,7 +119,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		private String category;
 		private String message;
 
-		public AuditEvent create(Date now) {
+		public AuditEvent create(LocalDateTime now) {
 			AuditEvent event = new AuditEvent();
 			event.setCategory(category);
 			event.setMessage(message);

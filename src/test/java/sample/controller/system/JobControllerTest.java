@@ -1,11 +1,12 @@
 package sample.controller.system;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
-import org.junit.*;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import sample.*;
@@ -25,9 +26,9 @@ public class JobControllerTest extends WebTestSupport {
 
 	@Test
 	public void processDay() throws Exception {
-		String day = businessDay.day();
-		String dayPlus1 = businessDay.day(1);
-		String dayPlus2 = businessDay.day(2);
+		LocalDate day = businessDay.day();
+		LocalDate dayPlus1 = businessDay.day(1);
+		LocalDate dayPlus2 = businessDay.day(2);
 		assertThat(time.day(), is(day));
 		performPost("/daily/processDay");
 		assertThat(time.day(), is(dayPlus1));
@@ -49,8 +50,8 @@ public class JobControllerTest extends WebTestSupport {
 
 	@Test
 	public void realizeCashflow() throws Exception {
-		String dayMinus1 = businessDay.day(-1);
-		String day = businessDay.day();
+		LocalDate dayMinus1 = businessDay.day(-1);
+		LocalDate day = businessDay.day();
 		// 当日実現のキャッシュフローを準備
 		Cashflow cf = fixtures.cf("sample", "3000", dayMinus1, day).save(rep);
 		assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.UNPROCESSED)));

@@ -16,8 +16,8 @@ import javax.validation.constraints.*;
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
+@Digits(integer = 4, fraction = 0)
 @Size
-@Pattern(regexp = "")
 public @interface YearEmpty {
 	String message() default "{error.domain.year}";
 
@@ -27,9 +27,6 @@ public @interface YearEmpty {
 
 	@OverridesAttribute(constraint = Size.class, name = "max")
 	int max() default 4;
-
-	@OverridesAttribute(constraint = Pattern.class, name = "regexp")
-	String regexp() default "^\\d{4}$";
 
 	@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 	@Retention(RUNTIME)

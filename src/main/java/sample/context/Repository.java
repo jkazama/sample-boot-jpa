@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * 特定のドメインオブジェクトに依存しない汎用的なRepositoryです。
- * タイプセーフでないRepositoryとして利用することができます。
+ * <p>タイプセーフでないRepositoryとして利用することができます。
  */
 public interface Repository {
 

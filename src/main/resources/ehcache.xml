@@ -36,7 +36,7 @@
     maxEntriesLocalHeap="1000"
     timeToIdleSeconds="1800"
     timeToLiveSeconds="1800" />
-  <cache name="AccountService.getLogin"
+  <cache name="AccountService.getLoginByLoginId"
     maxEntriesLocalHeap="1000"
     timeToIdleSeconds="1800"
     timeToLiveSeconds="1800" />

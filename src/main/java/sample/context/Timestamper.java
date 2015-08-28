@@ -1,6 +1,6 @@
 package sample.context;
 
-import java.util.*;
+import java.time.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,50 +14,41 @@ import sample.util.*;
 public class Timestamper {
 	public static final String KEY_DAY = "system.businessDay.day";
 
-	@Autowired
-	private AppSettingHandler settingHandler;
+	@Autowired(required = false)
+	private AppSettingHandler setting;
 	
-	/** 設定時は固定日/日時を返すモックモードとする */
-	private final Optional<String> mockDay;
-	private final Optional<Date> mockDate;
+	private final Clock clock;
 	
 	public Timestamper() {
-		mockDay = Optional.empty();
-		mockDate = Optional.empty();
+		clock = Clock.systemDefaultZone();
 	}
 	
-	public Timestamper(final TimePoint mockDay) {
-		this.mockDay = Optional.of(mockDay.getDay());
-		this.mockDate = Optional.of(mockDay.getDate());
+	public Timestamper(final Clock clock) {
+		this.clock = clock;
 	}
 	
-	/**
-	 * @return 営業日を返します。
-	 */
-	public String day() {
-		return mockDay.orElseGet(() -> settingHandler.setting(KEY_DAY).str());
+	/** 営業日を返します。 */
+	public LocalDate day() {
+		return setting == null ? LocalDate.now(clock) : DateUtils.day(setting.setting(KEY_DAY).str());
 	}
 
-	/**
-	 * @return 日時を返します。
-	 */
-	public Date date() {
-		return mockDate.orElse(new Date());
+	/** 日時を返します。 */
+	public LocalDateTime date() {
+		return LocalDateTime.now(clock);
 	}
 
-	/**
-	 * @return 営業日/日時を返します。
-	 */
+	/** 営業日/日時を返します。 */
 	public TimePoint tp() {
-		return new TimePoint(day(), date());
+		return TimePoint.of(day(), date());
 	}
 
 	/**
 	 * 営業日を指定日へ進めます。
+	 * <p>AppSettingHandlerを設定時のみ有効です。
 	 * @param day 更新営業日
 	 */
-	public Timestamper proceedDay(String day) {
-		settingHandler.update(KEY_DAY, day);
+	public Timestamper proceedDay(LocalDate day) {
+		if (setting != null) setting.update(KEY_DAY, DateUtils.dayFormat(day));
 		return this;
 	}
 

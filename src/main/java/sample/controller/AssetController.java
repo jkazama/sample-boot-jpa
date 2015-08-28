@@ -1,6 +1,7 @@
 package sample.controller;
 
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ public class AssetController extends ControllerSupport {
 	private AssetService service;
 
 	/** 未処理の振込依頼情報を検索します。 */
-	@RequestMapping(value = "/cio/unprocessedOut")
+	@RequestMapping(value = "/cio/unprocessedOut/")
 	public List<CashOutUI> findUnprocessedCashOut() {
 		return service.findUnprocessedCashOut().stream().map((cio) ->
 			CashOutUI.of(cio)).collect(Collectors.toList());
@@ -51,12 +52,12 @@ public class AssetController extends ControllerSupport {
 		private Long id;
 		private String currency;
 		private BigDecimal absAmount;
-		private String requestDay;
-		private Date requestDate;
-		private String eventDay;
-		private String valueDay;
+		private LocalDate requestDay;
+		private LocalDateTime requestDate;
+		private LocalDate eventDay;
+		private LocalDate valueDay;
 		private ActionStatusType statusType;
-		private Date updateDate;
+		private LocalDateTime updateDate;
 		private Long cashflowId;
 
 		public static CashOutUI of(final CashInOut cio) {

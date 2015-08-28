@@ -42,6 +42,12 @@ public class Login extends OrmActiveRecord<Login> {
 		return rep.get(Login.class, id);
 	}
 	
+	/** ログイン情報を取得します。 */
+	public static Optional<Login> getByLoginId(final OrmRepository rep, String loginId) {
+		return Optional.ofNullable(loginId).flatMap(lid ->
+			rep.tmpl().get("from Login where loginId=?1", lid));
+	}
+	
 	/** ログイン情報を取得します。(例外付) */
 	public static Login load(final OrmRepository rep, String id) {
 		return rep.load(Login.class, id);

@@ -6,15 +6,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.ibm.icu.text.Transliterator;
 
-/** 各種型/文字列変換をサポートします。 */
+/** 各種型/文字列変換をサポートします。(ICU4Jライブラリに依存しています) */
 public abstract class ConvertUtils {
 	private static Transliterator zenkakuToHan = Transliterator.getInstance("Fullwidth-Halfwidth");
 	private static Transliterator hankakuToZen = Transliterator.getInstance("Halfwidth-Fullwidth");
 	private static Transliterator katakanaToHira = Transliterator.getInstance("Katakana-Hiragana");
 	private static Transliterator hiraganaToKana = Transliterator.getInstance("Hiragana-Katakana");
 
-	/** 強制的にLongへ変換します。(変換できない時はnull) */
-	public static Long parseLong(Object v) {
+	/** 例外無しにLongへ変換します。(変換できない時はnull) */
+	public static Long quietlyLong(Object v) {
 		if (v == null) return null;
 		try {
 			return Long.parseLong(v.toString());
@@ -23,8 +23,8 @@ public abstract class ConvertUtils {
 		}
 	}
 
-	/** 強制的にIntegerへ変換します。(変換できない時はnull) */
-	public static Integer parseInt(Object v) {
+	/** 例外無しにIntegerへ変換します。(変換できない時はnull) */
+	public static Integer quietlyInt(Object v) {
 		if (v == null) return null;
 		try {
 			return Integer.parseInt(v.toString());
@@ -33,8 +33,8 @@ public abstract class ConvertUtils {
 		}
 	}
 
-	/** 強制的にBigDecimalへ変換します。(変換できない時はnull) */
-	public static BigDecimal parseDecimal(Object v) {
+	/** 例外無しにBigDecimalへ変換します。(変換できない時はnull) */
+	public static BigDecimal quietlyDecimal(Object v) {
 		if (v == null) return null;
 		try {
 			return new BigDecimal(v.toString());
@@ -43,8 +43,8 @@ public abstract class ConvertUtils {
 		}
 	}
 
-	/** ObjectをBooleanへ変換します。(変換できない時はEmpty) */
-	public static Boolean parseBool(Object v) {
+	/** 例外無しBooleanへ変換します。(変換できない時はfalse) */
+	public static Boolean quietlyBool(Object v) {
 		if (v == null) return null;
 		return Boolean.parseBoolean(v.toString());
 	}

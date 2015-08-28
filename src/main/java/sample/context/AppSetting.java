@@ -11,6 +11,7 @@ import org.hibernate.criterion.MatchMode;
 
 import lombok.*;
 import sample.context.orm.*;
+import sample.model.constraints.OutlineEmpty;
 
 /**
  * アプリケーション設定情報を表現します。
@@ -107,6 +108,7 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
 	@AllArgsConstructor
 	public static class FindAppSetting implements Dto {
 		private static final long serialVersionUID = 1l;
+		@OutlineEmpty
 		private String keyword;
 	}
 

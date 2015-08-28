@@ -1,15 +1,11 @@
 package sample.context.orm;
 
-import java.util.Date;
+import java.time.temporal.Temporal;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.hibernate.sql.JoinType;
 import org.hibernate.transform.ResultTransformer;
 
@@ -20,36 +16,47 @@ import sample.context.Entity;
  * ORMのCriteriaBuilderラッパー。
  * <p>Criteriaの簡易的な取り扱いを可能にします。
  * <p>Criteriaで利用する条件句は必要に応じて追加してください。
+ * <p>ビルド結果としてのDetatchedCriteriaはresult*メソッドで受け取って下さい。
  */
 @Getter
 public class OrmCriteria<T extends Entity> {
 
 	private final DetachedCriteria criteria;
 
+	/** 指定したEntityクラスを軸にしたCriteriaを生成します。 */
 	public OrmCriteria(Class<T> clazz) {
 		this.criteria = DetachedCriteria.forClass(clazz);
 	}
 
+	/** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
 	public OrmCriteria(Class<T> clazz, String alias) {
 		this.criteria = DetachedCriteria.forClass(clazz, alias);
 	}
 
+	/** 組み上げたDetachedCriteriaを返します。 */
 	public DetachedCriteria result() {
 		return criteria;
 	}
 
+	/**
+	 * 組み上げたDetachedCriteriaを返します。
+	 * エイリアス(key)とEntity(value)を1行にMapマッピングした結果を返します。
+	 */
 	public DetachedCriteria resultJoinToMap() {
 		return result(Criteria.ALIAS_TO_ENTITY_MAP);
 	}
 
+	/** 組み上げたDetachedCriteriaを返します。(Criteria.PROJECTION相当の戻り値) */
 	public DetachedCriteria resultJoin() {
 		return result(Criteria.PROJECTION);
 	}
 
+	/** 組み上げたDetachedCriteriaを返します。(Criteria.DISTINCT_ROOT_ENTITY相当の戻り値) */
 	public DetachedCriteria resultJoinDistinct() {
 		return result(Criteria.DISTINCT_ROOT_ENTITY);
 	}
 
+	/** 組み上げたDetachedCriteriaに戻り値フォーマットを紐付けて返します。 */
 	public DetachedCriteria result(final ResultTransformer transformer) {
 		return criteria.setResultTransformer(transformer);
 	}
@@ -79,11 +86,19 @@ public class OrmCriteria<T extends Entity> {
 	}
 
 	/**
-	 * 条件句(OR結合含む)を追加します。
+	 * 条件句(or条件含む)を追加します。
 	 * <p>引数にはRestrictionsで生成したCriterionを追加してください。
 	 */
 	public OrmCriteria<T> add(final Criterion criterion) {
 		this.criteria.add(criterion);
+		return this;
+	}
+	
+	/** or条件を付与します。 */
+	public OrmCriteria<T> or(Criterion[] predicates) {
+		if (predicates.length != 0) {
+			add(Restrictions.or(predicates));
+		}
 		return this;
 	}
 
@@ -97,7 +112,7 @@ public class OrmCriteria<T extends Entity> {
 		return add(Restrictions.isNotNull(field));
 	}
 
-	/** 一致条件を付与します。 */
+	/** 一致条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> equal(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.eq(field, value));
@@ -107,12 +122,14 @@ public class OrmCriteria<T extends Entity> {
 	private boolean isValid(final Object value) {
 		if (value instanceof String) {
 			return StringUtils.isNotBlank((String)value);
+		} else if (value instanceof Optional) {
+			return ((Optional<?>)value).isPresent();
 		} else {
 			return value != null;
 		}
 	}
 
-	/** 不一致条件を付与します。 */
+	/** 不一致条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> equalNot(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.ne(field, value));
@@ -120,13 +137,13 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** 一致条件を付与します。 */
+	/** 一致条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> equalProp(String field, final String fieldOther) {
 		add(Restrictions.eqProperty(field, fieldOther));
 		return this;
 	}
 
-	/** like条件を付与します。 */
+	/** like条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> like(String field, String value, MatchMode mode) {
 		if (isValid(value)) {
 			add(Restrictions.like(field, value, mode));
@@ -134,23 +151,13 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** like条件を付与します。[複数フィールドに対するOR結合] */
+	/** like条件を付与します。[複数フィールドに対するOR結合](値がnullの時は無視されます) */
 	public OrmCriteria<T> like(String[] fields, String value, MatchMode mode) {
 		if (isValid(value)) {
 			Criterion[] predicates = new Criterion[fields.length];
 			for (int i = 0; i < fields.length; i++) {
 				predicates[i] = Restrictions.like(fields[i], value, mode);
 			}
-			add(Restrictions.or(predicates));
-		}
-		return this;
-	}
-
-	/**
-	 * or条件を付与します。
-	 */
-	public OrmCriteria<T> or(Criterion[] predicates) {
-		if (predicates.length != 0) {
 			add(Restrictions.or(predicates));
 		}
 		return this;
@@ -165,7 +172,7 @@ public class OrmCriteria<T extends Entity> {
 	}
 
 	/** between条件を付与します。 */
-	public OrmCriteria<T> between(String field, final Date from, final Date to) {
+	public OrmCriteria<T> between(String field, final Temporal from, final Temporal to) {
 		if (from != null && to != null) {
 			add(Restrictions.between(field, from, to));
 		}
@@ -180,7 +187,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "greater than or equal"【[フィールド]&gt;=[値]】条件を付与します。 */
+	/** [フィールド]&gt;=[値] 条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> gte(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.ge(field, value));
@@ -188,7 +195,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "greater than"【[フィールド]&gt;[値]】条件を付与します。 */
+	/** [フィールド]&gt;[値] 条件を付与します。(値がnullの時は無視されます) */
 	public OrmCriteria<T> gt(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.gt(field, value));
@@ -196,7 +203,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "less than or equal"【[フィールド]&lt;=[値]】条件を付与します。 */
+	/** [フィールド]&lt;=[値] 条件を付与します。 */
 	public OrmCriteria<T> lte(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.le(field, value));
@@ -204,7 +211,7 @@ public class OrmCriteria<T extends Entity> {
 		return this;
 	}
 
-	/** "less than"【[フィールド]&lt;[値]】条件を付与します。 */
+	/** [フィールド]&lt;[値] 条件を付与します。 */
 	public OrmCriteria<T> lt(String field, final Object value) {
 		if (isValid(value)) {
 			add(Restrictions.lt(field, value));

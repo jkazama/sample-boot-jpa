@@ -6,35 +6,31 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.*;
 
 import javax.validation.*;
-import javax.validation.constraints.*;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 /**
- * 年(必須)を表現する制約注釈。
+ * ISOフォーマットの日時を表現する制約注釈。
+ * <p>yyyy-MM-dd'T'HH:mm:ss.SSSZを想定します。
  */
 @Documented
 @Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-@NotNull
-@Digits(integer = 4, fraction = 0)
-@Size
-public @interface Year {
-	String message() default "{error.domain.year}";
+@DateTimeFormat(iso = ISO.DATE_TIME)
+public @interface ISODateTimeEmpty {
+	String message() default "{error.domain.ISODateTime}";
 
 	Class<?>[] groups() default {};
 
 	Class<? extends Payload>[] payload() default {};
 
-	@OverridesAttribute(constraint = Size.class, name = "max")
-	int max() default 4;
-	@OverridesAttribute(constraint = Size.class, name = "min")
-	int min() default 4;
-
 	@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 	@Retention(RUNTIME)
 	@Documented
 	public @interface List {
-		Year[] value();
+		ISODateTimeEmpty[] value();
 	}
 }

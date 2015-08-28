@@ -1,5 +1,6 @@
 package sample.usecase;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -29,9 +30,7 @@ public class AssetAdminService extends ServiceSupport {
 	 * 振込出金依頼を締めます。
 	 */
 	public void closingCashOut() {
-		audit().audit("振込出金依頼の締め処理をする", () -> {
-			tx(() -> closingCashOutInTx());
-		});
+		audit().audit("振込出金依頼の締め処理をする", () -> tx(() -> closingCashOutInTx()));
 	}
 	
 	private void closingCashOutInTx() {
@@ -64,14 +63,12 @@ public class AssetAdminService extends ServiceSupport {
 	 * <p>受渡日を迎えたキャッシュフローを残高に反映します。
 	 */
 	public void realizeCashflow() {
-		audit().audit("キャッシュフローを実現する", () -> {
-			tx(() -> realizeCashflowInTx());
-		});
+		audit().audit("キャッシュフローを実現する", () -> tx(() -> realizeCashflowInTx()));
 	}
 
 	private void realizeCashflowInTx() {
 		//low: 日回し後の実行を想定
-		String day = dh().time().day();
+		LocalDate day = dh().time().day();
 		for (final Cashflow cf : Cashflow.findDoRealize(rep(), day)) {
 			idLock().call(cf.getAccountId(), LockType.WRITE, () -> {
 				try {

@@ -10,7 +10,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import sample.ValidationException;
 import sample.ValidationException.ErrorKeys;
-import sample.context.orm.Sort.SortOrder;
 
 /**
  * HibernateのRepositoryに対する簡易アクセサ。
@@ -30,22 +29,14 @@ public class OrmTemplate {
 		return tmpl;
 	}
 
-	/**
-	 * 一件取得の処理をします。
-	 */
+	/** Criteriaで一件取得します。 */
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T> get(final DetachedCriteria criteria) {
-		return Optional.ofNullable(tmpl.executeWithNativeSession(new HibernateCallback<T>() {
-			@Override
-			public T doInHibernate(Session session) throws HibernateException {
-				return (T) criteria.getExecutableCriteria(session).setCacheable(true).uniqueResult();
-			}
-		}));
+		return Optional.ofNullable(tmpl.executeWithNativeSession((session) ->
+				(T) criteria.getExecutableCriteria(session).setCacheable(true).uniqueResult()));
 	}
 
-	/**
-	 * 一件取得の処理をします。(存在しない時はValidationException)
-	 */
+	/** Criteriaで一件取得します。(存在しない時はValidationException) */
 	public <T> T load(final DetachedCriteria criteria) {
 		try {
 			Optional<T> v = get(criteria);
@@ -56,61 +47,48 @@ public class OrmTemplate {
 	}
 
 	/**
-	 * Criteriaの検索をします。
+	 * Criteriaで検索します。
+	 * ※ランダムな条件検索等、可変条件検索が必要となる時に利用して下さい
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> find(final DetachedCriteria criteria) {
 		return (List<T>) tmpl.findByCriteria(criteria);
 	}
 
-	/**
-	 * Criteriaのページング検索をします。
-	 */
+	/** Criteriaでページング検索します。 */
 	@SuppressWarnings("unchecked")
 	public <T> PagingList<T> find(final DetachedCriteria criteria, final Pagination page) {
-		return new PagingList<T>(tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				long total = -1L;
-				if (!page.isIgnoreTotal()) {
-					total = load(SerializationUtils.clone(criteria).setProjection(Projections.rowCount()));
-				}
-				page.setTotal(total);
-				Criteria executableCriteria = criteria.getExecutableCriteria(session);
-				prepareCriteria(executableCriteria);
-				if (page != null) {
-					if (page.getPage() > 0) {
-						executableCriteria.setFirstResult(page.getFirstResult());
-					}
-					if (page.getSize() > 0) {
-						executableCriteria.setMaxResults(page.getSize());
-					}
-					for (SortOrder order : page.getSort().orders()) {
-						executableCriteria.addOrder(
-								order.isAscending() ? Order.asc(order.getProperty()) : Order.desc(order.getProperty()));
-					}
-				}
-				return executableCriteria.list();
+		return new PagingList<T>(tmpl.executeWithNativeSession((session) -> {
+			long total = -1L;
+			if (!page.isIgnoreTotal()) {
+				total = load(SerializationUtils.clone(criteria).setProjection(Projections.rowCount()));
 			}
+			page.setTotal(total);
+			Criteria executableCriteria = criteria.getExecutableCriteria(session);
+			prepareCriteria(executableCriteria);
+			if (page != null) {
+				if (page.getPage() > 0) {
+					executableCriteria.setFirstResult(page.getFirstResult());
+				}
+				if (page.getSize() > 0) {
+					executableCriteria.setMaxResults(page.getSize());
+				}
+				page.getSort().orders().forEach((order) ->
+					executableCriteria.addOrder(
+						order.isAscending() ? Order.asc(order.getProperty()) : Order.desc(order.getProperty())));
+			}
+			return executableCriteria.list();
 		}), page);
 	}
 
-	/**
-	 * 一件取得の処理をします。
-	 */
+	/** HQLで一件取得します。*/
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T> get(final String hql, final Object... args) {
-		return Optional.ofNullable(tmpl.executeWithNativeSession(new HibernateCallback<T>() {
-			@Override
-			public T doInHibernate(Session session) throws HibernateException {
-				return (T) bindArgs(session.createQuery(hql).setCacheable(true), args).uniqueResult();
-			}
-		}));
+		return Optional.ofNullable(tmpl.executeWithNativeSession((session) ->
+				(T) bindArgs(session.createQuery(hql).setCacheable(true), args).uniqueResult()));
 	}
 
-	/**
-	 * 一件取得の処理をします。(存在しない時はValidationException)
-	 */
+	/** HQLで一件取得します。(存在しない時はValidationException) */
 	public <T> T load(final String hql, final Object... args) {
 		try {
 			Optional<T> v = get(hql, args);
@@ -120,54 +98,42 @@ public class OrmTemplate {
 		}
 	}
 
-	/**
-	 * 対象Entityを全件取得します。
-	 */
+	/** 対象Entityを全件取得します。*/
 	public <T> List<T> loadAll(final Class<T> entityClass) {
 		return tmpl.loadAll(entityClass);
 	}
 
-	/**
-	 * HQLの検索を行います。
-	 */
+	/** HQLで検索します。 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> find(final String hql, final Object... args) {
-		return tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				return bindArgs(session.createQuery(hql), args).list();
-			}
-		});
+		return tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.createQuery(hql), args).list());
 	}
 
 	/**
-	 * HQLのページング検索を行います。
+	 * HQLでページング検索します。
+	 * <p>カウント句がうまく構築されない時はPagination#ignoreTotalをtrueにして、
+	 * 別途通常の検索でトータル件数を算出するようにして下さい。
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> PagingList<T> find(final String hql, final Pagination page, final Object... args) {
-		return new PagingList<T>(tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				if (page.isIgnoreTotal()) {
-					page.setTotal(-1L);
-				} else {
-					String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
-					int orderPos = hqlCnt.indexOf("order");
-					if (0 <= orderPos) {
-						hqlCnt = hqlCnt.substring(0, orderPos);
-					}
-					long total = load(hqlCnt, args);
-					page.setTotal(total);
+		return new PagingList<T>(tmpl.executeWithNativeSession((session) -> {
+			if (page.isIgnoreTotal()) {
+				page.setTotal(-1L);
+			} else {
+				String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
+				int orderPos = hqlCnt.indexOf("order");
+				if (0 <= orderPos) {
+					hqlCnt = hqlCnt.substring(0, orderPos);
 				}
-				Query query = session.createQuery(hql);
-				return bindArgs(query, page, args).list();
+				long total = load(hqlCnt, args);
+				page.setTotal(total);
 			}
+			return bindArgs(session.createQuery(hql), page, args).list();
 		}), page);
 	}
 
-	/**
-	 * 名前付きHQLで一件取得を行います。
-	 */
+	/** 名前付きHQLで一件取得します。 */
 	public <T> Optional<T> getNamed(final String queryName, final Object... args) {
 		List<T> list = findNamed(queryName, args);
 		if (list.isEmpty()) {
@@ -176,103 +142,68 @@ public class OrmTemplate {
 		return Optional.of(list.get(0));
 	}
 
-	/**
-	 * 名前付きHQLで一件取得を行います。
-	 */
+	/** 名前付きHQLで一件取得をします。(存在しない時はValidationException) */
 	public <T> T loadNamed(final String queryName, final Object... args) {
 		Optional<T> v = getNamed(queryName, args);
 		return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
 	}
 
-	/**
-	 * 名前付きHQLの検索を行います。
-	 */
+	/** 名前付きHQLで検索します。 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> findNamed(final String queryName, final Object... args) {
-		return (List<T>) tmpl.executeWithNativeSession(new HibernateCallback<List<?>>() {
-			@Override
-			public List<?> doInHibernate(Session session) throws HibernateException {
-				Query query = session.getNamedQuery(queryName);
-				return bindArgs(query, args).list();
-			}
-		});
+		return (List<T>) tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.getNamedQuery(queryName), args).list());
 	}
 
-	/**
-	 * 名前付きHQLのページング検索を行います。
+	/** 
+	 * 名前付きHQLでページング検索します。
+	 * <p>カウント句がうまく構築されない時はPagination#ignoreTotalをtrueにして、
+	 * 別途通常の検索でトータル件数を算出するようにして下さい。
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> PagingList<T> findNamed(final String queryName, final Pagination page, final Object... args) {
-		return new PagingList<T>(tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				Query query = session.getNamedQuery(queryName);
-				String hql = query.getQueryString();
-				String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
-				long total = load(hqlCnt, args);
-				page.setTotal(total);
-				return bindArgs(query, page, args).list();
-			}
+		return new PagingList<T>(tmpl.executeWithNativeSession((session) -> {
+			Query query = session.getNamedQuery(queryName);
+			String hql = query.getQueryString();
+			String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
+			long total = load(hqlCnt, args);
+			page.setTotal(total);
+			return bindArgs(query, page, args).list();
 		}), page);
 	}
 
 	/**
-	 * SQL検索をします。
-	 * @return 検索結果(selectの値配列一覧)
+	 * SQLで検索します。
+	 * <p>検索結果としてselectの値配列一覧が返されます。
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> findBySql(final String sql, final Object... args) {
-		return tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				Query query = session.createSQLQuery(sql);
-				return bindArgs(query, args).list();
-			}
-		});
+		return tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.createSQLQuery(sql), args).list());
 	}
 
 	/**
-	 * SQLのページング検索をします。
+	 * SQLでページング検索します。
 	 * <p>常にPagination#ignoreTotalがtrueな状態となります。
 	 * 件数が必要な時は別途カウント算出を行うようにしてください。
-	 * @return 検索結果(selectの値配列一覧)
+	 * <p>検索結果としてselectの値配列一覧が返されます。
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> PagingList<T> findBySql(final String sql, final Pagination page, final Object... args) {
-		return new PagingList<T>(tmpl.executeWithNativeSession(new HibernateCallback<List<T>>() {
-			@Override
-			public List<T> doInHibernate(Session session) throws HibernateException {
-				return bindArgs(session.createSQLQuery(sql), page, args).list();
-			}
-		}), page);
+		return new PagingList<T>(tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.createSQLQuery(sql), page, args).list()), page);
 	}
 
-	/**
-	 * HQL実行をします。
-	 * @return 実行件数
-	 */
+	/** HQLを実行します。 */
 	public int execute(final String hql, final Object... args) {
-		return tmpl.executeWithNativeSession(new HibernateCallback<Integer>() {
-			@Override
-			public Integer doInHibernate(Session session) throws HibernateException {
-				Query query = session.createQuery(hql);
-				return bindArgs(query, args).executeUpdate();
-			}
-		});
+		return tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.createQuery(hql), args).executeUpdate());
 	}
 
-	/**
-	 * SQL実行をします。
-	 * @return 実行件数
-	 */
+	/** SQLを実行をします。*/
 	public int executeSql(final String sql, final Object... args) {
-		return tmpl.executeWithNativeSession(new HibernateCallback<Integer>() {
-			@Override
-			public Integer doInHibernate(Session session) throws HibernateException {
-				Query query = session.createSQLQuery(sql);
-				return bindArgs(query, args).executeUpdate();
-			}
-		});
+		return tmpl.executeWithNativeSession((session) ->
+				bindArgs(session.createSQLQuery(sql), args).executeUpdate());
 	}
 
 	protected Query bindArgs(final Query query, final Object... args) {

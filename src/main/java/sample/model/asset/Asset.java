@@ -1,6 +1,7 @@
 package sample.model.asset;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import lombok.Getter;
 import sample.context.orm.OrmRepository;
@@ -29,14 +30,11 @@ public class Asset {
 	 * <p>0 &lt;= 口座残高 + 未実現キャッシュフロー - (出金依頼拘束額 + 出金依頼額) 
 	 * low: 判定のみなのでscale指定は省略。余力金額を返す時はきちんと指定する
 	 */
-	public boolean canWithdraw(final OrmRepository rep, String currency, BigDecimal absAmount, String valueDay) {
+	public boolean canWithdraw(final OrmRepository rep, String currency, BigDecimal absAmount, LocalDate valueDay) {
 		Calculator calc = Calculator.init(CashBalance.getOrNew(rep, id, currency).getAmount());
-		for (Cashflow cf : Cashflow.findUnrealize(rep, valueDay)) {
-			calc.add(cf.getAmount());
-		}
-		for (CashInOut withdrawal : CashInOut.findUnprocessed(rep, id, currency, true)) {
-			calc.add(withdrawal.getAbsAmount().negate());
-		}
+		Cashflow.findUnrealize(rep, valueDay).stream().forEach((cf) -> calc.add(cf.getAmount()));
+		CashInOut.findUnprocessed(rep, id, currency, true).stream().forEach((withdrawal) ->
+			calc.add(withdrawal.getAbsAmount().negate()));
 		calc.add(absAmount.negate());
 		return 0 <= calc.decimal().signum();
 	}

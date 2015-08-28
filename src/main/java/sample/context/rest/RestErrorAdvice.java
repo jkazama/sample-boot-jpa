@@ -77,7 +77,7 @@ public class RestErrorAdvice {
 	public ResponseEntity<Map<String, String[]>> handleBind(BindException e) {
 		log.warn(e.getMessage());
 		Warns warns = Warns.init();
-		for (ObjectError oe : e.getAllErrors()) {
+		e.getAllErrors().forEach((oe) -> { 
 			String field = "";
 			if (1 == oe.getCodes().length) {
 				field = bindField(oe.getCodes()[0]);
@@ -86,18 +86,17 @@ public class RestErrorAdvice {
 				field = bindField(oe.getCodes()[1]);
 			}
 			List<String> args = new ArrayList<String>();
-			for (Object arg : oe.getArguments()) {
-				if (arg instanceof MessageSourceResolvable) {
-					continue;
+			Arrays.stream(oe.getArguments()).forEach((arg) -> {
+				if (!(arg instanceof MessageSourceResolvable)) {
+					args.add(arg.toString());
 				}
-				args.add(arg.toString());
-			}
+			});
 			String message = oe.getDefaultMessage();
 			if (0 <= oe.getCodes()[0].indexOf("typeMismatch")) {
 				message = oe.getCodes()[2];
 			}
 			warns.add(field, message, args.toArray(new String[0]));
-		}
+		});
 		return new ErrorHolder(msg, warns.list()).result(HttpStatus.BAD_REQUEST);
 	}
 
@@ -146,13 +145,13 @@ public class RestErrorAdvice {
 
 		public ErrorHolder(final MessageSource msg, final List<Warn> warns) {
 			this.msg = msg;
-			for (Warn warn : warns) {
+			warns.forEach((warn) -> {
 				if (warn.global()) {
 					errorGlobal(warn.getMessage());
 				} else {
 					error(warn.getField(), warn.getMessage());
 				}
-			}
+			});
 		}
 
 		public ErrorHolder(final MessageSource msg, String globalMsgKey, String... msgArgs) {

@@ -45,10 +45,12 @@ public abstract class OrmRepository implements Repository {
 		return new OrmTemplate(sf());
 	}
 
+	/** 指定したEntityクラスを軸にしたCriteriaを生成します。 */
 	public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz) {
 		return new OrmCriteria<T>(clazz);
 	}
 
+	/** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
 	public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz, String alias) {
 		return new OrmCriteria<T>(clazz, alias);
 	}
@@ -137,11 +139,17 @@ public abstract class OrmRepository implements Repository {
 	/** Hibernateコンポーネントを生成するための設定情報を表現します。 */
 	@Data
 	public static class OrmRepositoryConfig {
+		/** 接続するDBのDialect */
 		private String dialect = "org.hibernate.dialect.H2Dialect";
+		/** スキーマ紐付け対象とするパッケージ。(annotatedClassesとどちらかを設定) */
 		private String packageToScan;
+		/** SQLログを表示する時はtrue */
 		private boolean showSql;
+		/** DDLを自動生成して流す時はtrue */
 		private boolean createDrop;
+		/** Entityとして登録するクラス。(packageToScanとどちらかを設定) */
 		private Class<?>[] annotatedClasses;
+		/** クエリ置換設定 */
 		private String substitutions = "true 1, false 0";
 
 		public LocalSessionFactoryBean sessionFactory(final DataSource dataSource, final OrmInterceptor interceptor) {

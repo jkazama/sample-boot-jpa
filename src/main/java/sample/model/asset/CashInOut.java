@@ -1,7 +1,8 @@
 package sample.model.asset;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.time.*;
+import java.util.List;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
@@ -16,7 +17,6 @@ import sample.model.account.FiAccount;
 import sample.model.asset.Cashflow.RegCashflow;
 import sample.model.asset.type.CashflowType;
 import sample.model.constraints.*;
-import sample.model.constraints.Currency;
 import sample.model.master.SelfFiAccount;
 import sample.util.*;
 
@@ -50,16 +50,16 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 	/** 出金時はtrue */
 	private boolean withdrawal;
 	/** 依頼日/日時 */
-	@Day
-	private String requestDay;
-	@NotNull
-	private Date requestDate;
+	@ISODate
+	private LocalDate requestDay;
+	@ISODateTime
+	private LocalDateTime requestDate;
 	/** 発生日 */
-	@Day
-	private String eventDay;
+	@ISODate
+	private LocalDate eventDay;
 	/** 受渡日 */
-	@Day
-	private String valueDay;
+	@ISODate
+	private LocalDate valueDay;
 	/** 相手方金融機関コード */
 	@IdStr
 	private String targetFiCode;
@@ -79,12 +79,14 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 	/** キャッシュフローID。処理済のケースでのみ設定されます。low: 実際は調整CFや消込CFの概念なども有 */
 	private Long cashflowId;
 	/** 登録日時 */
-	private Date createDate;
+	@ISODateTime
+	private LocalDateTime createDate;
 	/** 登録者ID */
 	@IdStr
 	private String createId;
 	/** 更新日時 */
-	private Date updateDate;
+	@ISODateTime
+	private LocalDateTime updateDate;
 	/** 更新者ID */
 	@IdStr
 	private String updateId;
@@ -154,8 +156,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		OrmCriteria<CashInOut> criteria = rep.criteria(CashInOut.class);
 		criteria.equal("currency", p.getCurrency());
 		criteria.in("statusType", p.getStatusTypes());
-		criteria.between("updateDate", DateUtils.date(p.getUpdFromDay()),
-				DateUtils.dateTo(p.getUpdToDay()));
+		criteria.between("updateDate", p.getUpdFromDay().atStartOfDay(), DateUtils.dateTo(p.getUpdToDay()));
 		return rep.tmpl().find(criteria.sortDesc("updateDate").result());
 	}
 
@@ -181,9 +182,9 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		DomainHelper dh = rep.dh();
 		TimePoint now = dh.time().tp();
 		// low: 発生日は締め時刻等の兼ね合いで営業日と異なるケースが多いため、別途DB管理される事が多い
-		String eventDay = now.getDay();
+		LocalDate eventDay = day.day();
 		// low: 実際は各金融機関/通貨の休日を考慮しての T+N 算出が必要
-		String valueDay = day.day(3);
+		LocalDate valueDay = day.day(3);
 		
 		// 事前審査
 		Validator.validate((v) -> {
@@ -208,10 +209,10 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		@CurrencyEmpty
 		private String currency;
 		private ActionStatusType[] statusTypes;
-		@Day
-		private String updFromDay;
-		@Day
-		private String updToDay;
+		@ISODate
+		private LocalDate updFromDay;
+		@ISODate
+		private LocalDate updToDay;
 	}
 
 	/** 振込出金の依頼パラメタ。  */
@@ -227,7 +228,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		@AbsAmount
 		private BigDecimal absAmount;
 
-		public CashInOut create(final TimePoint now, String eventDay, String valueDay, final FiAccount acc,
+		public CashInOut create(final TimePoint now, LocalDate eventDay, LocalDate valueDay, final FiAccount acc,
 				final SelfFiAccount selfAcc, String updActor) {
 			CashInOut m = new CashInOut();
 			m.setAccountId(accountId);

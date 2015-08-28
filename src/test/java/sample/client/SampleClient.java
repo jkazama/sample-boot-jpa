@@ -8,11 +8,13 @@ import org.junit.Test;
 import org.springframework.http.*;
 import org.springframework.http.client.*;
 
-import sample.util.TimePoint;
+import sample.util.*;
 
 /**
  * 単純なHTTP経由の実行検証。
  * <p>SpringがサポートするWebTestSupportでの検証で良いのですが、コンテナ立ち上げた後に叩く単純確認用に作りました。
+ * <p>「extention.security.auth.enabled: true」の時は実際にログインして処理を行います。falseの時は
+ * DummyLoginInterceptorによる擬似ログインが行われます。
  */
 public class SampleClient {
 	private static final String ROOT_PATH = "http://localhost:8080/api";
@@ -23,16 +25,16 @@ public class SampleClient {
 		SimpleTestAgent agent = new SimpleTestAgent();
 		agent.login("sample", "sample");
 		agent.post("振込出金依頼", "/asset/cio/withdraw?accountId=sample&currency=JPY&absAmount=200");
-		agent.get("振込出金依頼未処理検索", "/asset/cio/unprocessedOut");
+		agent.get("振込出金依頼未処理検索", "/asset/cio/unprocessedOut/");
 	}
 
 	// 「extention.security.auth.admin: true」の時のみ利用可能です。
 	@Test
 	public void 社内向けユースケース検証() throws Exception {
-		String day = new TimePoint().getDay();
+		String day = DateUtils.dayFormat(TimePoint.now().day());
 		SimpleTestAgent agent = new SimpleTestAgent();
 		agent.login("admin", "admin");
-		agent.get("振込入出金依頼検索", "/admin/asset/cio/?updFromDay=" + day + "&updFromDay=" + day);
+		agent.get("振込入出金依頼検索", "/admin/asset/cio/?updFromDay=" + day + "&updToDay=" + day);
 	}
 	
 	@Test

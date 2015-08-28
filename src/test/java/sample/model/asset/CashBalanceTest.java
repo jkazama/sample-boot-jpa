@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class CashBalanceTest extends EntityTestSupport {
 	
 	@Test
 	public void add() {
-		String baseDay = businessDay.day();
+		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashBalance cb = fixtures.cb("test1", baseDay, "USD", "10.02").save(rep);
 	
@@ -36,8 +37,8 @@ public class CashBalanceTest extends EntityTestSupport {
 
 	@Test
 	public void getOrNew() {
-		String baseDay = businessDay.day();
-		String baseMinus1Day = businessDay.day(-1);
+		LocalDate baseDay = businessDay.day();
+		LocalDate baseMinus1Day = businessDay.day(-1);
 		tx(() -> {
 			fixtures.cb("test1", baseDay, "JPY", "1000").save(rep);
 			fixtures.cb("test2", baseMinus1Day, "JPY", "3000").save(rep);

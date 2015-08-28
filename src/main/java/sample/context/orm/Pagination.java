@@ -52,17 +52,13 @@ public class Pagination implements Dto {
 		return this;
 	}
 	
-	/**
-	 * @return 最大ページ数を返します。total設定時のみ適切な値が返されます。
-	 */
+	/** 最大ページ数を返します。total設定時のみ適切な値が返されます。 */
 	public int getMaxPage() {
 		return (total == null) ? 0 : Calculator.init(total)
 				.scale(0, RoundingMode.UP).divideBy(size).intValue();
 	}
 
-	/**
-	 * @return 開始件数を返します。
-	 */
+	/** 開始件数を返します。 */
 	public int getFirstResult() {
 		return (page - 1) * size;
 	}

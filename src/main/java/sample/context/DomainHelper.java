@@ -20,30 +20,22 @@ public class DomainHelper {
 	@Autowired
 	private AppSettingHandler settingHandler;
 	
-	/**
-	 * @return ログイン中のユースケース利用者
-	 */
+	/** ログイン中のユースケース利用者を取得します。 */
 	public Actor actor() {
 		return actorSession().actor();
 	}
 
-	/**
-	 * @return スレッドローカルスコープの利用者セッション
-	 */
+	/** スレッドローカルスコープの利用者セッションを取得します。 */
 	public ActorSession actorSession() {
 		return actorSession;
 	}
 	
-	/**
-	 * @return 日時ユーティリティ
-	 */
+	/** 日時ユーティリティを取得します。 */
 	public Timestamper time() {
 		return time;
 	}
 
-	/**
-	 * @return アプリケーション設定情報
-	 */
+	/** アプリケーション設定情報を取得します。 */
 	public AppSetting setting(String id) {
 		return settingHandler.setting(id);
 	}

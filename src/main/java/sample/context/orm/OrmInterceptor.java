@@ -1,18 +1,16 @@
 package sample.context.orm;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import sample.context.Timestamper;
-import sample.context.actor.Actor;
-import sample.context.actor.ActorSession;
+import sample.context.actor.*;
 
 /**
  * Entityの永続化タイミングでAOP処理を差し込むHibernateInterceptor。
@@ -37,7 +35,7 @@ public class OrmInterceptor extends EmptyInterceptor {
 			String[] propertyNames, Type[] types) {
 		if (entity instanceof OrmActiveMetaRecord) {
 			Actor staff = session.actor();
-			Date now = time.date();
+			LocalDateTime now = time.date();
 			OrmActiveMetaRecord<?> metaEntity = (OrmActiveMetaRecord<?>) entity;
 			metaEntity.setCreateId(staff.getId());
 			metaEntity.setCreateDate(now);
@@ -67,7 +65,7 @@ public class OrmInterceptor extends EmptyInterceptor {
 			final Object[] previousState, final String[] propertyNames, final Type[] types) {
 		if (entity instanceof OrmActiveMetaRecord) {
 			Actor staff = session.actor();
-			Date now = time.date();
+			LocalDateTime now = time.date();
 			OrmActiveMetaRecord<?> metaEntity = (OrmActiveMetaRecord<?>) entity;
 			boolean create = false;
 			if (metaEntity.getCreateDate() == null) {

@@ -1,60 +1,79 @@
 package sample.util;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.*;
 
 import javax.validation.constraints.NotNull;
 
-import lombok.*;
-import sample.model.constraints.Day;
+import lombok.Value;
 
 /**
  * 日付と日時のペアを表現します。
  * <p>0:00に営業日切り替えが行われないケースなどでの利用を想定しています。
  */
-@Data
-@AllArgsConstructor
-public class TimePoint {
+@Value
+public class TimePoint implements Serializable {
+	private static final long serialVersionUID = 1L;
 	/** 日付(営業日) */
-	@Day
-	private String day;
+	@NotNull
+	private LocalDate day;
 	/** 日付におけるシステム日時 */
 	@NotNull
-	private Date date;
-
-	public TimePoint() {
-		Date now = new Date();
-		setDay(DateUtils.dayFormat(now));
-		setDate(now);
+	private LocalDateTime date;
+	
+	public LocalDate day() {
+		return getDay();
+	}
+	
+	public LocalDateTime date() {
+		return getDate();
 	}
 	
 	/** 指定日付と同じか。(day == targetDay) */
-	public boolean equalsDay(String targetDay) {
-		return day.equals(targetDay);
+	public boolean equalsDay(LocalDate targetDay) {
+		return day.compareTo(targetDay) == 0;
 	}
 	
 	/** 指定日付よりも前か。(day &lt; targetDay) */
-	public boolean beforeDay(String targetDay) {
-		return DateUtils.date(day).before(DateUtils.date(targetDay));
+	public boolean beforeDay(LocalDate targetDay) {
+		return day.compareTo(targetDay) < 0;
 	}
 	
 	/** 指定日付以前か。(day &lt;= targetDay) */
-	public boolean beforeEqualsDay(String targetDay) {
-		return equalsDay(targetDay) || beforeDay(targetDay);
+	public boolean beforeEqualsDay(LocalDate targetDay) {
+		return day.compareTo(targetDay) <= 0;
 	}
 
 	/** 指定日付よりも後か。(targetDay &lt; day) */
-	public boolean afterDay(String targetDay) {
-		return DateUtils.date(day).after(DateUtils.date(targetDay));
+	public boolean afterDay(LocalDate targetDay) {
+		return 0 < day.compareTo(targetDay);
 	}
 	
 	/** 指定日付以降か。(targetDay &lt;= day) */
-	public boolean afterEqualsDay(String targetDay) {
-		return equalsDay(targetDay) || afterDay(targetDay);
+	public boolean afterEqualsDay(LocalDate targetDay) {
+		return 0 <= day.compareTo(targetDay);
 	}
 
+	/** 日付/日時を元にTimePointを生成します。 */
+	public static TimePoint of(LocalDate day, LocalDateTime date) {
+		return new TimePoint(day, date);
+	}
+	
 	/** 日付を元にTimePointを生成します。 */
-	public static TimePoint by(String day) {
-		return new TimePoint(day, DateUtils.date(day));
+	public static TimePoint of(LocalDate day) {
+		return of(day, day.atStartOfDay());
+	}
+	
+	/** TimePointを生成します。 */
+	public static TimePoint now() {
+		LocalDateTime now = LocalDateTime.now();
+		return of(now.toLocalDate(), now);
+	}
+	
+	/** TimePointを生成します。 */
+	public static TimePoint now(Clock clock) {
+		LocalDateTime now = LocalDateTime.now(clock);
+		return of(now.toLocalDate(), now);
 	}
 
 }

@@ -1,5 +1,6 @@
 package sample.model;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +30,13 @@ public class BusinessDayHandler {
 	private HolidayAccessor holidayAccessor;
 			
 	/** 営業日を返します。 */
-	public String day() {
+	public LocalDate day() {
 		return time.day();
 	}
 	
 	/** 営業日を返します。 */
-	public String day(int amount) {
-		String day = day();
+	public LocalDate day(int amount) {
+		LocalDate day = day();
 		if (0 < amount) {
 			for (int i = 0; i < amount; i++) {
 				day = dayNext(day);
@@ -48,28 +49,28 @@ public class BusinessDayHandler {
 		return day;
 	}
 	
-	private String dayNext(String baseDay){
-		String day = DateUtils.calcDayStr(baseDay, 1);
+	private LocalDate dayNext(LocalDate baseDay){
+		LocalDate day = baseDay.plusDays(1);
 		while (isHolidayOrWeeekDay(day)) {
-			day = DateUtils.calcDayStr(day, 1);
+			day = day.plusDays(1);
 		}
 		return day;
 	}
 	
-	private String dayPrevious(String baseDay){
-		String day = DateUtils.calcDayStr(baseDay, -1);
+	private LocalDate dayPrevious(LocalDate baseDay){
+		LocalDate day = baseDay.minusDays(1);
 		while (isHolidayOrWeeekDay(day)) {
-			day = DateUtils.calcDayStr(day, -1);
+			day = day.minusDays(1);
 		}
 		return day;
 	}
 	
 	/** 祝日もしくは週末時はtrue。 */
-	private boolean isHolidayOrWeeekDay(String day) {
-		return (DateUtils.isWeekday(day) || isHoliday(day));
+	private boolean isHolidayOrWeeekDay(LocalDate day) {
+		return (DateUtils.isWeekend(day) || isHoliday(day));
 	}
 	
-	private boolean isHoliday(String day) {
+	private boolean isHoliday(LocalDate day) {
 		return holidayAccessor == null ? false : holidayAccessor.getHoliday(day).isPresent();
 	}
 	
@@ -81,7 +82,7 @@ public class BusinessDayHandler {
 		
 		@Transactional(DefaultRepository.beanNameTx)
 		@Cacheable(cacheNames="HolidayAccessor.getHoliday")
-		public Optional<Holiday> getHoliday(String day) {
+		public Optional<Holiday> getHoliday(LocalDate day) {
 			return Holiday.get(rep, day);
 		}
 
