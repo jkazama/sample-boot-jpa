@@ -1,6 +1,7 @@
 package sample.util;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,63 +15,55 @@ public abstract class ConvertUtils {
 	private static Transliterator hiraganaToKana = Transliterator.getInstance("Hiragana-Katakana");
 
 	/** 例外無しにLongへ変換します。(変換できない時はnull) */
-	public static Long quietlyLong(Object v) {
-		if (v == null) return null;
+	public static Long quietlyLong(Object value) {
 		try {
-			return Long.parseLong(v.toString());
+			return Optional.ofNullable(value).map(v -> Long.parseLong(v.toString())).orElse(null);
 		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
 
 	/** 例外無しにIntegerへ変換します。(変換できない時はnull) */
-	public static Integer quietlyInt(Object v) {
-		if (v == null) return null;
+	public static Integer quietlyInt(Object value) {
 		try {
-			return Integer.parseInt(v.toString());
+			return Optional.ofNullable(value).map(v -> Integer.parseInt(v.toString())).orElse(null);
 		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
 
 	/** 例外無しにBigDecimalへ変換します。(変換できない時はnull) */
-	public static BigDecimal quietlyDecimal(Object v) {
-		if (v == null) return null;
+	public static BigDecimal quietlyDecimal(Object value) {
 		try {
-			return new BigDecimal(v.toString());
+			return Optional.ofNullable(value).map((v) -> new BigDecimal(v.toString())).orElse(null);
 		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
 
 	/** 例外無しBooleanへ変換します。(変換できない時はfalse) */
-	public static Boolean quietlyBool(Object v) {
-		if (v == null) return null;
-		return Boolean.parseBoolean(v.toString());
+	public static Boolean quietlyBool(Object value) {
+		return Optional.ofNullable(value).map((v) -> Boolean.parseBoolean(v.toString())).orElse(false);
 	}
 
 	/** 全角文字を半角にします。 */
 	public static String zenkakuToHan(String text) {
-		if (text == null) return null;
-		return zenkakuToHan.transliterate(text);
+		return Optional.ofNullable(text).map((v) -> zenkakuToHan.transliterate(v)).orElse(null);
 	}
 
 	/** 半角文字を全角にします。 */
 	public static String hankakuToZen(String text) {
-		if (text == null) return null;
-		return hankakuToZen.transliterate(text);
+		return Optional.ofNullable(text).map((v) -> hankakuToZen.transliterate(v)).orElse(null);
 	}
 
 	/** カタカナをひらがなにします。 */
 	public static String katakanaToHira(String text) {
-		if (text == null) return null;
-		return katakanaToHira.transliterate(text);
+		return Optional.ofNullable(text).map((v) -> katakanaToHira.transliterate(v)).orElse(null);
 	}
 
 	/** ひらがな/半角カタカナを全角カタカナにします。 */
 	public static String hiraganaToZenKana(String text) {
-		if (text == null) return null;
-		return hiraganaToKana.transliterate(text);
+		return Optional.ofNullable(text).map((v) -> hiraganaToKana.transliterate(v)).orElse(null);
 	}
 
 	/** ひらがな/全角カタカナを半角カタカナにします。 */

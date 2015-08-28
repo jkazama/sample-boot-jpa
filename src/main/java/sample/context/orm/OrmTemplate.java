@@ -1,6 +1,7 @@
 package sample.context.orm;
 
 import java.util.*;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.hibernate.*;
@@ -81,6 +82,54 @@ public class OrmTemplate {
 		}), page);
 	}
 
+	/**
+	 * Criteriaで一件取得します。
+	 * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
+	 */
+	public <T> Optional<T> get(Class<T> entityClass, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return get(func.apply(new OrmCriteria<>(entityClass)));
+	}
+	
+	public <T> Optional<T> get(Class<T> entityClass, String alias, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return get(func.apply(new OrmCriteria<>(entityClass, alias)));
+	}
+
+	/**
+	 * Criteriaで一件取得します。(存在しない時はValidationException)
+	 * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
+	 */
+	public <T> Optional<T> load(Class<T> entityClass, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return load(func.apply(new OrmCriteria<>(entityClass)));
+	}
+	
+	public <T> Optional<T> load(Class<T> entityClass, String alias, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return load(func.apply(new OrmCriteria<>(entityClass, alias)));
+	}
+	
+	/**
+	 * Criteriaで検索します。
+	 * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
+	 */
+	public <T> List<T> find(Class<T> entityClass, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return find(func.apply(new OrmCriteria<>(entityClass)));
+	}
+	
+	public <T> List<T> find(Class<T> entityClass, String alias, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return find(func.apply(new OrmCriteria<>(entityClass, alias)));
+	}
+
+	/**
+	 * Criteriaでページング検索します。
+	 * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
+	 */
+	public <T> PagingList<T> find(Class<T> entityClass, final Pagination page, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return find(func.apply(new OrmCriteria<>(entityClass)), page);
+	}
+	
+	public <T> PagingList<T> find(Class<T> entityClass, String alias, final Pagination page, Function<OrmCriteria<T>, DetachedCriteria> func) {
+		return find(func.apply(new OrmCriteria<>(entityClass, alias)), page);
+	}
+	
 	/** HQLで一件取得します。*/
 	@SuppressWarnings("unchecked")
 	public <T> Optional<T> get(final String hql, final Object... args) {

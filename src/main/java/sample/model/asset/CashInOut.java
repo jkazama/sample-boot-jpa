@@ -153,11 +153,13 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 	/** 未処理の振込入出金依頼一覧を検索します。  low: criteriaベース実装例 */
 	public static List<CashInOut> find(final OrmRepository rep, final FindCashInOut p) {
 		// low: 通常であれば事前にfrom/toの期間チェックを入れる
-		OrmCriteria<CashInOut> criteria = rep.criteria(CashInOut.class);
-		criteria.equal("currency", p.getCurrency());
-		criteria.in("statusType", p.getStatusTypes());
-		criteria.between("updateDate", p.getUpdFromDay().atStartOfDay(), DateUtils.dateTo(p.getUpdToDay()));
-		return rep.tmpl().find(criteria.sortDesc("updateDate").result());
+		return rep.tmpl().find(CashInOut.class, (criteria) ->
+			criteria
+				.equal("currency", p.getCurrency())
+				.in("statusType", p.getStatusTypes())
+				.between("updateDate", p.getUpdFromDay().atStartOfDay(), DateUtils.dateTo(p.getUpdToDay()))
+				.sortDesc("updateDate")
+				.result());
 	}
 
 	/** 当日発生で未処理の振込入出金一覧を検索します。 */

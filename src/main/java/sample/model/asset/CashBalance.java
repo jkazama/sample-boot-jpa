@@ -49,7 +49,7 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
 	public CashBalance add(final OrmRepository rep, BigDecimal addAmount) {
 		int scale = java.util.Currency.getInstance(currency).getDefaultFractionDigits();
 		RoundingMode mode = RoundingMode.DOWN;
-		setAmount(Calculator.init(amount).scale(scale, mode).add(addAmount).decimal());
+		setAmount(Calculator.of(amount).scale(scale, mode).add(addAmount).decimal());
 		return update(rep);
 	}
 

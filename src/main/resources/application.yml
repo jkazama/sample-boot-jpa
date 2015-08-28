@@ -3,6 +3,7 @@ spring:
   application.name: sample-boot-hibernate
   aop.proxy-target-class: true
   messages.basename: messages-validation, messages
+  main.show-banner: false 
   jackson:
     date-format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
     serialization:

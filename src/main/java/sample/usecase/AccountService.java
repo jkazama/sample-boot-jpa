@@ -22,7 +22,7 @@ public class AccountService extends ServiceSupport {
 		return Login.getByLoginId(rep(), loginId);
 	}
 	
-	/** 口座情報を取得します。 */
+	/** 有効な口座情報を取得します。 */
 	@Transactional(DefaultRepository.beanNameTx)
 	@Cacheable("AccountService.getAccount")
 	public Optional<Account> getAccount(String id) {

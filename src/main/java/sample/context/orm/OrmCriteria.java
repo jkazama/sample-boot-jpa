@@ -10,7 +10,6 @@ import org.hibernate.sql.JoinType;
 import org.hibernate.transform.ResultTransformer;
 
 import lombok.Getter;
-import sample.context.Entity;
 
 /**
  * ORMのCriteriaBuilderラッパー。
@@ -19,7 +18,7 @@ import sample.context.Entity;
  * <p>ビルド結果としてのDetatchedCriteriaはresult*メソッドで受け取って下さい。
  */
 @Getter
-public class OrmCriteria<T extends Entity> {
+public class OrmCriteria<T> {
 
 	private final DetachedCriteria criteria;
 

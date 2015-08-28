@@ -54,7 +54,7 @@ public class Pagination implements Dto {
 	
 	/** 最大ページ数を返します。total設定時のみ適切な値が返されます。 */
 	public int getMaxPage() {
-		return (total == null) ? 0 : Calculator.init(total)
+		return (total == null) ? 0 : Calculator.of(total)
 				.scale(0, RoundingMode.UP).divideBy(size).intValue();
 	}
 

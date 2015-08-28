@@ -44,12 +44,11 @@ public class IdLockHandler {
 	}
 
 	private void writeLock(final Serializable id) {
-		if (id == null) {
-			return;
-		}
-		synchronized (lockMap) {
-			idLock(id).writeLock().lock();
-		}
+		Optional.of(id).ifPresent((v) -> {
+			synchronized (lockMap) {
+				idLock(v).writeLock().lock();
+			}
+		});
 	}
 
 	private ReentrantReadWriteLock idLock(final Serializable id) {
@@ -60,27 +59,24 @@ public class IdLockHandler {
 	}
 
 	public void readLock(final Serializable id) {
-		if (id == null) {
-			return;
-		}
-		synchronized (lockMap) {
-			idLock(id).readLock().lock();
-		}
+		Optional.of(id).ifPresent((v) -> {
+			synchronized (lockMap) {
+				idLock(v).readLock().lock();
+			}
+		});
 	}
 
 	public void unlock(final Serializable id) {
-		if (id == null) {
-			return;
-		}
-
-		synchronized (lockMap) {
-			ReentrantReadWriteLock idLock = idLock(id);
-			if (idLock.isWriteLockedByCurrentThread()) {
-				idLock.writeLock().unlock();
-			} else {
-				idLock.readLock().unlock();
+		Optional.of(id).ifPresent((v) -> {
+			synchronized (lockMap) {
+				ReentrantReadWriteLock idLock = idLock(v);
+				if (idLock.isWriteLockedByCurrentThread()) {
+					idLock.writeLock().unlock();
+				} else {
+					idLock.readLock().unlock();
+				}
 			}
-		}
+		});
 	}
 
 	/**

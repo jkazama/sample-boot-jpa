@@ -60,8 +60,8 @@ task wrapper(type: Wrapper) {
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
 // 「 gradlew copyProject 」を実行してください。
-def yourProjectName = "hoge"
-def yourProjectPackage = "hoge.sample"
+def yourProjectName = "sample"
+def yourProjectPackage = "your.sample"
 def yourProjectPath = "../${yourProjectName}"
 task copyProject << {
     def projectPath = yourProjectPath

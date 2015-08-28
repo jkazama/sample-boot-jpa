@@ -72,10 +72,9 @@ public class Staff extends OrmActiveRecord<Staff> {
 
 	/** 社員を検索します。 */
 	public static List<Staff> find(final OrmRepository rep, final FindStaff p) {
-		OrmTemplate tmpl = rep.tmpl();
-		OrmCriteria<Staff> criteria = rep.criteria(Staff.class);
-		criteria.like(new String[] { "id", "name" }, p.keyword, MatchMode.ANYWHERE).sort("id");
-		return tmpl.find(criteria.result());
+		return rep.tmpl().find(Staff.class, (criteria) ->
+			criteria.like(new String[] { "id", "name" }, p.keyword, MatchMode.ANYWHERE)
+			.sort("id").result());
 	}
 
 	/** 社員の登録を行います。 */

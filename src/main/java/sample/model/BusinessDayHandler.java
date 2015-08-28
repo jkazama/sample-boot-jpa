@@ -35,33 +35,25 @@ public class BusinessDayHandler {
 	}
 	
 	/** 営業日を返します。 */
-	public LocalDate day(int amount) {
+	public LocalDate day(int daysToAdd) {
 		LocalDate day = day();
-		if (0 < amount) {
-			for (int i = 0; i < amount; i++) {
-				day = dayNext(day);
-			}
-		} else if (amount < 0) {
-			for (int i = 0; i < (-amount); i++) {
-				day = dayPrevious(day);
-			}
+		if (0 < daysToAdd) {
+			for (int i = 0; i < daysToAdd; i++) day = dayNext(day);
+		} else if (daysToAdd < 0) {
+			for (int i = 0; i < (-daysToAdd); i++) day = dayPrevious(day);
 		}
 		return day;
 	}
 	
 	private LocalDate dayNext(LocalDate baseDay){
 		LocalDate day = baseDay.plusDays(1);
-		while (isHolidayOrWeeekDay(day)) {
-			day = day.plusDays(1);
-		}
+		while (isHolidayOrWeeekDay(day)) day = day.plusDays(1);
 		return day;
 	}
 	
 	private LocalDate dayPrevious(LocalDate baseDay){
 		LocalDate day = baseDay.minusDays(1);
-		while (isHolidayOrWeeekDay(day)) {
-			day = day.minusDays(1);
-		}
+		while (isHolidayOrWeeekDay(day)) day = day.minusDays(1);
 		return day;
 	}
 	

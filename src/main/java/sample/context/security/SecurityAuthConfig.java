@@ -271,8 +271,8 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		@Override
 		public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 				Authentication authentication) throws IOException, ServletException {
-			ActorDetails details = (ActorDetails)authentication.getDetails();
-			if (details != null) details.bindRequestInfo(request);
+			Optional.ofNullable((ActorDetails)authentication.getDetails()).ifPresent(
+				(detail) -> detail.bindRequestInfo(request));
 			if (response.isCommitted()) return;
 			writeReponseEmpty(response, HttpServletResponse.SC_OK);
 		}

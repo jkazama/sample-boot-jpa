@@ -46,18 +46,15 @@ public abstract class DateUtils {
 		return dateByDayOpt(day).orElse(null);
 	}
 	public static Optional<LocalDateTime> dateByDayOpt(LocalDate day) {
-		if (day == null) return Optional.empty();
-		return Optional.of(day.atStartOfDay());
+		return Optional.ofNullable(day).map((v) -> v.atStartOfDay());
 	}
 
 	/** 指定した日付の翌日から1msec引いた日時を返します。 */
 	public static LocalDateTime dateTo(LocalDate day) {
-		if (day == null) return null;
-		return day.atTime(23, 59, 59);
+		return dateToOpt(day).orElse(null);
 	}
 	public static Optional<LocalDateTime> dateToOpt(LocalDate day) {
-		if (day == null) return Optional.empty();
-		return Optional.of(day.atTime(23, 59, 59));
+		return Optional.ofNullable(day).map((v) -> v.atTime(23, 59, 59));
 	}
 
 	/** 指定された日時型とフォーマット型を元に文字列(YYYY-MM-DD)へ変更します。 */
@@ -65,8 +62,7 @@ public abstract class DateUtils {
 		return dayFormatOpt(day).orElse(null);
 	}
 	public static Optional<String> dayFormatOpt(LocalDate day) {
-		if (day == null) return Optional.empty();
-		return Optional.of(day.format(DateTimeFormatter.ISO_LOCAL_DATE));
+		return Optional.ofNullable(day).map((v) -> v.format(DateTimeFormatter.ISO_LOCAL_DATE));
 	}
 
 	/** 指定された日時型とフォーマット型を元に文字列へ変更します。 */
@@ -74,8 +70,7 @@ public abstract class DateUtils {
 		return dateFormatOpt(date, formatter).orElse(null);
 	}
 	public static Optional<String> dateFormatOpt(LocalDateTime date, DateTimeFormatter formatter) {
-		if (date == null) return Optional.empty();
-		return Optional.of(date.format(formatter));
+		return Optional.ofNullable(date).map((v) -> v.format(formatter));
 	}
 
 	/** 指定された日時型とフォーマット文字列を元に文字列へ変更します。 */
@@ -83,8 +78,7 @@ public abstract class DateUtils {
 		return dateFormatOpt(date, format).orElse(null);
 	}
 	public static Optional<String> dateFormatOpt(LocalDateTime date, String format) {
-		if (date == null) return Optional.empty();
-		return Optional.of(date.format(DateTimeFormatter.ofPattern(format)));
+		return Optional.ofNullable(date).map((v) -> v.format(DateTimeFormatter.ofPattern(format)));
 	}
 	
 	/** 日付の間隔を取得します。 */

@@ -22,9 +22,7 @@ public class ActorSession {
 		return this;
 	}
 
-	/**
-	 * @return 有効な利用者を返します。紐付けされていない時は匿名者が返されます。
-	 */
+	/** 有効な利用者を返します。紐付けされていない時は匿名者が返されます。 */
 	public Actor actor() {
 		Actor actor = actorLocal.get();
 		return actor != null ? actor : Actor.Anonymous;

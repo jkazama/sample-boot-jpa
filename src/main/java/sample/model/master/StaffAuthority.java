@@ -8,6 +8,9 @@ import lombok.*;
 import sample.context.orm.*;
 import sample.model.constraints.*;
 
+/**
+ * 社員に割り当てられた権限を表現します。
+ */
 @Entity
 @Data
 @NoArgsConstructor

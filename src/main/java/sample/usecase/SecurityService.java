@@ -10,8 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import sample.context.security.SecurityActorFinder.*;
 import sample.context.security.SecurityAuthConfig;
-import sample.model.account.*;
-import sample.model.master.Staff;
 import sample.util.ConvertUtils;
 
 /**
@@ -25,19 +23,24 @@ public class SecurityService {
 	@ConditionalOnBean(SecurityAuthConfig.class)
 	public SecurityUserService securityUserService(final AccountService service) {
 		return new SecurityUserService() {
+			/**
+			 * 以下の手順で利用口座を特定します。
+			 * <ul>
+			 * <li>ログインID(全角は半角に自動変換)に合致するログイン情報があるか
+			 * <li>口座IDに合致する有効な口座情報があるか
+			 * </ul>
+			 * <p>一般利用者には「ROLE_USER」の権限が自動で割り当てられます。
+			 */
 			@Override
 			public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-				if (username == null) {
-					throw new UsernameNotFoundException("error.Login");
-				}
-				String loginId = ConvertUtils.zenkakuToHan(username);
-				Login login = service.getLoginByLoginId(loginId).orElseThrow(() ->
-					new UsernameNotFoundException("error.Login"));
-				Account account = service.getAccount(login.getId()).orElseThrow(() ->
-					new UsernameNotFoundException("error.Login"));
-				List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
-						new SimpleGrantedAuthority("ROLE_USER") });
-				return new ActorDetails(account.actor(), login.getPassword(), authorities);
+				return Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((loginId) ->
+					service.getLoginByLoginId(loginId).flatMap((login) ->							
+						service.getAccount(login.getId()).map((account) -> {
+							List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
+								new SimpleGrantedAuthority("ROLE_USER") });
+							return new ActorDetails(account.actor(), login.getPassword(), authorities);
+						})
+					)).orElseThrow(() -> new UsernameNotFoundException("error.Login"));
 			}
 		};
 	}
@@ -48,19 +51,24 @@ public class SecurityService {
 	@ConditionalOnProperty(prefix = "extension.security.auth", name = "admin", matchIfMissing = false)
 	public SecurityAdminService securityAdminService(final MasterAdminService service) {
 		return new SecurityAdminService() {
+			/**
+			 * 以下の手順で社員を特定します。
+			 * <ul>
+			 * <li>社員ID(全角は半角に自動変換)に合致する社員情報があるか
+			 * <li>社員情報に紐付く権限があるか
+			 * </ul>
+			 * <p>社員には「ROLE_ADMIN」の権限が自動で割り当てられます。
+			 */
 			@Override
 			public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-				if (username == null) {
-					throw new UsernameNotFoundException("error.Login");
-				}
-				String staffId = ConvertUtils.zenkakuToHan(username);
-				Staff staff = service.getStaff(staffId).orElseThrow(() ->
-					new UsernameNotFoundException("error.Login"));
-				List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
-					new SimpleGrantedAuthority("ROLE_ADMIN") }));
-				service.findStaffAuthority(staffId).forEach((auth) ->
-					authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
-				return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
+				return Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((staffId) ->
+					service.getStaff(staffId).map((staff) -> {
+						List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
+							new SimpleGrantedAuthority("ROLE_ADMIN") }));
+						service.findStaffAuthority(staffId).forEach((auth) ->
+							authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
+						return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
+					})).orElseThrow(() -> new UsernameNotFoundException("error.Login"));
 			}
 		};
 	}	

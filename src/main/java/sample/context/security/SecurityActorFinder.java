@@ -1,6 +1,7 @@
 package sample.context.security;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,8 +38,7 @@ public class SecurityActorFinder {
 	}
 	
 	private SecurityAdminService adminService() {
-		if (adminService == null) throw new IllegalStateException("SecurityAdminServiceをコンテナへBean登録してください。");
-		return adminService;
+		return Optional.ofNullable(adminService).orElseThrow(() -> new IllegalStateException("SecurityAdminServiceをコンテナへBean登録してください。"));
 	}
 	
 	/**
@@ -114,11 +114,7 @@ public class SecurityActorFinder {
 		}
 		
 		public Collection<String> getAuthorityIds() {
-			List<String> list = new ArrayList<>();
-			for (GrantedAuthority auth : authorities) {
-				list.add(auth.getAuthority());
-			}
-			return list;
+			return authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 		}
 		
 	}

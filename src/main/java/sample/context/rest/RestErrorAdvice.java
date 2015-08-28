@@ -2,7 +2,7 @@ package sample.context.rest;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.*;
@@ -13,7 +13,7 @@ import org.springframework.context.*;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.validation.*;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.*;
@@ -85,12 +85,10 @@ public class RestErrorAdvice {
 				// low: プリフィックスは冗長なので外してます
 				field = bindField(oe.getCodes()[1]);
 			}
-			List<String> args = new ArrayList<String>();
-			Arrays.stream(oe.getArguments()).forEach((arg) -> {
-				if (!(arg instanceof MessageSourceResolvable)) {
-					args.add(arg.toString());
-				}
-			});
+			List<String> args = Arrays.stream(oe.getArguments())
+				.filter((arg) -> !(arg instanceof MessageSourceResolvable))
+				.map(Object::toString)
+				.collect(Collectors.toList());
 			String message = oe.getDefaultMessage();
 			if (0 <= oe.getCodes()[0].indexOf("typeMismatch")) {
 				message = oe.getCodes()[2];
@@ -101,10 +99,7 @@ public class RestErrorAdvice {
 	}
 
 	protected String bindField(String field) {
-		if (field == null) {
-			return "";
-		}
-		return field.substring(field.indexOf('.') + 1);
+		return Optional.ofNullable(field).map((v) -> v.substring(v.indexOf('.') + 1)).orElse("");
 	}
 
 	@ExceptionHandler(ValidationException.class)
@@ -132,7 +127,7 @@ public class RestErrorAdvice {
 
 	/** 例外情報のスタックを表現します。 */
 	public static class ErrorHolder {
-		private Map<String, List<String>> errors = new HashMap<String, List<String>>();
+		private Map<String, List<String>> errors = new HashMap<>();
 		private MessageSource msg;
 
 		public ErrorHolder(final MessageSource msg) {
@@ -145,13 +140,10 @@ public class RestErrorAdvice {
 
 		public ErrorHolder(final MessageSource msg, final List<Warn> warns) {
 			this.msg = msg;
-			warns.forEach((warn) -> {
-				if (warn.global()) {
-					errorGlobal(warn.getMessage());
-				} else {
-					error(warn.getField(), warn.getMessage());
-				}
-			});
+			warns.stream().filter((warn) -> warn.global()).map((warn) ->
+				errorGlobal(warn.getMessage()));
+			warns.stream().filter((warn) -> !warn.global()).map((warn) ->
+				error(warn.getField(), warn.getMessage()));
 		}
 
 		public ErrorHolder(final MessageSource msg, String globalMsgKey, String... msgArgs) {
@@ -160,9 +152,7 @@ public class RestErrorAdvice {
 		}
 
 		public ErrorHolder errorGlobal(String msgKey, String defaultMsg, String... msgArgs) {
-			if (!errors.containsKey("")) {
-				errors.put("", new ArrayList<String>());
-			}
+			if (!errors.containsKey("")) errors.put("", new ArrayList<>());
 			errors.get("").add(msg.getMessage(msgKey, msgArgs, defaultMsg, Locale.getDefault()));
 			return this;
 		}
@@ -172,19 +162,16 @@ public class RestErrorAdvice {
 		}
 
 		public ErrorHolder error(String field, String msgKey, String... msgArgs) {
-			if (!errors.containsKey(field)) {
-				errors.put(field, new ArrayList<String>());
-			}
+			if (!errors.containsKey(field)) errors.put(field, new ArrayList<>());
 			errors.get(field).add(msg.getMessage(msgKey, msgArgs, msgKey, Locale.getDefault()));
 			return this;
 		}
 
 		public ResponseEntity<Map<String, String[]>> result(HttpStatus status) {
-			Map<String, String[]> ret = new HashMap<String, String[]>();
-			for (Entry<String, List<String>> v : errors.entrySet()) {
-				ret.put(v.getKey(), v.getValue().toArray(new String[0]));
-			}
-			return new ResponseEntity<Map<String, String[]>>(ret, status);
+			return new ResponseEntity<Map<String, String[]>>(
+				errors.entrySet().stream().collect(Collectors.toMap(
+					Map.Entry::getKey, (entry) -> entry.getValue().toArray(new String[0]))),
+				status);
 		}
 	}
 
