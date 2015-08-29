@@ -82,9 +82,8 @@ public class Account extends OrmActiveRecord<Account> {
 	 */
 	public static Account register(final OrmRepository rep, final PasswordEncoder encoder, RegAccount p) {
 		Validator.validate((v) -> v.checkField(get(rep, p.id).isPresent(), "id", "error.common.duplicateCode"));
-		Account account = p.create().save(rep);
 		p.createLogin(encoder.encode(p.plainPassword)).save(rep);
-		return account;
+		return p.create().save(rep);
 	}
 	
 	/** 登録パラメタ */

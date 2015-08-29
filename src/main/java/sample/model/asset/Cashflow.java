@@ -98,13 +98,12 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 		return update(rep);
 	}
 
-	/**
-	 * キャッシュフローを実現(受渡)可能か判定します。
-	 */
+	/** キャッシュフローを実現(受渡)可能か判定します。 */
 	public boolean canRealize(final OrmRepository rep) {
 		return rep.dh().time().tp().afterEqualsDay(valueDay);
 	}
 
+	/** キャッシュフローを取得します。(例外付) */
 	public static Cashflow load(final OrmRepository rep, Long id) {
 		return rep.load(Cashflow.class, id);
 	}

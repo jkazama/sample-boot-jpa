@@ -99,7 +99,7 @@ public abstract class DateUtils {
 		return day.query(weekendQuery);
 	}
 	
-	/** 週末判定用のTemporalQuery<Boolean>を表現します。 */
+	/** 週末判定用のTemporalQuery&gt;Boolean&lt;を表現します。 */
 	public static class WeekendQuery implements TemporalQuery<Boolean> {
 		@Override
 		public Boolean queryFrom(TemporalAccessor temporal) {

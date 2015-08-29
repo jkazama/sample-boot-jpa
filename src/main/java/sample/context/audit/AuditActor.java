@@ -13,6 +13,7 @@ import sample.ActionStatusType;
 import sample.context.Dto;
 import sample.context.actor.Actor;
 import sample.context.orm.*;
+import sample.context.orm.Sort.SortOrder;
 import sample.model.constraints.*;
 import sample.util.*;
 
@@ -89,15 +90,15 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 	
 	/** 利用者監査ログを検索します。 */
 	public static PagingList<AuditActor> find(final SystemRepository rep, final FindAuditActor p) {
-		OrmTemplate tmpl = rep.tmpl();
-		OrmCriteria<AuditActor> criteria = rep.criteria(AuditActor.class);
-		criteria.like(new String[]{"actorId", "source"}, p.actorId, MatchMode.ANYWHERE);
-		criteria.equal("category", p.category);
-		criteria.equal("statusType", p.statusType);
-		criteria.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE);
-		criteria.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
-        p.page.getSort().desc("startDate");
-		return tmpl.find(criteria.result(), p.page);
+		return rep.tmpl().find(AuditActor.class, (criteria) -> {
+			return criteria
+				.like(new String[]{"actorId", "source"}, p.actorId, MatchMode.ANYWHERE)
+				.equal("category", p.category)
+				.equal("statusType", p.statusType)
+				.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE)
+				.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay))
+				.result();
+		}, p.page.sortIfEmpty(SortOrder.desc("startDate")));
 	}
 
 	/** 検索パラメタ */

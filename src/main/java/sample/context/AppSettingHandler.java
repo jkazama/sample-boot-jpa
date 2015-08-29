@@ -41,7 +41,7 @@ public class AppSettingHandler {
 		return setting;
 	}
 	
-	protected AppSetting mockSetting(String id) {
+	private AppSetting mockSetting(String id) {
 		return new AppSetting(id, "category", "テスト用モック情報", mockMap.get().get(id));
 	}
 

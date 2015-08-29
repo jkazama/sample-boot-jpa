@@ -60,25 +60,18 @@ public class OrmTemplate {
 	@SuppressWarnings("unchecked")
 	public <T> PagingList<T> find(final DetachedCriteria criteria, final Pagination page) {
 		return new PagingList<T>(tmpl.executeWithNativeSession((session) -> {
-			long total = -1L;
-			if (!page.isIgnoreTotal()) {
-				total = load(SerializationUtils.clone(criteria).setProjection(Projections.rowCount()));
-			}
-			page.setTotal(total);
-			Criteria executableCriteria = criteria.getExecutableCriteria(session);
-			prepareCriteria(executableCriteria);
-			if (page != null) {
-				if (page.getPage() > 0) {
-					executableCriteria.setFirstResult(page.getFirstResult());
-				}
-				if (page.getSize() > 0) {
-					executableCriteria.setMaxResults(page.getSize());
-				}
+			page.setTotal(page.isIgnoreTotal() ? -1 :
+				(long)load(SerializationUtils.clone(criteria).setProjection(Projections.rowCount())));
+			Criteria execCriteria = criteria.getExecutableCriteria(session);
+			prepareCriteria(execCriteria);
+			Optional.ofNullable(page).ifPresent((pg) -> {
+				if (page.getPage() > 0)	execCriteria.setFirstResult(page.getFirstResult());
+				if (page.getSize() > 0) execCriteria.setMaxResults(page.getSize());
 				page.getSort().orders().forEach((order) ->
-					executableCriteria.addOrder(
+					execCriteria.addOrder(
 						order.isAscending() ? Order.asc(order.getProperty()) : Order.desc(order.getProperty())));
-			}
-			return executableCriteria.list();
+			});
+			return execCriteria.list();
 		}), page);
 	}
 
@@ -122,11 +115,11 @@ public class OrmTemplate {
 	 * Criteriaでページング検索します。
 	 * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
 	 */
-	public <T> PagingList<T> find(Class<T> entityClass, final Pagination page, Function<OrmCriteria<T>, DetachedCriteria> func) {
+	public <T> PagingList<T> find(Class<T> entityClass, Function<OrmCriteria<T>, DetachedCriteria> func, final Pagination page) {
 		return find(func.apply(new OrmCriteria<>(entityClass)), page);
 	}
 	
-	public <T> PagingList<T> find(Class<T> entityClass, String alias, final Pagination page, Function<OrmCriteria<T>, DetachedCriteria> func) {
+	public <T> PagingList<T> find(Class<T> entityClass, String alias, Function<OrmCriteria<T>, DetachedCriteria> func, final Pagination page) {
 		return find(func.apply(new OrmCriteria<>(entityClass, alias)), page);
 	}
 	
@@ -172,11 +165,8 @@ public class OrmTemplate {
 			} else {
 				String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
 				int orderPos = hqlCnt.indexOf("order");
-				if (0 <= orderPos) {
-					hqlCnt = hqlCnt.substring(0, orderPos);
-				}
-				long total = load(hqlCnt, args);
-				page.setTotal(total);
+				if (0 <= orderPos) hqlCnt = hqlCnt.substring(0, orderPos);
+				page.setTotal(load(hqlCnt, args));
 			}
 			return bindArgs(session.createQuery(hql), page, args).list();
 		}), page);
@@ -185,10 +175,7 @@ public class OrmTemplate {
 	/** 名前付きHQLで一件取得します。 */
 	public <T> Optional<T> getNamed(final String queryName, final Object... args) {
 		List<T> list = findNamed(queryName, args);
-		if (list.isEmpty()) {
-			return Optional.empty();
-		}
-		return Optional.of(list.get(0));
+		return list.stream().findFirst();
 	}
 
 	/** 名前付きHQLで一件取得をします。(存在しない時はValidationException) */
@@ -215,8 +202,7 @@ public class OrmTemplate {
 			Query query = session.getNamedQuery(queryName);
 			String hql = query.getQueryString();
 			String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
-			long total = load(hqlCnt, args);
-			page.setTotal(total);
+			page.setTotal(load(hqlCnt, args));
 			return bindArgs(query, page, args).list();
 		}), page);
 	}
@@ -261,22 +247,17 @@ public class OrmTemplate {
 
 	protected Query bindArgs(final Query query, final Pagination page, final Object... args) {
 		prepareQuery(query);
-		if (page != null && page.getPage() > 0) {
-			query.setFirstResult(page.getFirstResult());
-		}
-		if (page != null && page.getSize() > 0) {
-			query.setMaxResults(page.getSize());
-		}
+		Optional.ofNullable(page).ifPresent((pg) -> { 
+			if (page.getPage() > 0) query.setFirstResult(page.getFirstResult());
+			if (page.getSize() > 0) query.setMaxResults(page.getSize());
+		});
 		if (args != null) {
-			for (int i = 0; i < args.length; i++) {
-				bindParameter(query, String.valueOf(i + 1), args[i]);
-			}
+			for (int i = 0; i < args.length; i++) bindParameter(query, String.valueOf(i + 1), args[i]);
 		}
 		SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager
 				.getResource(tmpl.getSessionFactory());
-		if (sessionHolder != null && sessionHolder.hasTimeout()) {
-			query.setTimeout(sessionHolder.getTimeToLiveInSeconds());
-		}
+		Optional.ofNullable(sessionHolder).filter((v) -> v.hasTimeout()).ifPresent((v) ->
+			query.setTimeout(v.getTimeToLiveInSeconds()));
 		return query;
 	}
 	
@@ -295,22 +276,17 @@ public class OrmTemplate {
 	protected void prepareCriteria(Criteria criteria) {
 		if (tmpl.isCacheQueries()) {
 			criteria.setCacheable(true);
-			if (tmpl.getQueryCacheRegion() != null) {
+			if (tmpl.getQueryCacheRegion() != null) { 
 				criteria.setCacheRegion(tmpl.getQueryCacheRegion());
 			}
 		}
-		if (tmpl.getFetchSize() > 0) {
-			criteria.setFetchSize(tmpl.getFetchSize());
-		}
-		if (tmpl.getMaxResults() > 0) {
-			criteria.setMaxResults(tmpl.getMaxResults());
-		}
+		if (tmpl.getFetchSize() > 0) criteria.setFetchSize(tmpl.getFetchSize());
+		if (tmpl.getMaxResults() > 0) criteria.setMaxResults(tmpl.getMaxResults());
 
 		SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager
 				.getResource(tmpl.getSessionFactory());
-		if (sessionHolder != null && sessionHolder.hasTimeout()) {
-			criteria.setTimeout(sessionHolder.getTimeToLiveInSeconds());
-		}
+		Optional.ofNullable(sessionHolder).filter((v) -> v.hasTimeout()).ifPresent((v) ->
+			criteria.setTimeout(v.getTimeToLiveInSeconds()));
 	}
 
 	protected void prepareQuery(Query queryObject) {
@@ -320,18 +296,13 @@ public class OrmTemplate {
 				queryObject.setCacheRegion(tmpl.getQueryCacheRegion());
 			}
 		}
-		if (tmpl.getFetchSize() > 0) {
-			queryObject.setFetchSize(tmpl.getFetchSize());
-		}
-		if (tmpl.getMaxResults() > 0) {
-			queryObject.setMaxResults(tmpl.getMaxResults());
-		}
+		if (tmpl.getFetchSize() > 0) queryObject.setFetchSize(tmpl.getFetchSize());
+		if (tmpl.getMaxResults() > 0) queryObject.setMaxResults(tmpl.getMaxResults());
 
 		SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager
 				.getResource(tmpl.getSessionFactory());
-		if (sessionHolder != null && sessionHolder.hasTimeout()) {
-			queryObject.setTimeout(sessionHolder.getTimeToLiveInSeconds());
-		}
+		Optional.ofNullable(sessionHolder).filter((v) -> v.hasTimeout()).ifPresent((v) ->
+			queryObject.setTimeout(v.getTimeToLiveInSeconds()));
 	}
 
 }

@@ -48,6 +48,14 @@ public class Sort implements Dto {
 	public List<SortOrder> orders() {
 		return orders;
 	}
+	
+	/** ソート条件が未指定だった際にソート順が上書きされます。 */
+	public Sort ifEmpty(SortOrder... items) {
+		if (orders.isEmpty() && items != null) {
+			orders.addAll(Arrays.asList(items));
+		}
+		return this;
+	}
 
 	/** 昇順でソート情報を返します。 */
 	public static Sort ascBy(String property) {

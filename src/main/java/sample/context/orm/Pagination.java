@@ -2,9 +2,9 @@ package sample.context.orm;
 
 import java.math.RoundingMode;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import sample.context.Dto;
+import sample.context.orm.Sort.SortOrder;
 import sample.util.Calculator;
 
 /**
@@ -49,6 +49,12 @@ public class Pagination implements Dto {
 	/** カウント算出を無効化します。 */
 	public Pagination ignoreTotal() {
 		this.ignoreTotal = true;
+		return this;
+	}
+	
+	/** ソート指定が未指定の時は与えたソート条件で上書きします。 */
+	public Pagination sortIfEmpty(SortOrder... orders) {
+		if (sort != null) sort.ifEmpty(orders);
 		return this;
 	}
 	

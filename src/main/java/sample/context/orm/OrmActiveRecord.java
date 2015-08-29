@@ -13,6 +13,10 @@ import sample.util.Validator;
  * 変える行為ではなく対象インスタンスを特定する行為(クラス概念)にあたるため、
  * クラスメソッドとして継承先で個別定義するようにしてください。
  * <pre>
+ * public static Optional&lt;Account&gt; get(final OrmRepository rep, String id) {
+ *     return rep.get(Account.class, id);
+ * }
+ * 
  * public static Account findAll(final OrmRepository rep) {
  *     return rep.findAll(Account.class);
  * }

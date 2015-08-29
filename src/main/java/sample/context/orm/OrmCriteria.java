@@ -3,7 +3,7 @@ package sample.context.orm;
 import java.time.temporal.Temporal;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.*;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 import org.hibernate.sql.JoinType;
@@ -34,7 +34,7 @@ public class OrmCriteria<T> {
 
 	/** 組み上げたDetachedCriteriaを返します。 */
 	public DetachedCriteria result() {
-		return criteria;
+		return SerializationUtils.clone(criteria);
 	}
 
 	/**

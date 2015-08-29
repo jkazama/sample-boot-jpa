@@ -12,6 +12,7 @@ import lombok.*;
 import sample.ActionStatusType;
 import sample.context.Dto;
 import sample.context.orm.*;
+import sample.context.orm.Sort.SortOrder;
 import sample.model.constraints.*;
 import sample.util.DateUtils;
 
@@ -80,14 +81,14 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 
 	/** イベント監査ログを検索します。 */
 	public static PagingList<AuditEvent> find(final SystemRepository rep, final FindAuditEvent p) {
-		OrmTemplate tmpl = rep.tmpl();
-		OrmCriteria<AuditEvent> criteria = rep.criteria(AuditEvent.class);
-		criteria.equal("category", p.category);
-		criteria.equal("statusType", p.statusType);
-		criteria.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE);
-		criteria.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
-		p.page.getSort().desc("startDate");
-		return tmpl.find(criteria.result(), p.page);
+		return rep.tmpl().find(AuditEvent.class, (criteria) -> {
+			return criteria
+				.equal("category", p.category)
+				.equal("statusType", p.statusType)
+				.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE)
+				.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay))
+				.result();
+		}, p.page.sortIfEmpty(SortOrder.desc("startDate")));
 	}
 
 	/** 検索パラメタ */

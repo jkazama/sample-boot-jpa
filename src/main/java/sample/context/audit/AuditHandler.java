@@ -1,5 +1,6 @@
 package sample.context.audit;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.slf4j.*;
@@ -90,37 +91,37 @@ public class AuditHandler {
 	}
 
 	public <T> T callAudit(String category, String message, final Supplier<T> callable) {
-		AuditActor audit = null;
+		Optional<AuditActor> audit = Optional.empty();
 		try {
 			try { // システムスキーマの障害は本質的なエラーに影響を与えないように
-				audit = persister.start(RegAuditActor.of(category, message));
+				audit = Optional.of(persister.start(RegAuditActor.of(category, message)));
 			} catch (Exception e) {
 				loggerSystem.error(e.getMessage(), e);
 			}
 			T v = callable.get();
 			try {
-				if (audit != null) persister.finish(audit);
+				audit.ifPresent(persister::finish);
 			} catch (Exception e) {
 				loggerSystem.error(e.getMessage(), e);
 			}
 			return v;
 		} catch (ValidationException e) {
 			try {
-				if (audit != null) persister.cancel(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.cancel(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
 			throw e;
 		} catch (RuntimeException e) {
 			try {
-				if (audit != null) persister.error(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.error(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
 			throw e;
 		} catch (Exception e) {
 			try {
-				if (audit != null) persister.error(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.error(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
@@ -129,37 +130,37 @@ public class AuditHandler {
 	}
 	
 	public <T> T callEvent(String category, String message, final Supplier<T> callable) {
-		AuditEvent audit = null;
+		Optional<AuditEvent> audit = Optional.empty();
 		try {
 			try { // システムスキーマの障害は本質的なエラーに影響を与えないように
-				audit = persister.start(RegAuditEvent.of(category, message));
+				audit = Optional.of(persister.start(RegAuditEvent.of(category, message)));
 			} catch (Exception e) {
 				loggerSystem.error(e.getMessage(), e);
 			}
 			T v = callable.get();
 			try {
-				if (audit != null) persister.finish(audit);
+				audit.ifPresent(persister::finish);
 			} catch (Exception e) {
 				loggerSystem.error(e.getMessage(), e);
 			}
 			return v;
 		} catch (ValidationException e) {
 			try {
-				if (audit != null) persister.cancel(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.cancel(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
 			throw e;
 		} catch (RuntimeException e) {
 			try {
-				if (audit != null) persister.error(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.error(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
 			throw (RuntimeException)e;
 		} catch (Exception e) {
 			try {
-				if (audit != null) persister.error(audit, e.getMessage());
+				audit.ifPresent((v) -> persister.error(v, e.getMessage()));
 			} catch (Exception ex) {
 				loggerSystem.error(ex.getMessage(), ex);
 			}
