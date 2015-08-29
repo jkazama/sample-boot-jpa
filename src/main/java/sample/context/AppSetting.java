@@ -96,10 +96,11 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
 	
 	/** アプリケーション設定情報を検索します。 */
 	public static List<AppSetting> find(OrmRepository rep, FindAppSetting p) {
-		OrmTemplate tmpl = rep.tmpl();
-		OrmCriteria<AppSetting> criteria = rep.criteria(AppSetting.class);
-		criteria.like(new String[]{"id", "category", "outline"}, p.keyword, MatchMode.ANYWHERE);
-		return tmpl.find(criteria.result());
+		return rep.tmpl().find(AppSetting.class, (criteria) -> {
+			return criteria
+				.like(new String[]{"id", "category", "outline"}, p.keyword, MatchMode.ANYWHERE)
+				.result();
+		});
 	}
 	
 	/** 検索パラメタ　*/

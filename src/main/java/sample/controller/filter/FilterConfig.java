@@ -6,7 +6,7 @@ import javax.servlet.Filter;
 
 import org.springframework.context.annotation.Configuration;
 
-import sample.context.security.SecurityAuthConfig.SecurityFilters;
+import sample.context.security.SecurityFilters;
 
 /**
  * ServletFilterの拡張実装。

@@ -1,7 +1,7 @@
 package sample.model.account;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class AccountTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void loadActive() {
+	public void 有効口座の取得() {
 		tx(() -> {
 			// 通常時取得検証
 			fixtures.acc("normal").save(rep);
@@ -30,6 +30,7 @@ public class AccountTest extends EntityTestSupport {
 			withdrawal.save(rep);
 			try {
 				Account.loadValid(rep, "withdrawal");
+				fail();
 			} catch (ValidationException e) {
 				assertThat(e.getMessage(), is("error.Account.loadValid"));
 			}

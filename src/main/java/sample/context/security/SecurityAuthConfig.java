@@ -167,11 +167,6 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		 */
 		private boolean admin = false;
 	}
-
-	/** Spring Securityに対するFilter拡張設定。Filterを追加したい時は本I/Fを継承してBean登録してください。 */
-	public static interface SecurityFilters {
-		List<Filter> filters();
-	}
 	
 	/**
 	 * Spring Securityのカスタム認証プロバイダ。

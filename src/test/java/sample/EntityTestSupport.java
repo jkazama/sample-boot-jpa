@@ -10,6 +10,8 @@ import javax.sql.DataSource;
 import org.hibernate.SessionFactory;
 import org.junit.*;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -28,6 +30,7 @@ public class EntityTestSupport {
 	protected Clock clock = Clock.systemDefaultZone();
 	protected Timestamper time;
 	protected BusinessDayHandler businessDay;
+	protected PasswordEncoder encoder;
 	protected ActorSession session;
 	protected MockDomainHelper dh;
 	protected SessionFactory sf;
@@ -50,6 +53,7 @@ public class EntityTestSupport {
 		session = dh.actorSession();
 		businessDay = new BusinessDayHandler();
 		businessDay.setTime(time);
+		encoder = new BCryptPasswordEncoder();
 		setupRepository();
 		setupDataFixtures();
 		before();
@@ -116,6 +120,7 @@ public class EntityTestSupport {
 		fixtures = new DataFixtures();
 		fixtures.setTime(time);
 		fixtures.setBusinessDay(businessDay);
+		fixtures.setEncoder(encoder);
 		fixtures.setRep(rep);
 		fixtures.setTx(txm);
 		fixtures.setRepSystem(repSystem);

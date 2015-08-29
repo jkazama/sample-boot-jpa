@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import sample.ValidationException.ErrorKeys;
 import sample.context.security.SecurityActorFinder.*;
 import sample.context.security.SecurityAuthConfig;
 import sample.util.ConvertUtils;
@@ -40,7 +41,7 @@ public class SecurityService {
 								new SimpleGrantedAuthority("ROLE_USER") });
 							return new ActorDetails(account.actor(), login.getPassword(), authorities);
 						})
-					)).orElseThrow(() -> new UsernameNotFoundException("error.Login"));
+					)).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
 			}
 		};
 	}
@@ -68,7 +69,7 @@ public class SecurityService {
 						service.findStaffAuthority(staffId).forEach((auth) ->
 							authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
 						return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
-					})).orElseThrow(() -> new UsernameNotFoundException("error.Login"));
+					})).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
 			}
 		};
 	}	

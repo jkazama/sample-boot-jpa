@@ -128,6 +128,9 @@ public class ValidationException extends RuntimeException {
 		String EntityNotFound = "error.EntityNotFoundException";
 		String Authentication = "error.Authentication";
 		String AccessDenied = "error.AccessDeniedException";
+		
+		String Login = "error.login";
+		String DuplicateId = "error.duplicateId";
 	}
 	
 }

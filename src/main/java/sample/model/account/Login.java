@@ -7,6 +7,7 @@ import javax.persistence.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.*;
+import sample.ValidationException.ErrorKeys;
 import sample.context.Dto;
 import sample.context.orm.*;
 import sample.model.constraints.*;
@@ -31,9 +32,16 @@ public class Login extends OrmActiveRecord<Login> {
 	/** パスワード(暗号化済) */
 	@Password
 	private String password;
-		
+
+	/** ログインIDを変更します。 */
+	public Login change(final OrmRepository rep, final ChgLoginId p) {
+		boolean exists = rep.tmpl().get("from Login where id<>?1 and loginId=?2", id, p.loginId).isPresent();
+		validate((v) -> v.checkField(!exists, "loginId", ErrorKeys.DuplicateId));
+		return p.bind(this).update(rep);
+	}
+	
 	/** パスワードを変更します。 */
-	public Login change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassowrd p) {
+	public Login change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassword p) {
 		return p.bind(this, encoder.encode(p.plainPassword)).update(rep);
 	}
 
@@ -53,21 +61,21 @@ public class Login extends OrmActiveRecord<Login> {
 		return rep.load(Login.class, id);
 	}
 	
-	/** パスワード変更パラメタ */
+	/** ログインID変更パラメタ low: 基本はユースケース単位で切り出す */
 	@Value
 	public static class ChgLoginId implements Dto {
 		private static final long serialVersionUID = 1l;
 		@IdStr
 		private String loginId;
-		public Login bind(final Login m, String password) {
-			m.setLoginId(password);
+		public Login bind(final Login m) {
+			m.setLoginId(loginId);
 			return m;
 		}
 	}
 	
 	/** パスワード変更パラメタ */
 	@Value
-	public static class ChgPassowrd implements Dto {
+	public static class ChgPassword implements Dto {
 		private static final long serialVersionUID = 1l;
 		@Password
 		private String plainPassword;
