@@ -19,7 +19,7 @@ public class CashBalanceTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void add() {
+	public void 現金残高を追加する() {
 		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashBalance cb = fixtures.cb("test1", baseDay, "USD", "10.02").save(rep);
@@ -36,7 +36,7 @@ public class CashBalanceTest extends EntityTestSupport {
 	}
 
 	@Test
-	public void getOrNew() {
+	public void 現金残高を取得する() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate baseMinus1Day = businessDay.day(-1);
 		tx(() -> {

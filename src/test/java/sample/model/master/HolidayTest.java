@@ -40,8 +40,8 @@ public class HolidayTest extends EntityTestSupport {
 	@Test
 	public void 休日を検索する() {
 		tx(() -> {
-			assertThat(Holiday.find(rep, 2015).size(), is(3));
-			assertThat(Holiday.find(rep, 2016).size(), is(1));
+			assertThat(Holiday.find(rep, 2015), hasSize(3));
+			assertThat(Holiday.find(rep, 2016), hasSize(1));
 		});
 	}
 
@@ -51,7 +51,7 @@ public class HolidayTest extends EntityTestSupport {
 			.stream().map((s) -> new RegisterHolidayItem(DateUtils.day(s), "休日")).collect(Collectors.toList());
 		tx(() -> {
 			Holiday.register(rep, new RegisterHoliday(2016, items));
-			assertThat(Holiday.find(rep, 2016).size(), is(3));
+			assertThat(Holiday.find(rep, 2016), hasSize(3));
 		});
 	}
 }

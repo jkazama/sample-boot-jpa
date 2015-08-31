@@ -39,5 +39,10 @@ public class DomainHelper {
 	public AppSetting setting(String id) {
 		return settingHandler.setting(id);
 	}
+	
+	/** アプリケーション設定情報を設定します。 */
+	public AppSetting settingSet(String id, String value) {
+		return settingHandler.update(id, value);
+	}	
 
 }

@@ -20,7 +20,7 @@ public class AssetTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void canWithdraw() {
+	public void 振込出金可能か判定する() {
 		// 残高   +  未実現キャッシュフロー - 出金依頼拘束額 = 出金可能額 
 		// 10000 + (1000 - 2000) - 8000 = 1000
 		tx(() -> {

@@ -14,7 +14,7 @@ import sample.context.actor.Actor;
 import sample.context.audit.AuditHandler;
 import sample.context.lock.IdLockHandler;
 import sample.context.lock.IdLockHandler.LockType;
-import sample.context.orm.DefaultRepository;
+import sample.context.orm.*;
 import sample.model.BusinessDayHandler;
 import sample.usecase.mail.ServiceMailDeliver;
 import sample.usecase.report.ServiceReportExporter;

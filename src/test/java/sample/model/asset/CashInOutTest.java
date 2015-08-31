@@ -39,7 +39,7 @@ public class CashInOutTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void find() {
+	public void 振込入出金を検索する() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate basePlus1Day = businessDay.day(1);
 		LocalDate basePlus2Day = businessDay.day(2);
@@ -67,7 +67,7 @@ public class CashInOutTest extends EntityTestSupport {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void withdrawal() {
+	public void 振込出金依頼をする() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate basePlus3Day = businessDay.day(3);
 		tx(() -> {
@@ -113,7 +113,7 @@ public class CashInOutTest extends EntityTestSupport {
 	}
 
 	@Test
-	public void cancel() {
+	public void 振込出金依頼を取消する() {
 		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			// CF未発生の依頼を取消
@@ -134,7 +134,7 @@ public class CashInOutTest extends EntityTestSupport {
 	}
 
 	@Test
-	public void error() {
+	public void 振込出金依頼を例外状態とする() {
 		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
@@ -156,7 +156,7 @@ public class CashInOutTest extends EntityTestSupport {
 	
 	@Test
 	@SuppressWarnings("unchecked")
-	public void process() {
+	public void 発生日を迎えた振込入出金をキャッシュフロー登録する() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate basePlus3Day = businessDay.day(3);
 		tx(() -> {

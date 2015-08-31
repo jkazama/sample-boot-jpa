@@ -19,7 +19,7 @@ public class CashflowTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void register() {
+	public void キャッシュフローを登録する() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate baseMinus1Day = businessDay.day(-1);
 		LocalDate basePlus1Day = businessDay.day(1);
@@ -42,7 +42,7 @@ public class CashflowTest extends EntityTestSupport {
 	}
 
 	@Test
-	public void realize() {
+	public void 未実現キャッシュフローを実現する() {
 		LocalDate baseDay = businessDay.day();
 		LocalDate baseMinus1Day = businessDay.day(-1);
 		LocalDate baseMinus2Day = businessDay.day(-2);
@@ -82,7 +82,7 @@ public class CashflowTest extends EntityTestSupport {
 	}
 	
 	@Test
-	public void registerWithRealize() {
+	public void 発生即実現のキャッシュフローを登録する() {
 		LocalDate baseDay = businessDay.day();
 		tx(() -> {
 			CashBalance.getOrNew(rep, "test1", "JPY");

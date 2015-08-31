@@ -23,12 +23,12 @@ public class JobController extends ControllerSupport {
 	@Autowired
 	private AssetAdminService asset;
 	@Autowired
-	private MasterAdminService master;
+	private SystemAdminService system;
 
 	/** 営業日を進めます。 */
 	@RequestMapping(value = "/daily/processDay", method = RequestMethod.POST)
 	public ResponseEntity<Void> processDay() {
-		return resultEmpty(() -> master.processDay());
+		return resultEmpty(() -> system.processDay());
 	}
 
 	/** 振込出金依頼を締めます。 */

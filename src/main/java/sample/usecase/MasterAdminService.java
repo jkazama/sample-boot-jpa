@@ -34,10 +34,5 @@ public class MasterAdminService extends ServiceSupport {
 		audit().audit("休日情報を登録する", () -> tx(() ->
 			Holiday.register(rep(), p)));
 	}
-
-	public void processDay() {
-		audit().audit("営業日を進める", () ->
-			dh().time().proceedDay(businessDay().day(1)));
-	}
 	
 }
