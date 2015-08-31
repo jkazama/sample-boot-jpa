@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.*;
 import sample.ValidationException;
+import sample.ValidationException.ErrorKeys;
 import sample.context.Dto;
 import sample.context.actor.Actor;
 import sample.context.actor.Actor.ActorRoleType;
@@ -81,7 +82,7 @@ public class Account extends OrmActiveRecord<Account> {
 	 * <p>ログイン情報も同時に登録されます。
 	 */
 	public static Account register(final OrmRepository rep, final PasswordEncoder encoder, RegAccount p) {
-		Validator.validate((v) -> v.checkField(get(rep, p.id).isPresent(), "id", "error.common.duplicateCode"));
+		Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
 		p.createLogin(encoder.encode(p.plainPassword)).save(rep);
 		return p.create().save(rep);
 	}
@@ -108,6 +109,7 @@ public class Account extends OrmActiveRecord<Account> {
 			m.setId(id);
 			m.setName(name);
 			m.setMail(mail);
+			m.setStatusType(AccountStatusType.NORMAL);
 			return m;
 		}
 		

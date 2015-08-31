@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.*;
@@ -41,8 +42,8 @@ public class AssetController extends ControllerSupport {
 	 * (解析時の優先順位の関係だと思いますが)
 	 */
 	@RequestMapping(value = "/cio/withdraw", method = RequestMethod.POST)
-	public Map<String, Long> withdraw(@Valid RegCashOut p) {
-		return objectToMap("id", service.withdraw(p));
+	public ResponseEntity<Long> withdraw(@Valid RegCashOut p) {
+		return result(() -> service.withdraw(p));
 	}
 
 	/** 振込出金依頼情報の表示用Dto */

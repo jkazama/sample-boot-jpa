@@ -218,6 +218,11 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 
 `AccountService`等でSpringが提供する@Cacheableを利用。UI層かアプリケーション層のどちらかに統一した方が良いが、本サンプルではとりあえずアプリケーション層だけ付与。Hibernateの2nd/Queryキャッシュはユースケース内のスコープで必要になる以外は利用しない方が混乱を避けられる。
 
+#### テスト
+
+パターンとしては通常のSpringコンテナを用いる2パターン(WebMockテスト/コンテナテスト)と、Hibernateだけに閉じた実行時間に優れたテスト(Entityのみが対象)の合計3パターンで考える。（それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport`）  
+テスト対象にServiceまで含めるてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけ。
+
 ### TODO
 
 - adminモードでの権限不具合修正

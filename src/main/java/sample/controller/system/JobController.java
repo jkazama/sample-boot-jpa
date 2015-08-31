@@ -3,8 +3,10 @@ package sample.controller.system;
 import lombok.Setter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import sample.controller.ControllerSupport;
 import sample.usecase.*;
 
 /**
@@ -16,7 +18,7 @@ import sample.usecase.*;
 @RestController
 @RequestMapping("/api/system/job")
 @Setter
-public class JobController {
+public class JobController extends ControllerSupport {
 
 	@Autowired
 	private AssetAdminService asset;
@@ -25,20 +27,20 @@ public class JobController {
 
 	/** 営業日を進めます。 */
 	@RequestMapping(value = "/daily/processDay", method = RequestMethod.POST)
-	public void processDay() {
-		master.processDay();
+	public ResponseEntity<Void> processDay() {
+		return resultEmpty(() -> master.processDay());
 	}
 
 	/** 振込出金依頼を締めます。 */
 	@RequestMapping(value = "/daily/closingCashOut",  method = RequestMethod.POST)
-	public void closingCashOut() {
-		asset.closingCashOut();
+	public ResponseEntity<Void> closingCashOut() {
+		return resultEmpty(() -> asset.closingCashOut());
 	}
 
 	/** キャッシュフローを実現します。 */
 	@RequestMapping(value = "/daily/realizeCashflow",  method = RequestMethod.POST)
-	public void realizeCashflow() {
-		asset.realizeCashflow();
+	public ResponseEntity<Void> realizeCashflow() {
+		return resultEmpty(() -> asset.realizeCashflow());
 	}
 
 }

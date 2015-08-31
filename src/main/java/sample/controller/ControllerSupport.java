@@ -3,6 +3,7 @@ package sample.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,7 +61,20 @@ public class ControllerSupport {
 		ret.put(key, t);
 		return ret;
 	}
-
+	
+	protected <T> Map<String, T> objectToMap(final T t) {
+		return objectToMap("result", t);
+	}
+	
+	/** 戻り値を生成して返します。(戻り値がプリミティブまたはnullを許容する時はこちらを利用してください) */
+	protected <T> ResponseEntity<T> result(Supplier<T> command) {
+		return ResponseEntity.status(HttpStatus.OK).body(command.get());
+	}
+	protected ResponseEntity<Void> resultEmpty(Runnable command) {
+		command.run();
+		return ResponseEntity.status(HttpStatus.OK).build();
+	}
+ 
 	/** ファイルアップロード情報(MultipartFile)をReportFileへ変換します。 */
 	protected ReportFile uploadFile(final MultipartFile file) {
 		return uploadFile(file, (String[])null);

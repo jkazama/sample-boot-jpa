@@ -109,7 +109,13 @@ public class DataFixtures {
 
 	/** 口座に紐付く金融機関口座の簡易生成 */
 	public FiAccount fiAcc(String accountId, String category, String currency) {
-		return new FiAccount(null, accountId, category, currency, category + "-" + currency, "FI" + accountId);
+		FiAccount m = new FiAccount();
+		m.setAccountId(accountId);
+		m.setCategory(category);
+		m.setCurrency(currency);
+		m.setFiCode(category + "-" + currency);
+		m.setFiAccountId("FI" + accountId);
+		return m;
 	}
 
 	// asset
@@ -168,7 +174,21 @@ public class DataFixtures {
 	
 	/** 自社金融機関口座の簡易生成 */
 	public SelfFiAccount selfFiAcc(String category, String currency) {
-		return new SelfFiAccount(null, category, currency, category + "-" + currency, "xxxxxx");
+		SelfFiAccount m = new SelfFiAccount();
+		m.setCategory(category);
+		m.setCurrency(currency);
+		m.setFiCode(category + "-" + currency);
+		m.setFiAccountId("xxxxxx");
+		return m;
+	}
+	
+	/** 祝日の簡易生成 */
+	public Holiday holiday(String dayStr) {
+		Holiday m = new Holiday();
+		m.setCategory(Holiday.categoryDefault);
+		m.setName("休日サンプル");
+		m.setDay(DateUtils.day(dayStr));
+		return m;
 	}
 
 }

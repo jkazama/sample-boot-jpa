@@ -11,28 +11,29 @@ import sample.context.Dto;
 import sample.context.orm.*;
 import sample.model.constraints.*;
 import sample.model.constraints.Year;
+import sample.util.DateUtils;
 
 /**
- * 祝日マスタを表現します。
+ * 休日マスタを表現します。
  */
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	private static final long serialVersionUID = 1l;
-	public static final String CATEGORY_DEFAULT = "default";
+	public static final String categoryDefault = "default";
 
 	/** ID */
 	@Id
 	@GeneratedValue
 	private Long id;
-	/** 祝日区分 */
+	/** 休日区分 */
 	@Category
 	private String category;
-	/** 祝日 */
+	/** 休日 */
 	@ISODate
 	private LocalDate day;
-	/** 祝日名称 */
+	/** 休日名称 */
 	@Name(max = 40)
 	private String name;
 	@ISODateTime
@@ -44,33 +45,35 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@IdStr
 	private String updateId;
 
-	/** 祝日マスタを取得します。 */
+	/** 休日マスタを取得します。 */
 	public static Optional<Holiday> get(final OrmRepository rep, LocalDate day) {
-		return get(rep, day, CATEGORY_DEFAULT);
+		return get(rep, day, categoryDefault);
 	}
 	public static Optional<Holiday> get(final OrmRepository rep, LocalDate day, String category) {
 		return rep.tmpl().get("from Holiday h where h.category=?1 and h.day=?2", category, day);
 	}
 
-	/** 祝日マスタを取得します。(例外付) */
+	/** 休日マスタを取得します。(例外付) */
 	public static Holiday load(final OrmRepository rep, LocalDate day) {
-		return load(rep, day, CATEGORY_DEFAULT);
+		return load(rep, day, categoryDefault);
 	}
 	public static Holiday load(final OrmRepository rep, LocalDate day, String category) {
 		return rep.tmpl().load("from Holiday h where h.category=?1 and h.day=?2", category, day);
 	}
 
-	/** 祝日情報を検索します。 */
+	/** 休日情報を検索します。 */
 	public static List<Holiday> find(final OrmRepository rep, final int year) {
-		return find(rep, year, CATEGORY_DEFAULT);
+		return find(rep, year, categoryDefault);
 	}
 	public static List<Holiday> find(final OrmRepository rep, final int year, final String category) {
-		return rep.tmpl().find("from Holiday h where h.category=?1 and h.day like ?2 order by h.day", category, year + "%");
+		return rep.tmpl().find("from Holiday h where h.category=?1 and h.day between ?2 and ?3 order by h.day",
+				category, LocalDate.ofYearDay(year, 1), DateUtils.dayTo(year));
 	}
 
-	/** 祝日マスタを登録します。 */
+	/** 休日マスタを登録します。 */
 	public static void register(final OrmRepository rep, final RegisterHoliday p) {
-		rep.tmpl().execute("delete from Holiday h where h.category=?1 and h.day like ?2'", p.category, p.year + "%");
+		rep.tmpl().execute("delete from Holiday h where h.category=?1 and h.day between ?2 and ?3",
+				p.category, LocalDate.ofYearDay(p.year, 1), DateUtils.dayTo(p.year));
 		p.list.forEach(v -> v.create(p).save(rep));
 	}
 
@@ -80,12 +83,17 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@AllArgsConstructor
 	public static class RegisterHoliday implements Dto {
 		private static final long serialVersionUID = 1l;
-		@Category
-		private String category;
+		@CategoryEmpty
+		private String category = categoryDefault;
 		@Year
 		private int year;
 		@Valid
 		private List<RegisterHolidayItem> list;
+		
+		public RegisterHoliday(int year, final List<RegisterHolidayItem> list) {
+			this.year = year;
+			this.list = list;
+		}
 	}
 
 	/** 登録パラメタ(要素) */

@@ -8,13 +8,11 @@ import org.hibernate.criterion.MatchMode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.*;
-import sample.ValidationException;
+import sample.ValidationException.ErrorKeys;
 import sample.context.Dto;
 import sample.context.actor.Actor;
 import sample.context.actor.Actor.ActorRoleType;
 import sample.context.orm.*;
-import sample.context.security.SecurityActorFinder;
-import sample.context.security.SecurityActorFinder.ActorDetails;
 import sample.model.constraints.*;
 import sample.util.Validator;
 
@@ -44,7 +42,7 @@ public class Staff extends OrmActiveRecord<Staff> {
 	}
 	
 	/** パスワードを変更します。 */
-	public Staff change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassowrd p) {
+	public Staff change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassword p) {
 		return p.bind(this, encoder.encode(p.plainPassword)).update(rep);
 	}
 
@@ -62,13 +60,6 @@ public class Staff extends OrmActiveRecord<Staff> {
 	public static Staff load(final OrmRepository rep, final String id) {
 		return rep.load(Staff.class, id);
 	}
-	
-	/** ログイン情報を取得します。 */
-	public static LoginStaff loadLoginStaff(final OrmRepository rep) {
-		ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException("ログイン状態ではありません"));
-		Actor actor = actorDetails.actor();
-		return new LoginStaff(actor.getId(), actor.getName(), actorDetails.getAuthorityIds());
-	}
 
 	/** 社員を検索します。 */
 	public static List<Staff> find(final OrmRepository rep, final FindStaff p) {
@@ -79,18 +70,8 @@ public class Staff extends OrmActiveRecord<Staff> {
 
 	/** 社員の登録を行います。 */
 	public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, RegStaff p) {
-		Validator.validate((v) -> v.checkField(get(rep, p.id).isPresent(), "id", "error.common.duplicateCode"));
+		Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
 		return p.create(encoder.encode(p.plainPassword)).save(rep);
-	}
-
-	/** クライアント利用用途に絞ったパラメタ */
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class LoginStaff {
-		private String id;
-		private String name;
-		private Collection<String> authorities;
 	}
 
 	/** 検索パラメタ */
@@ -143,7 +124,7 @@ public class Staff extends OrmActiveRecord<Staff> {
 	
 	/** パスワード変更パラメタ */
 	@Value
-	public static class ChgPassowrd implements Dto {
+	public static class ChgPassword implements Dto {
 		private static final long serialVersionUID = 1l;
 		@Password
 		private String plainPassword;

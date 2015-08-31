@@ -99,6 +99,11 @@ public abstract class DateUtils {
 		return day.query(weekendQuery);
 	}
 	
+	/** 指定年の最終日を取得します。 */
+	public static LocalDate dayTo(int year) {
+		return LocalDate.ofYearDay(year, Year.of(year).isLeap() ? 366 : 365);
+	}
+	
 	/** 週末判定用のTemporalQuery&gt;Boolean&lt;を表現します。 */
 	public static class WeekendQuery implements TemporalQuery<Boolean> {
 		@Override

@@ -4,12 +4,12 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import lombok.Setter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import sample.model.asset.*;
+import lombok.Setter;
+import sample.controller.ControllerSupport;
+import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.FindCashInOut;
 import sample.usecase.AssetAdminService;
 
@@ -19,7 +19,7 @@ import sample.usecase.AssetAdminService;
 @RestController
 @RequestMapping("/api/admin/asset")
 @Setter
-public class AssetAdminController {
+public class AssetAdminController extends ControllerSupport {
 
 	@Autowired
 	private AssetAdminService service;

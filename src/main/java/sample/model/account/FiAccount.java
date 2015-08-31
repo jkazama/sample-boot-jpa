@@ -13,8 +13,6 @@ import sample.model.constraints.*;
  */
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class FiAccount extends OrmActiveRecord<FiAccount> {
 
