@@ -9,8 +9,6 @@ sample-boot-hibernate
 
 考え方の骨子については以前発表した資料([Spring Bootを用いたドメイン駆動設計](http://www.slideshare.net/jkazama/jsug-20141127))を参照してください。
 
-> 動作検証含めてまだ実装中です。
-
 ---
 
 本サンプルはSpring Bootを用いたドメインモデリングの実装例としても利用できます。実際にそれなりの規模の案件で運用されていた実装アプローチなので、モデリングする際の参考事例としてみてもらえればと思います。  
@@ -222,10 +220,6 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 
 パターンとしては通常のSpringコンテナを用いる2パターン(WebMockテスト/コンテナテスト)と、Hibernateだけに閉じた実行時間に優れたテスト(Entityのみが対象)の合計3パターンで考える。（それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport`）  
 テスト対象にServiceまで含めるてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけ。
-
-### TODO
-
-- adminモードでの権限不具合修正
 
 ### License
 

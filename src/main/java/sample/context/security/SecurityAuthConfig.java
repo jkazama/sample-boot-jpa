@@ -103,11 +103,8 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		http
 			.csrf().disable()
 			.authorizeRequests()
-			.antMatchers(props.auth().path).hasRole("USER");
-		http
-			.csrf().disable()
-			.authorizeRequests()
-			.antMatchers(props.auth().pathAdmin).hasRole("ADMIN");
+				.antMatchers(props.auth().pathAdmin).hasRole("ADMIN")
+				.antMatchers(props.auth().path).hasRole("USER");
 		// common
 		http
 			.exceptionHandling().authenticationEntryPoint(entryPoint);
