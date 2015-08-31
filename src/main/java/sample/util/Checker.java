@@ -13,7 +13,7 @@ public abstract class Checker {
 		return v != null ? v.toString().matches(regex) : true;
 	}
 	
-	/** 文字桁数チェック。(サロゲートペア対応) */
+	/** 文字桁数チェック、max以下の時はtrue。(サロゲートペア対応) */
 	public static boolean len(String v, int max) {
 		return wordSize(v) <= max;
 	}

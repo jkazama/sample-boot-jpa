@@ -61,12 +61,18 @@ public abstract class ConvertUtils {
 		return Optional.ofNullable(text).map((v) -> katakanaToHira.transliterate(v)).orElse(null);
 	}
 
-	/** ひらがな/半角カタカナを全角カタカナにします。 */
+	/**
+	 * ひらがな/半角カタカナを全角カタカナにします。
+	 * <p>low: 実際の挙動は厳密ではないので単体検証(ConvertUtilsTest)などで事前に確認して下さい。
+	 */
 	public static String hiraganaToZenKana(String text) {
 		return Optional.ofNullable(text).map((v) -> hiraganaToKana.transliterate(v)).orElse(null);
 	}
 
-	/** ひらがな/全角カタカナを半角カタカナにします。 */
+	/**
+	 * ひらがな/全角カタカナを半角カタカナにします。
+	 * <p>low: 実際の挙動は厳密ではないので単体検証(ConvertUtilsTest)などで事前に確認して下さい。
+	 */
 	public static String hiraganaToHanKana(String text) {
 		return zenkakuToHan(hiraganaToZenKana(text));
 	}
