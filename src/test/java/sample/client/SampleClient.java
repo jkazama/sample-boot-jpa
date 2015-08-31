@@ -39,10 +39,13 @@ public class SampleClient {
 	
 	@Test
 	public void バッチ向けユースケース検証() throws Exception {
+		String fromDay = DateUtils.dayFormat(TimePoint.now().day().minusDays(1));
+		String toDay = DateUtils.dayFormat(TimePoint.now().day().plusDays(3));
 		SimpleTestAgent agent = new SimpleTestAgent();
 		agent.post("営業日を進める(単純日回しのみ)", "/system/job/daily/processDay");
 		agent.post("当営業日の出金依頼を締める", "/system/job/daily/closingCashOut");
 		agent.post("入出金キャッシュフローを実現する(受渡日に残高へ反映)", "/system/job/daily/realizeCashflow");
+		agent.get("イベントログを検索する", "/admin/system/audit/event/?fromDay=" + fromDay + "&toDay=" + toDay);
 	}
 	
 	/** 単純なSession概念を持つHTTPエージェント */

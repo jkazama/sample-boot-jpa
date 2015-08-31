@@ -102,9 +102,9 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
 		@DescriptionEmpty
 		private String keyword;
 		private ActionStatusType statusType;
-		@NotNull
+		@ISODate
 		private LocalDate fromDay;
-		@NotNull
+		@ISODate
 		private LocalDate toDay;
 		@NotNull
 		private Pagination page = new Pagination();

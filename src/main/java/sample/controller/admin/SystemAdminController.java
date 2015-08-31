@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ import sample.usecase.SystemAdminService;
 @Setter
 public class SystemAdminController extends ControllerSupport {
 
+	@Autowired
 	private SystemAdminService service;
 	
 	/** 利用者監査ログを検索します。 */

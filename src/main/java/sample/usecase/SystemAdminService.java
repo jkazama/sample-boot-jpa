@@ -2,6 +2,7 @@ package sample.usecase;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import sample.context.orm.*;
 @Service
 public class SystemAdminService extends ServiceSupport {
 
+	@Autowired
 	private SystemRepository rep;
 	
 	/** 利用者監査ログを検索します。 */
