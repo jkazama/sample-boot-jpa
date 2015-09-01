@@ -12,6 +12,7 @@ import lombok.*;
 import sample.ActionStatusType;
 import sample.context.Dto;
 import sample.context.actor.Actor;
+import sample.context.actor.Actor.ActorRoleType;
 import sample.context.orm.*;
 import sample.context.orm.Sort.SortOrder;
 import sample.model.constraints.*;
@@ -32,6 +33,10 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 	/** 利用者ID */
 	@IdStr
 	private String actorId;
+	/** 利用者役割 */
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	private ActorRoleType roleType;
 	/** 利用者ソース(IP等) */
 	private String source;
 	/** カテゴリ */
@@ -94,6 +99,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 			return criteria
 				.like(new String[]{"actorId", "source"}, p.actorId, MatchMode.ANYWHERE)
 				.equal("category", p.category)
+				.equal("roleType", p.roleType)
 				.equal("statusType", p.statusType)
 				.like(new String[]{"message", "errorReason"}, p.keyword, MatchMode.ANYWHERE)
 				.between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay))
@@ -113,6 +119,8 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		private String category;
 		@DescriptionEmpty
 		private String keyword;
+		@NotNull
+		private ActorRoleType roleType = ActorRoleType.USER;
 		private ActionStatusType statusType;
 		@ISODate
 		private LocalDate fromDay;
@@ -134,6 +142,7 @@ public class AuditActor  extends OrmActiveRecord<AuditActor> {
 		public AuditActor create(final Actor actor, LocalDateTime now) {
 			AuditActor audit = new AuditActor();
 			audit.setActorId(actor.getId());
+			audit.setRoleType(actor.getRoleType());
 			audit.setSource(actor.getSource());
 			audit.setCategory(category);
 			audit.setMessage(ConvertUtils.left(message, 300));
