@@ -176,7 +176,7 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 | `spring-orm`            | 4.2.0    | Spring4のORM概念サポート |
 | `hibernate-*`           | 5.0.0    | DB永続化サポート (core/java8/ehcache) |
 | `ehcache-core`          | 2.6.+    | 最新のEhCache設定記法を利用するため |
-| `HikariCP-java6`        | 2.3.+    | コネクションプーリング実装の組み立て用途 |
+| `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
 | `jackson-datatype-*`    | 2.6.+    | JSON変換時のJava8/Hibernate対応 |
 | `commons-*`             | -        | 汎用ユーティリティライブラリ |
 | `icu4j-*`               | 54.1.+   | 文字変換ライブラリ |
@@ -191,35 +191,38 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 
 #### DB/トランザクション
 
-`sample.context.orm`直下。ドメイン実装をよりEntityに寄せるためのORMサポート実装。Repository(スキーマ単位)にはドメイン処理を記載しないアプローチのため、Spring Bootが提供するJPA実装を利用しなかった。  
-トランザクションはトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与する。単純なreadOnlyな処理のみ`@Transactional`を付与。
+`sample.context.orm`直下。ドメイン実装をよりEntityに寄せるためのORMサポート実装です。Repository(スキーマ単位で定義)にドメイン処理を記載しないアプローチのため、Spring Bootが提供するJPA実装は利用していません。  
+トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。単純なreadOnlyな処理のみ`@Transactional([Bean名称])`を利用してメソッド単位の対応を取ります。
 
-スキーマは標準(`DefaultRepository`)とシステム(`SystemRepository`)を用意。Entity実装はスキーマに依存させず、引数に渡す側がアプリケーション層(Service)で判断するアプローチ。
+スキーマは標準のビジネスロジック用途(`DefaultRepository`)とシステム用途(`SystemRepository`)の2種類を想定しています。Entity実装ではスキーマに依存させず、引数に渡す側(主にアプリケーション層)で判断させます。
 
 #### 認証/認可
 
-`sample.context.security`直下。顧客(ROLE_USER) / 社員(ROLE_ADMIN)の2パターンを考慮。それぞれのUserDetails提供手段は`sample.usecase.SecurityService`で定義している。有効にするには`application.yml`の`extension.security.auth.enabled`に`true`を設定する。顧客/社員それぞれ同一VMでの相乗りは考えない。社員専用にする時は起動時にプロファイル切り替え等で`extension.security.auth.admin`を`true`に設定する。
+`sample.context.security`直下。顧客(ROLE_USER) / 社員(ROLE_ADMIN)の2パターンを想定しています。それぞれのユーザ情報(UserDetails)提供手段は`sample.usecase.SecurityService`において定義しています。
+
+認証/認可の機能を有効にするには`application.yml`の`extension.security.auth.enabled`に`true`を設定してください(標準ではテスト用途にfalse)。顧客/社員それぞれ同一VMでの相乗りは考えていません。社員専用モードで起動する時は起動時のプロファイル切り替え等で`extension.security.auth.admin`を`true`に設定してください。
 
 #### 利用者監査
 
-`sample.context.audit`直下。アプリケーション層での暗黙的利用を想定。`Actor`の種別(User/System)によって書き出し先と情報を切り替える。運用時に行動証跡を取る際に利用。
+`sample.context.audit`直下。「いつ」「誰が」「何をしたか」の情報を顧客/システムそれぞれの視点で取得します。アプリケーション層での利用を想定しています。ログインした`Actor`の種別(User/System)によって書き出し先と情報を切り替えています。運用時に行動証跡を取る際に利用可能です。
 
 #### 例外
 
-汎用概念としてフィールド単位にスタックした例外を持つ`ValidationException`を提供。例外補足は末端のUI層で考える。アプリケーション層、ドメイン層では用途別の実行時例外をそのまま上位に投げるだけ。例外捕捉は`sample.context.rest`直下のコンポーネントでAOPを用いた暗黙的差し込みを行っている。
+汎用概念としてフィールド単位にスタックした例外を持つ`ValidationException`を提供します。  
+例外は末端のUI層でまとめて処理します。具体的にはアプリケーション層、ドメイン層では用途別の実行時例外をそのまま上位に投げるだけとし、例外捕捉は`sample.context.rest`直下のコンポーネントにおいてAOPを用いた暗黙的差し込みを行います。
 
 #### 日付/日時
 
-`sample.context.Timestamper`を経由してJava8で追加された`time`ライブラリを利用。祝日等を考慮した営業日算出はドメイン概念が含まれるので`sample.model.BusinessDayHandler`で定義。
+`sample.context.Timestamper`を経由してJava8で追加された`time`ライブラリを利用します。休日等を考慮した営業日算出はドメイン概念が含まれるので`sample.model.BusinessDayHandler`で別途定義しています。
 
 #### キャッシング
 
-`AccountService`等でSpringが提供する@Cacheableを利用。UI層かアプリケーション層のどちらかに統一した方が良いが、本サンプルではとりあえずアプリケーション層だけ付与。Hibernateの2nd/Queryキャッシュはユースケース内のスコープで必要になる以外は利用しない方が混乱を避けられる。
+`AccountService`等でSpringが提供する@Cacheableを利用しています。UI層かアプリケーション層のどちらかに統一した方が良いですが、本サンプルではアプリケーション層だけ付与しています。Hibernateの2nd/QueryキャッシュはEntity内で必要になる以外、利用しないことを推奨します。
 
 #### テスト
 
-パターンとしては通常のSpringコンテナを用いる2パターン(WebMockテスト/コンテナテスト)と、Hibernateだけに閉じた実行時間に優れたテスト(Entityのみが対象)の合計3パターンで考える。（それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport`）  
-テスト対象にServiceまで含めるてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけ。
+パターンとしては通常のSpringコンテナを用いる2パターン(WebMockテスト/コンテナテスト)と、Hibernateだけに閉じた実行時間に優れたテスト(Entityのみが対象)の合計3パターンで考えます。（それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport`）  
+テスト対象にServiceまで含めるてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけとしています。
 
 ### License
 

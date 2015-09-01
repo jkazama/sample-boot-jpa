@@ -34,7 +34,7 @@ public class SecurityService {
 			 */
 			@Override
 			public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-				return Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((loginId) ->
+				return (ActorDetails)Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((loginId) ->
 					service.getLoginByLoginId(loginId).flatMap((login) ->							
 						service.getAccount(login.getId()).map((account) -> {
 							List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
@@ -62,7 +62,7 @@ public class SecurityService {
 			 */
 			@Override
 			public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-				return Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((staffId) ->
+				return (ActorDetails)Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan).flatMap((staffId) ->
 					service.getStaff(staffId).map((staff) -> {
 						List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
 							new SimpleGrantedAuthority("ROLE_ADMIN") }));

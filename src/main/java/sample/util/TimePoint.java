@@ -3,9 +3,8 @@ package sample.util;
 import java.io.Serializable;
 import java.time.*;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.Value;
+import sample.model.constraints.*;
 
 /**
  * 日付と日時のペアを表現します。
@@ -15,10 +14,10 @@ import lombok.Value;
 public class TimePoint implements Serializable {
 	private static final long serialVersionUID = 1L;
 	/** 日付(営業日) */
-	@NotNull
+	@ISODate
 	private LocalDate day;
 	/** 日付におけるシステム日時 */
-	@NotNull
+	@ISODateTime
 	private LocalDateTime date;
 	
 	public LocalDate day() {
