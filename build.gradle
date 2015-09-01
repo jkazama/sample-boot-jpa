@@ -10,7 +10,7 @@ buildscript {
 apply plugin: "java"
 apply plugin: "spring-boot"
 
-version = "0.1.0"
+version = "0.1.1"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -23,7 +23,7 @@ javadoc {
 }
 
 test {
-    include "**/model/**", "**/controller/**"
+    include "**/model/**", "**/controller/**", "**/util/**", "**/context/**"
 }
 
 repositories {
