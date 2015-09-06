@@ -39,6 +39,8 @@ import sample.context.security.SecurityConfig.SecurityProperties;
  * <p>認証はベーシック認証ではなく、HttpSessionを用いた従来型のアプローチで定義しています。
  * <p>設定はパターンを決め打ちしている関係上、既存の定義ファイルをラップしています。
  * securityプリフィックスではなくextension.securityプリフィックスのものを利用してください。
+ * <p>low: HttpSessionを利用しているため、横スケールする際に問題となります。その際は上位のL/Bで制御するか、
+ * SpringSession(HttpSessionの実装をRedis等でサポート)を利用する事でコード変更無しに対応が可能となります。
  * <p>low: 本サンプルでは無効化していますが、CSRF対応はプロジェクト毎に適切な利用を検討してください。
  */
 @Setter
