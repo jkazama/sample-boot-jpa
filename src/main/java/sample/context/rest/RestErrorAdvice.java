@@ -154,10 +154,10 @@ public class RestErrorAdvice {
 
 		public ErrorHolder(final MessageSource msg, final List<Warn> warns) {
 			this.msg = msg;
-			warns.stream().filter((warn) -> warn.global()).map((warn) ->
-				errorGlobal(warn.getMessage()));
-			warns.stream().filter((warn) -> !warn.global()).map((warn) ->
-				error(warn.getField(), warn.getMessage()));
+			warns.forEach((warn) -> {
+				if (warn.global()) errorGlobal(warn.getMessage());
+				else error(warn.getField(), warn.getMessage()); 
+			});
 		}
 
 		public ErrorHolder(final MessageSource msg, String globalMsgKey, String... msgArgs) {
