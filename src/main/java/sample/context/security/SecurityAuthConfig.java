@@ -26,7 +26,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.*;
 
 import lombok.*;
 import sample.ValidationException.ErrorKeys;
@@ -76,6 +76,10 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 	/** ThreadLocalスコープの利用者セッション */
 	@Autowired
 	private ActorSession actorSession;
+	/** CORS利用時のフィルタ */
+	@Autowired(required = false)
+	private CorsFilter corsFilter;
+	/** 認証配下に置くServletFilter */
 	@Autowired(required = false)
 	private SecurityFilters filters;
 
@@ -117,6 +121,9 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 			.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
 		http
 			.addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
+		if (corsFilter != null) {
+			http.addFilterAfter(corsFilter, UsernamePasswordAuthenticationFilter.class);
+		}
 		if (filters != null) {
 			for (Filter filter : filters.filters()) {
 				http.addFilterAfter(filter, ActorSessionFilter.class);
