@@ -122,7 +122,7 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		http
 			.addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
 		if (corsFilter != null) {
-			http.addFilterAfter(corsFilter, UsernamePasswordAuthenticationFilter.class);
+			http.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class);
 		}
 		if (filters != null) {
 			for (Filter filter : filters.filters()) {
