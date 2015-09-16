@@ -223,7 +223,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 	@AllArgsConstructor
 	public static class RegCashOut implements Dto {
 		private static final long serialVersionUID = 1L;
-		@IdStr
+		@IdStrEmpty
 		private String accountId;
 		@Currency
 		private String currency;
