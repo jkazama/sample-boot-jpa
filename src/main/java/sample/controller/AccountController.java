@@ -26,7 +26,7 @@ public class AccountController extends ControllerSupport {
 	private AccountService service;
 	
 	/** 口座情報を取得します。 */
-	@RequestMapping(value = "/loginStaff/")
+	@RequestMapping(value = "/loginStatus/")
 	public static LoginAccount loadLoginAccount() {
 		ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
 		Actor actor = actorDetails.actor();
