@@ -172,6 +172,8 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		 * </ul> 
 		 */
 		private boolean admin = false;
+		/** 認証が有効な時はtrue */
+		private boolean enabled = true;
 	}
 	
 	/**
