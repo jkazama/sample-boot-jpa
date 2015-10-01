@@ -1,5 +1,6 @@
 package sample.controller.admin;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.validation.Valid;
@@ -14,6 +15,7 @@ import sample.ValidationException.ErrorKeys;
 import sample.context.actor.Actor;
 import sample.context.security.SecurityActorFinder;
 import sample.context.security.SecurityActorFinder.ActorDetails;
+import sample.context.security.SecurityConfig.SecurityProperties;
 import sample.controller.ControllerSupport;
 import sample.model.master.Holiday.RegisterHoliday;
 import sample.usecase.MasterAdminService;
@@ -28,13 +30,25 @@ public class MasterAdminController extends ControllerSupport {
 
 	@Autowired
 	private MasterAdminService service;
+	@Autowired
+	private SecurityProperties securityProps;
 	
-	/** ログイン情報を取得します。 */
-	@RequestMapping(value = "/loginStaff/")
-	public static LoginStaff loadLoginStaff() {
-		ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
-		Actor actor = actorDetails.actor();
-		return new LoginStaff(actor.getId(), actor.getName(), actorDetails.getAuthorityIds());
+	/** 社員ログイン状態を確認します。 */
+	@RequestMapping(value = "/loginStatus")
+	public boolean loginStatus() {
+		return true;
+	}
+	
+	/** 社員ログイン情報を取得します。 */
+	@RequestMapping(value = "/loginStaff")
+	public LoginStaff loadLoginStaff() {
+		if (securityProps.auth().isEnabled()) {
+			ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
+			Actor actor = actorDetails.actor();
+			return new LoginStaff(actor.getId(), actor.getName(), actorDetails.getAuthorityIds());
+		} else { // for dummy login
+			return new LoginStaff("sample", "sample", new ArrayList<>());
+		}
 	}
 	
 	/** クライアント利用用途に絞ったパラメタ */

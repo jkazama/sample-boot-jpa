@@ -30,8 +30,14 @@ public class AccountController extends ControllerSupport {
 	@Autowired
 	private SecurityProperties securityProps;
 	
-	/** 口座情報を取得します。 */
+	/** ログイン状態を確認します。 */
 	@RequestMapping(value = "/loginStatus")
+	public boolean loginStatus() {
+		return true;
+	}
+	
+	/** 口座ログイン情報を取得します。 */
+	@RequestMapping(value = "/loginAccount")
 	public LoginAccount loadLoginAccount() {
 		if (securityProps.auth().isEnabled()) {
 			ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
