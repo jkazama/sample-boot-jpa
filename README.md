@@ -9,6 +9,8 @@ sample-boot-hibernate
 
 考え方の骨子については以前発表した資料([Spring Bootを用いたドメイン駆動設計](http://www.slideshare.net/jkazama/jsug-20141127))を参照してください。
 
+UI側の実装サンプルについては[sample-ui-vue](https://github.com/jkazama/sample-ui-vue) / [sample-ui-react](https://github.com/jkazama/sample-ui-react)を参照してください。
+
 ---
 
 本サンプルはSpring Bootを用いたドメインモデリングの実装例としても利用できます。実際にそれなりの規模の案件で運用されていた実装アプローチなので、モデリングする際の参考事例としてみてもらえればと思います。  
