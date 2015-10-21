@@ -7,9 +7,11 @@ import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.*;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.*;
@@ -17,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Setter;
 import sample.ValidationException;
+import sample.context.ResourceBundleHandler;
 import sample.context.Timestamper;
+import sample.context.actor.ActorSession;
 import sample.context.report.ReportFile;
 
 /**
@@ -31,14 +35,29 @@ public class ControllerSupport {
 	@Autowired
 	private MessageSource msg;
 	@Autowired
+	private ResourceBundleHandler label;
+	@Autowired
 	private Timestamper time;
+	@Autowired
+	private ActorSession session;
 
 	/** i18nメッセージ変換を行います。 */
 	protected String msg(String message) {
-		return msg(message, Locale.getDefault());
+		return msg(message, session.actor().getLocale());
 	}
 	protected String msg(String message, final Locale locale) {
 		return msg.getMessage(message, new String[0], locale);
+	}
+	
+	/**
+	 * リソースファイル([basename].properties)内のキー/値のMap情報を返します。
+	 * <p>API呼び出し側でi18n対応を行いたい時などに利用してください。
+	 */
+	protected Map<String, String> labels(String basename) {
+		return labels(basename, session.actor().getLocale());
+	}
+	protected Map<String, String> labels(String basename, final Locale locale) {
+		return label.labels(basename, locale);
 	}
 
 	/** メッセージリソースアクセサを返します。 */
