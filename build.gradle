@@ -10,7 +10,7 @@ buildscript {
 apply plugin: "java"
 apply plugin: "spring-boot"
 
-version = "0.1.7"
+version = "0.1.8"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -55,7 +55,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "2.7"
+    gradleVersion = "2.8"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

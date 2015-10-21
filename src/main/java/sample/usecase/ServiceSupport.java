@@ -1,10 +1,11 @@
 package sample.usecase;
 
-import java.util.Locale;
 import java.util.function.Supplier;
 
-import org.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -14,7 +15,7 @@ import sample.context.actor.Actor;
 import sample.context.audit.AuditHandler;
 import sample.context.lock.IdLockHandler;
 import sample.context.lock.IdLockHandler.LockType;
-import sample.context.orm.*;
+import sample.context.orm.DefaultRepository;
 import sample.model.BusinessDayHandler;
 import sample.usecase.mail.ServiceMailDeliver;
 import sample.usecase.report.ServiceReportExporter;
@@ -107,7 +108,7 @@ public abstract class ServiceSupport {
 
 	/** i18nメッセージ変換を行います。 */
 	protected String msg(String message) {
-		return msg.getMessage(message, null, message, Locale.getDefault());
+		return msg.getMessage(message, null, message, actor().getLocale());
 	}
 
 	/** 利用者を返します。 */

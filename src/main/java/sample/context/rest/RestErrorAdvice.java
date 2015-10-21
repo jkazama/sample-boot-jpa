@@ -5,13 +5,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.*;
+import javax.validation.ConstraintViolationException;
 
-import org.apache.commons.logging.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.*;
+import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import sample.ValidationException;
 import sample.ValidationException.*;
+import sample.context.actor.ActorSession;
 
 /**
  * REST用の例外Map変換サポート。
@@ -32,40 +36,46 @@ public class RestErrorAdvice {
 
 	@Autowired
 	private MessageSource msg;
+	@Autowired
+	private ActorSession session;
 
 	/** Servlet例外 */
 	@ExceptionHandler(ServletRequestBindingException.class)
 	public ResponseEntity<Map<String, String[]>> handleServletRequestBinding(ServletRequestBindingException e) {
 		log.warn(e.getMessage());
-		return new ErrorHolder(msg, "error.ServletRequestBinding").result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), "error.ServletRequestBinding").result(HttpStatus.BAD_REQUEST);
+	}
+	
+	private Locale locale() {
+		return session.actor().getLocale();
 	}
 
 	/** メディアタイプのミスマッチ例外 */
 	@ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
 	public ResponseEntity<Map<String, String[]>> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException e) {
 		log.warn(e.getMessage());
-		return new ErrorHolder(msg, "error.HttpMediaTypeNotAcceptable").result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), "error.HttpMediaTypeNotAcceptable").result(HttpStatus.BAD_REQUEST);
 	}
 
 	/** 楽観的排他(Hibernateのバージョンチェック)の例外 */
 	@ExceptionHandler(OptimisticLockingFailureException.class)
 	public ResponseEntity<Map<String, String[]>> handleOptimisticLockingFailureException(OptimisticLockingFailureException e) {
 		log.warn(e.getMessage(), e);
-		return new ErrorHolder(msg, "error.OptimisticLockingFailure").result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), "error.OptimisticLockingFailure").result(HttpStatus.BAD_REQUEST);
 	}
 	
 	/** 権限例外 */
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<Map<String, String[]>> handleAccessDeniedException(AccessDeniedException e) {
 		log.warn(e.getMessage());
-		return new ErrorHolder(msg, ErrorKeys.AccessDenied).result(HttpStatus.UNAUTHORIZED);
+		return new ErrorHolder(msg, locale(), ErrorKeys.AccessDenied).result(HttpStatus.UNAUTHORIZED);
 	}
 	
 	/** 指定した情報が存在しない例外 */
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<Map<String, String[]>> handleEntityNotFoundException(EntityNotFoundException e) {
 		log.warn(e.getMessage(), e);
-		return new ErrorHolder(msg, ErrorKeys.EntityNotFound).result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), ErrorKeys.EntityNotFound).result(HttpStatus.BAD_REQUEST);
 	}
 
 	/** BeanValidation(JSR303)の制約例外 */
@@ -74,7 +84,7 @@ public class RestErrorAdvice {
 		log.warn(e.getMessage());
 		Warns warns = Warns.init();
 		e.getConstraintViolations().forEach((v) -> warns.add(v.getPropertyPath().toString(), v.getMessage()));
-		return new ErrorHolder(msg, warns.list()).result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), warns.list()).result(HttpStatus.BAD_REQUEST);
 	}
 
 	/** Controllerへのリクエスト紐付け例外 */
@@ -100,7 +110,7 @@ public class RestErrorAdvice {
 			}
 			warns.add(field, message, args.toArray(new String[0]));
 		});
-		return new ErrorHolder(msg, warns.list()).result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), warns.list()).result(HttpStatus.BAD_REQUEST);
 	}
 
 	protected String bindField(String field) {
@@ -111,7 +121,7 @@ public class RestErrorAdvice {
 	@ExceptionHandler(ValidationException.class)
 	public ResponseEntity<Map<String, String[]>> handleValidation(ValidationException e) {
 		log.warn(e.getMessage());
-		return new ErrorHolder(msg, e).result(HttpStatus.BAD_REQUEST);
+		return new ErrorHolder(msg, locale(), e).result(HttpStatus.BAD_REQUEST);
 	}
 
 	/** IO例外（Tomcatの Broken pipe はサーバー側の責務ではないので除外しています) */
@@ -129,7 +139,7 @@ public class RestErrorAdvice {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, String[]>> handleException(Exception e) {
 		log.error("予期せぬ例外が発生しました。", e);
-		return new ErrorHolder(msg, "error.Exception", "サーバー側で問題が発生した可能性があります。")
+		return new ErrorHolder(msg, locale(), "error.Exception", "サーバー側で問題が発生した可能性があります。")
 				.result(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
@@ -143,32 +153,36 @@ public class RestErrorAdvice {
 	public static class ErrorHolder {
 		private Map<String, List<String>> errors = new HashMap<>();
 		private MessageSource msg;
+		private Locale locale;
 
-		public ErrorHolder(final MessageSource msg) {
+		public ErrorHolder(final MessageSource msg, final Locale locale) {
 			this.msg = msg;
+			this.locale = locale;
 		}
 
-		public ErrorHolder(final MessageSource msg, final ValidationException e) {
-			this(msg, e.list());
+		public ErrorHolder(final MessageSource msg, final Locale locale, final ValidationException e) {
+			this(msg, locale, e.list());
 		}
 
-		public ErrorHolder(final MessageSource msg, final List<Warn> warns) {
+		public ErrorHolder(final MessageSource msg, final Locale locale, final List<Warn> warns) {
 			this.msg = msg;
+			this.locale = locale;
 			warns.forEach((warn) -> {
 				if (warn.global()) errorGlobal(warn.getMessage());
 				else error(warn.getField(), warn.getMessage()); 
 			});
 		}
 
-		public ErrorHolder(final MessageSource msg, String globalMsgKey, String... msgArgs) {
+		public ErrorHolder(final MessageSource msg, final Locale locale, String globalMsgKey, String... msgArgs) {
 			this.msg = msg;
+			this.locale = locale;
 			errorGlobal(globalMsgKey, msgArgs);
 		}
 
 		/** グローバルな例外(フィールドキーが空)を追加します。 */
 		public ErrorHolder errorGlobal(String msgKey, String defaultMsg, String... msgArgs) {
 			if (!errors.containsKey("")) errors.put("", new ArrayList<>());
-			errors.get("").add(msg.getMessage(msgKey, msgArgs, defaultMsg, Locale.getDefault()));
+			errors.get("").add(msg.getMessage(msgKey, msgArgs, defaultMsg, locale));
 			return this;
 		}
 
@@ -180,7 +194,7 @@ public class RestErrorAdvice {
 		/** フィールド単位の例外を追加します。 */
 		public ErrorHolder error(String field, String msgKey, String... msgArgs) {
 			if (!errors.containsKey(field)) errors.put(field, new ArrayList<>());
-			errors.get(field).add(msg.getMessage(msgKey, msgArgs, msgKey, Locale.getDefault()));
+			errors.get(field).add(msg.getMessage(msgKey, msgArgs, msgKey, locale));
 			return this;
 		}
 
