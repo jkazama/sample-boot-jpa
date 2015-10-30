@@ -1,37 +1,47 @@
 package sample.context.security;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Locale;
+import java.util.Optional;
 
 import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.*;
-import org.springframework.security.config.annotation.web.configuration.*;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.*;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.*;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.filter.GenericFilterBean;
 
 import lombok.*;
 import sample.ValidationException.ErrorKeys;
 import sample.context.actor.ActorSession;
-import sample.context.security.SecurityActorFinder.*;
+import sample.context.security.SecurityActorFinder.ActorDetails;
+import sample.context.security.SecurityActorFinder.SecurityActorService;
 import sample.context.security.SecurityConfig.SecurityProperties;
 
 /**
@@ -122,7 +132,7 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 		http
 			.addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
 		if (corsFilter != null) {
-			http.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class);
+			http.addFilterBefore(corsFilter, LogoutFilter.class);
 		}
 		if (filters != null) {
 			for (Filter filter : filters.filters()) {
