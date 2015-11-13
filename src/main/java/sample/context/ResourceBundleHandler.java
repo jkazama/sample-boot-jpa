@@ -30,8 +30,11 @@ public class ResourceBundleHandler {
 		return get(basename, Locale.getDefault());
 	}
 	public synchronized ResourceBundle get(String basename, Locale locale) {
-		bundleMap.putIfAbsent(basename, ResourceBundleFactory.create(basename, locale, encoding));
-		return bundleMap.get(basename);
+		bundleMap.putIfAbsent(keyname(basename, locale), ResourceBundleFactory.create(basename, locale, encoding));
+		return bundleMap.get(keyname(basename, locale));
+	}
+	private String keyname(String basename, Locale locale) {
+		return basename + "_" + locale.toLanguageTag();
 	}
 
 	/**

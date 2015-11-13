@@ -3,8 +3,6 @@ package sample.util;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.ibm.icu.text.Transliterator;
 
 /** 各種型/文字列変換をサポートします。(ICU4Jライブラリに依存しています) */
@@ -77,9 +75,17 @@ public abstract class ConvertUtils {
 		return zenkakuToHan(hiraganaToZenKana(text));
 	}
 
-	/** 文字列を左から指定の文字数で取得します。 */
+	/** 指定した文字列を抽出します。(サロゲートペア対応) */
+	public static String substring(String text, int start, int end) {
+		if (text == null) return null;
+		int spos = text.offsetByCodePoints(0, start);
+		int epos = text.length() < end ? text.length() : end;
+		return text.substring(spos, text.offsetByCodePoints(spos, epos - start));
+	}
+
+	/** 文字列を左から指定の文字数で取得します。(サロゲートペア対応) */
 	public static String left(String text, int len) {
-		return StringUtils.left(text, len);
+		return substring(text, 0, len);
 	}
 
 	/** 文字列を左から指定のバイト数で取得します。 */

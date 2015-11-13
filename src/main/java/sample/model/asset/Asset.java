@@ -32,7 +32,7 @@ public class Asset {
 	 */
 	public boolean canWithdraw(final OrmRepository rep, String currency, BigDecimal absAmount, LocalDate valueDay) {
 		Calculator calc = Calculator.of(CashBalance.getOrNew(rep, id, currency).getAmount());
-		Cashflow.findUnrealize(rep, valueDay).stream().forEach((cf) -> calc.add(cf.getAmount()));
+		Cashflow.findUnrealize(rep, id, currency, valueDay).stream().forEach((cf) -> calc.add(cf.getAmount()));
 		CashInOut.findUnprocessed(rep, id, currency, true).stream().forEach((withdrawal) ->
 			calc.add(withdrawal.getAbsAmount().negate()));
 		calc.add(absAmount.negate());
