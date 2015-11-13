@@ -109,10 +109,10 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 	}
 	
 	/**
-	 * 指定受渡日時点で未実現のキャッシュフロー一覧を検索します。
+	 * 指定受渡日時点で未実現のキャッシュフロー一覧を検索します。(口座通貨別)
 	 */
-	public static List<Cashflow> findUnrealize(final OrmRepository rep, LocalDate valueDay) {
-		return rep.tmpl().find("from Cashflow c where c.valueDay<=?1 and c.statusType in ?2 order by c.id", valueDay, ActionStatusType.unprocessingTypes);
+	public static List<Cashflow> findUnrealize(final OrmRepository rep, String accountId, String currency, LocalDate valueDay) {
+		return rep.tmpl().find("from Cashflow c where c.accountId=?1 and c.currency=?2 and c.valueDay<=?3 and c.statusType in ?4 order by c.id", accountId, currency, valueDay, ActionStatusType.unprocessingTypes);
 	}
 
 	/**

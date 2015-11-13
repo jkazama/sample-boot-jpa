@@ -3,8 +3,6 @@ package sample.util;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.ibm.icu.text.Transliterator;
 
 /** 各種型/文字列変換をサポートします。(ICU4Jライブラリに依存しています) */
