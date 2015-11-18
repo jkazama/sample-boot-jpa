@@ -13,7 +13,7 @@ import lombok.Setter;
 import sample.context.Timestamper;
 import sample.context.orm.DefaultRepository;
 import sample.model.master.Holiday;
-import sample.model.master.Holiday.RegisterHoliday;
+import sample.model.master.Holiday.RegHoliday;
 import sample.util.DateUtils;
 
 /**
@@ -80,7 +80,7 @@ public class BusinessDayHandler {
 
 		@Transactional(DefaultRepository.beanNameTx)
 		@CacheEvict(cacheNames="HolidayAccessor.getHoliday", allEntries=true)
-		public void register(final DefaultRepository rep, final RegisterHoliday p) {
+		public void register(final DefaultRepository rep, final RegHoliday p) {
 			Holiday.register(rep, p);
 		}
 		

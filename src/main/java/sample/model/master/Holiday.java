@@ -71,7 +71,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	}
 
 	/** 休日マスタを登録します。 */
-	public static void register(final OrmRepository rep, final RegisterHoliday p) {
+	public static void register(final OrmRepository rep, final RegHoliday p) {
 		rep.tmpl().execute("delete from Holiday h where h.category=?1 and h.day between ?2 and ?3",
 				p.category, LocalDate.ofYearDay(p.year, 1), DateUtils.dayTo(p.year));
 		p.list.forEach(v -> v.create(p).save(rep));
@@ -81,16 +81,16 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class RegisterHoliday implements Dto {
+	public static class RegHoliday implements Dto {
 		private static final long serialVersionUID = 1l;
 		@CategoryEmpty
 		private String category = categoryDefault;
 		@Year
 		private int year;
 		@Valid
-		private List<RegisterHolidayItem> list;
+		private List<RegHolidayItem> list;
 		
-		public RegisterHoliday(int year, final List<RegisterHolidayItem> list) {
+		public RegHoliday(int year, final List<RegHolidayItem> list) {
 			this.year = year;
 			this.list = list;
 		}
@@ -100,14 +100,14 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
-	public static class RegisterHolidayItem implements Dto {
+	public static class RegHolidayItem implements Dto {
 		private static final long serialVersionUID = 1l;
 		@ISODate
 		private LocalDate day;
 		@Name(max = 40)
 		private String name;
 
-		public Holiday create(RegisterHoliday p) {
+		public Holiday create(RegHoliday p) {
 			Holiday holiday = new Holiday();
 			holiday.setCategory(p.category);
 			holiday.setDay(day);
