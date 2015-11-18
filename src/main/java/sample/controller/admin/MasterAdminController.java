@@ -17,7 +17,7 @@ import sample.context.security.SecurityActorFinder;
 import sample.context.security.SecurityActorFinder.ActorDetails;
 import sample.context.security.SecurityConfig.SecurityProperties;
 import sample.controller.ControllerSupport;
-import sample.model.master.Holiday.RegisterHoliday;
+import sample.model.master.Holiday.RegHoliday;
 import sample.usecase.MasterAdminService;
 
 /**
@@ -63,7 +63,7 @@ public class MasterAdminController extends ControllerSupport {
 
 	/** 休日を登録します。 */
 	@RequestMapping(value = "/holiday/", method = RequestMethod.POST)
-	public ResponseEntity<Void> registerHoliday(@Valid RegisterHoliday p) {
+	public ResponseEntity<Void> registerHoliday(@Valid RegHoliday p) {
 		return resultEmpty(() -> service.registerHoliday(p)); 
 	}
 	

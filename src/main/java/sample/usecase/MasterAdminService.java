@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import sample.context.orm.DefaultRepository;
 import sample.model.master.*;
-import sample.model.master.Holiday.RegisterHoliday;
+import sample.model.master.Holiday.RegHoliday;
 
 /**
  * サービスマスタドメインに対する社内ユースケース処理。
@@ -30,7 +30,7 @@ public class MasterAdminService extends ServiceSupport {
 		return StaffAuthority.find(rep(), staffId);
 	}
 	
-	public void registerHoliday(final RegisterHoliday p) {
+	public void registerHoliday(final RegHoliday p) {
 		audit().audit("休日情報を登録する", () -> tx(() ->
 			Holiday.register(rep(), p)));
 	}

@@ -1,5 +1,6 @@
 package sample.client;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 
@@ -88,7 +89,9 @@ public class SampleClient {
 		
 		public ClientHttpResponse dump(ClientHttpResponse res) throws Exception {
 			System.out.println(String.format("status: %d, text: %s", res.getRawStatusCode(), res.getStatusText()));
-			System.out.println(IOUtils.toString(res.getBody()));
+			try {
+				System.out.println(IOUtils.toString(res.getBody()));
+			} catch (IOException e) { /* nothing. */ }
 			return res;
 		}
 

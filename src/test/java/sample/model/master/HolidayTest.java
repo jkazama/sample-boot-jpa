@@ -47,10 +47,10 @@ public class HolidayTest extends EntityTestSupport {
 
 	@Test
 	public void 休日を登録する() {
-		List<RegisterHolidayItem> items = Arrays.asList("2016-09-21", "2016-09-22", "2016-09-23")
-			.stream().map((s) -> new RegisterHolidayItem(DateUtils.day(s), "休日")).collect(Collectors.toList());
+		List<RegHolidayItem> items = Arrays.asList("2016-09-21", "2016-09-22", "2016-09-23")
+			.stream().map((s) -> new RegHolidayItem(DateUtils.day(s), "休日")).collect(Collectors.toList());
 		tx(() -> {
-			Holiday.register(rep, new RegisterHoliday(2016, items));
+			Holiday.register(rep, new RegHoliday(2016, items));
 			assertThat(Holiday.find(rep, 2016), hasSize(3));
 		});
 	}

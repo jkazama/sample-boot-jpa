@@ -124,13 +124,22 @@ public class ValidationException extends RuntimeException {
 
 	/** 審査例外で用いるメッセージキー定数 */
 	public static interface ErrorKeys {
+		/** サーバー側で問題が発生した可能性があります */
 		String Exception = "error.Exception";
+		/** 情報が見つかりませんでした */
 		String EntityNotFound = "error.EntityNotFoundException";
+		/** ログイン状態が有効ではありません */
 		String Authentication = "error.Authentication";
+		/** 対象機能の利用が認められていません */
 		String AccessDenied = "error.AccessDeniedException";
 		
+		/** ログインに失敗しました */
 		String Login = "error.login";
+		/** 既に登録されているIDです */
 		String DuplicateId = "error.duplicateId";
+		
+		/** 既に処理済の情報です */
+		String ActionUnprocessing = "error.ActionStatusType.unprocessing";
 	}
 	
 }
