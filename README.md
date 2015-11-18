@@ -175,8 +175,8 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
 | `spring-boot-starter-*` | 1.3.0    | Spring Boot基盤 (actuator/security/aop/cache/web) |
-| `spring-orm`            | 4.2.0    | Spring4のORM概念サポート |
-| `hibernate-*`           | 5.0.0    | DB永続化サポート (core/java8/ehcache) |
+| `spring-orm`            | 4.2.3    | Spring4のORM概念サポート |
+| `hibernate-*`           | 5.0.3    | DB永続化サポート (core/java8/ehcache) |
 | `ehcache-core`          | 2.6.+    | 最新のEhCache設定記法を利用するため |
 | `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
 | `jackson-datatype-*`    | 2.6.+    | JSON変換時のJava8/Hibernate対応 |
@@ -197,6 +197,8 @@ Spring BootではFat Jar(ライブラリなども内包するjar)を作成する
 トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。単純なreadOnlyな処理のみ`@Transactional([Bean名称])`を利用してメソッド単位の対応を取ります。
 
 スキーマは標準のビジネスロジック用途(`DefaultRepository`)とシステム用途(`SystemRepository`)の2種類を想定しています。Entity実装ではスキーマに依存させず、引数に渡す側(主にアプリケーション層)で判断させます。
+
+JPA標準の機能だけでは十分ではないケースがあるため、HibernateORM依存を明確にしてHibernate固有機能を利用できるようにしています。
 
 #### 認証/認可
 
