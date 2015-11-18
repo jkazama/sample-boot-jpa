@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import lombok.*;
 import sample.ActionStatusType;
+import sample.ValidationException.ErrorKeys;
 import sample.context.Dto;
 import sample.context.orm.*;
 import sample.model.asset.type.CashflowType;
@@ -76,8 +77,8 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 	/** キャッシュフローを処理済みにして残高へ反映します。 */
 	public Cashflow realize(final OrmRepository rep) {
 		validate((v) -> {
-			v.verify(canRealize(rep), "error.Cashflow.realizeDay");
-			v.verify(statusType.isUnprocessing(), "error.ActionStatusType.unprocessing"); // 「既に処理中/処理済です」
+			v.verify(canRealize(rep), AssetErrorKeys.CashflowRealizeDay);
+			v.verify(statusType.isUnprocessing(), ErrorKeys.ActionUnprocessing); // 「既に処理中/処理済です」
 		});
 
 		setStatusType(ActionStatusType.PROCESSED);
@@ -92,7 +93,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 	 * low: 実際はエラー事由などを引数に取って保持する
 	 */
 	public Cashflow error(final OrmRepository rep) {
-		validate((v) -> v.verify(statusType.isUnprocessed(), "error.ActionStatusType.unprocessing"));
+		validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
 
 		setStatusType(ActionStatusType.ERROR);
 		return update(rep);
@@ -130,7 +131,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 		TimePoint now = rep.dh().time().tp();
 		Validator.validate((v) ->
 			v.checkField(now.beforeEqualsDay(p.getValueDay()),
-				"valueDay", "error.Cashflow.beforeEqualsDay"));
+				"valueDay", AssetErrorKeys.CashflowBeforeEqualsDay));
 		Cashflow cf = p.create(now).save(rep);
 		return cf.canRealize(rep) ? cf.realize(rep) : cf;
 	}

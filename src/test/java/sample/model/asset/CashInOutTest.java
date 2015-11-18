@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import org.junit.Test;
 
 import sample.*;
+import sample.ValidationException.ErrorKeys;
+import sample.model.DomainErrorKeys;
 import sample.model.account.*;
 import sample.model.asset.CashInOut.*;
 import sample.model.asset.type.CashflowType;
@@ -76,7 +78,7 @@ public class CashInOutTest extends EntityTestSupport {
 				CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, new BigDecimal("1001")));
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.CashInOut.withdrawAmount"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutWithdrawAmount));
 			}
 	
 			// 0円出金の出金依頼 [例外]
@@ -84,7 +86,7 @@ public class CashInOutTest extends EntityTestSupport {
 				CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, BigDecimal.ZERO));
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.domain.AbsAmount.zero"));
+				assertThat(e.getMessage(), is(DomainErrorKeys.AbsAmountZero));
 			}
 	
 			// 通常の出金依頼
@@ -107,7 +109,7 @@ public class CashInOutTest extends EntityTestSupport {
 				CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, new BigDecimal("701")));
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.CashInOut.withdrawAmount"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutWithdrawAmount));
 			}
 		});
 	}
@@ -128,7 +130,7 @@ public class CashInOutTest extends EntityTestSupport {
 				today.cancel(rep);
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.CashInOut.beforeEqualsDay"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutBeforeEqualsDay));
 			}
 		});
 	}
@@ -149,7 +151,7 @@ public class CashInOutTest extends EntityTestSupport {
 				today.error(rep);
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.ActionStatusType.unprocessing"));
+				assertThat(e.getMessage(), is(ErrorKeys.ActionUnprocessing));
 			}
 		});
 	}
@@ -166,7 +168,7 @@ public class CashInOutTest extends EntityTestSupport {
 				future.process(rep);
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.CashInOut.afterEqualsDay"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutAfterEqualsDay));
 			}
 	
 			// 発生日到来処理

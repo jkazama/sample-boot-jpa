@@ -10,9 +10,10 @@ import javax.validation.constraints.NotNull;
 
 import lombok.*;
 import sample.ActionStatusType;
+import sample.ValidationException.ErrorKeys;
 import sample.context.*;
 import sample.context.orm.*;
-import sample.model.BusinessDayHandler;
+import sample.model.*;
 import sample.model.account.FiAccount;
 import sample.model.asset.Cashflow.RegCashflow;
 import sample.model.asset.type.CashflowType;
@@ -100,8 +101,8 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		TimePoint now = rep.dh().time().tp();
 		// 事前審査
 		validate((v) -> {
-			v.verify(statusType.isUnprocessed(), "error.ActionStatusType.unprocessing");
-			v.verify(now.afterEqualsDay(eventDay), "error.CashInOut.afterEqualsDay");
+			v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing);
+			v.verify(now.afterEqualsDay(eventDay), AssetErrorKeys.CashInOutAfterEqualsDay);
 		});
 		// 処理済状態を反映
 		setStatusType(ActionStatusType.PROCESSED);
@@ -125,8 +126,8 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		TimePoint now = rep.dh().time().tp();
 		// 事前審査
 		validate((v) -> {
-			v.verify(statusType.isUnprocessing(), "error.ActionStatusType.unprocessing");
-			v.verify(now.beforeDay(eventDay), "error.CashInOut.beforeEqualsDay");			
+			v.verify(statusType.isUnprocessing(), ErrorKeys.ActionUnprocessing);
+			v.verify(now.beforeDay(eventDay), AssetErrorKeys.CashInOutBeforeEqualsDay);
 		});
 		// 取消状態を反映
 		setStatusType(ActionStatusType.CANCELLED);
@@ -139,7 +140,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 	 * low: 実際はエラー事由などを引数に取って保持する
 	 */
 	public CashInOut error(final OrmRepository rep) {
-		validate((v) -> v.verify(statusType.isUnprocessed(), "error.ActionStatusType.unprocessing"));
+		validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
 
 		setStatusType(ActionStatusType.ERROR);
 		return update(rep);
@@ -190,9 +191,9 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
 		
 		// 事前審査
 		Validator.validate((v) -> {
-			v.verifyField(0 < p.getAbsAmount().signum(), "absAmount", "error.domain.AbsAmount.zero");
+			v.verifyField(0 < p.getAbsAmount().signum(), "absAmount", DomainErrorKeys.AbsAmountZero);
 			boolean canWithdraw = Asset.by(p.getAccountId()).canWithdraw(rep, p.getCurrency(), p.getAbsAmount(), valueDay);
-			v.verifyField(canWithdraw, "absAmount", "error.CashInOut.withdrawAmount");
+			v.verifyField(canWithdraw, "absAmount", AssetErrorKeys.CashInOutWithdrawAmount);
 		});
 
 		// 出金依頼情報を登録

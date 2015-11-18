@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import org.junit.Test;
 
 import sample.*;
+import sample.ValidationException.ErrorKeys;
 
 //low: 簡易な正常系検証が中心。依存するCashBalanceの単体検証パスを前提。
 public class CashflowTest extends EntityTestSupport {
@@ -29,7 +30,7 @@ public class CashflowTest extends EntityTestSupport {
 				Cashflow.register(rep, fixtures.cfReg("test1", "1000", baseMinus1Day));
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.Cashflow.beforeEqualsDay"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashflowBeforeEqualsDay));
 			}
 			// 翌日受渡でキャッシュフロー発生
 			assertThat(Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day)),
@@ -56,7 +57,7 @@ public class CashflowTest extends EntityTestSupport {
 				cfFuture.realize(rep);
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.Cashflow.realizeDay"));
+				assertThat(e.getMessage(), is(AssetErrorKeys.CashflowRealizeDay));
 			}
 			
 			// キャッシュフローの残高反映検証。  0 + 1000 = 1000
@@ -70,7 +71,7 @@ public class CashflowTest extends EntityTestSupport {
 				cfNormal.realize(rep);
 				fail();
 			} catch (ValidationException e) {
-				assertThat(e.getMessage(), is("error.ActionStatusType.unprocessing"));
+				assertThat(e.getMessage(), is(ErrorKeys.ActionUnprocessing));
 			}
 			
 			// 過日キャッシュフローの残高反映検証。 1000 + 2000 = 3000

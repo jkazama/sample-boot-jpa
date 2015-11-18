@@ -139,7 +139,7 @@ public class RestErrorAdvice {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, String[]>> handleException(Exception e) {
 		log.error("予期せぬ例外が発生しました。", e);
-		return new ErrorHolder(msg, locale(), "error.Exception", "サーバー側で問題が発生した可能性があります。")
+		return new ErrorHolder(msg, locale(), ErrorKeys.Exception, "サーバー側で問題が発生した可能性があります。")
 				.result(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
