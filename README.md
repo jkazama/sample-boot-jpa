@@ -153,7 +153,7 @@ Eclipseまたはコンソールでサーバを立ち上げた後、testパッケ
 
 ### 配布用jarの作成
 
-Spring BootではFat Jar(ライブラリなども内包するjar)を作成する事で単一の配布ファイルでアプリケーションを実行することができます。
+Spring Boot では Executable Jar ( ライブラリなども内包するjar ) を作成する事で単一の配布ファイルでアプリケーションを実行することができます。
 
 1. コンソールから「gradlew build」を実行
 1. `build/libs`直下にjarが出力されるのでJava8以降の実行環境へ配布
