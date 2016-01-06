@@ -17,20 +17,20 @@ import org.springframework.web.context.request.*;
  */
 @RestController
 public class RestErrorController implements ErrorController {
-	public static final String PATH_ERROR = "/api/error";
+    public static final String PATH_ERROR = "/api/error";
 
-	@Autowired
-	private ErrorAttributes errorAttributes;
+    @Autowired
+    private ErrorAttributes errorAttributes;
 
-	@Override
-	public String getErrorPath() {
-		return PATH_ERROR;
-	}
+    @Override
+    public String getErrorPath() {
+        return PATH_ERROR;
+    }
 
-	@RequestMapping(PATH_ERROR)
-	public Map<String, Object> error(HttpServletRequest request) {
-		RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-		return this.errorAttributes.getErrorAttributes(requestAttributes, false);
-	}
+    @RequestMapping(PATH_ERROR)
+    public Map<String, Object> error(HttpServletRequest request) {
+        RequestAttributes requestAttributes = new ServletRequestAttributes(request);
+        return this.errorAttributes.getErrorAttributes(requestAttributes, false);
+    }
 
 }

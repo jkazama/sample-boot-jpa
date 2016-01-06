@@ -25,26 +25,26 @@ import sample.util.Regex;
 @Size
 @Pattern(regexp = "")
 public @interface Password {
-	String message() default "{error.domain.password}";
+    String message() default "{error.domain.password}";
 
-	Class<?>[] groups() default {};
+    Class<?>[] groups() default {};
 
-	Class<? extends Payload>[] payload() default {};
+    Class<? extends Payload>[] payload() default {};
 
-	@OverridesAttribute(constraint = Size.class, name = "max")
-	int max() default 256;
+    @OverridesAttribute(constraint = Size.class, name = "max")
+    int max() default 256;
 
-	@OverridesAttribute(constraint = Pattern.class, name = "regexp")
-	String regexp() default Regex.rAscii;
+    @OverridesAttribute(constraint = Pattern.class, name = "regexp")
+    String regexp() default Regex.rAscii;
 
-	@OverridesAttribute(constraint = Pattern.class, name = "flags")
-	Pattern.Flag[] flags() default {};
+    @OverridesAttribute(constraint = Pattern.class, name = "flags")
+    Pattern.Flag[] flags() default {};
 
-	@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
-	@Retention(RUNTIME)
-	@Documented
-	public @interface List {
-		Password[] value();
-	}
+    @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
+    @Retention(RUNTIME)
+    @Documented
+    public @interface List {
+        Password[] value();
+    }
 
 }

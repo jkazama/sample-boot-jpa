@@ -17,39 +17,40 @@ import sample.context.orm.SystemRepository;
 @Component
 public class AppSettingHandler {
 
-	@Autowired
-	@Lazy
-	private SystemRepository rep;
-	/** 設定時は固定のキー/値を返すモックモードとする */
-	private final Optional<Map<String, String>> mockMap;
+    @Autowired
+    @Lazy
+    private SystemRepository rep;
+    /** 設定時は固定のキー/値を返すモックモードとする */
+    private final Optional<Map<String, String>> mockMap;
 
-	public AppSettingHandler() {
-		this.mockMap = Optional.empty();
-	}
+    public AppSettingHandler() {
+        this.mockMap = Optional.empty();
+    }
 
-	public AppSettingHandler(Map<String, String> mockMap) {
-		this.mockMap = Optional.of(mockMap);
-	}
-	
-	/** アプリケーション設定情報を取得します。 */
-	@Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
-	@Transactional(value = SystemRepository.beanNameTx)
-	public AppSetting setting(String id) {
-		if (mockMap.isPresent()) return mockSetting(id);
-		AppSetting setting = AppSetting.load(rep, id);
-		setting.hashCode(); // for loading
-		return setting;
-	}
-	
-	private AppSetting mockSetting(String id) {
-		return new AppSetting(id, "category", "テスト用モック情報", mockMap.get().get(id));
-	}
+    public AppSettingHandler(Map<String, String> mockMap) {
+        this.mockMap = Optional.of(mockMap);
+    }
 
-	/** アプリケーション設定情報を変更します。 */
-	@CacheEvict(cacheNames = "AppSettingHandler.appSetting", key = "#id")
-	@Transactional(value = SystemRepository.beanNameTx)
-	public AppSetting update(String id, String value) {
-		return mockMap.isPresent() ? mockSetting(id) : AppSetting.load(rep, id).update(rep, value);
-	}
+    /** アプリケーション設定情報を取得します。 */
+    @Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
+    @Transactional(value = SystemRepository.beanNameTx)
+    public AppSetting setting(String id) {
+        if (mockMap.isPresent())
+            return mockSetting(id);
+        AppSetting setting = AppSetting.load(rep, id);
+        setting.hashCode(); // for loading
+        return setting;
+    }
+
+    private AppSetting mockSetting(String id) {
+        return new AppSetting(id, "category", "テスト用モック情報", mockMap.get().get(id));
+    }
+
+    /** アプリケーション設定情報を変更します。 */
+    @CacheEvict(cacheNames = "AppSettingHandler.appSetting", key = "#id")
+    @Transactional(value = SystemRepository.beanNameTx)
+    public AppSetting update(String id, String value) {
+        return mockMap.isPresent() ? mockSetting(id) : AppSetting.load(rep, id).update(rep, value);
+    }
 
 }

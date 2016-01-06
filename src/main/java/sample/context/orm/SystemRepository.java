@@ -17,42 +17,42 @@ import lombok.Setter;
 @Setter
 public class SystemRepository extends OrmRepository {
 
-	public static final String beanNameDs = "systemDataSource";
-	public static final String beanNameSf = "systemSessionFactory";
-	public static final String beanNameTx = "systemTransactionManager";
-	
-	@Autowired
-	@Qualifier(beanNameSf)
-	private SessionFactory sessionFactory;
+    public static final String beanNameDs = "systemDataSource";
+    public static final String beanNameSf = "systemSessionFactory";
+    public static final String beanNameTx = "systemTransactionManager";
 
-	@Override
-	public SessionFactory sf() {
-		return sessionFactory;
-	}
+    @Autowired
+    @Qualifier(beanNameSf)
+    private SessionFactory sessionFactory;
 
-	/** システムスキーマのHibernateコンポーネントを生成します。 */
-	@ConfigurationProperties(prefix = "extension.hibernate.system")
-	public static class SystemRepositoryConfig extends OrmRepositoryConfig {
-		@Bean(name = beanNameSf)
-		public LocalSessionFactoryBean systemSessionFactory(
-				@Qualifier(beanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
-			return super.sessionFactory(dataSource, interceptor);
-		}
+    @Override
+    public SessionFactory sf() {
+        return sessionFactory;
+    }
 
-		@Bean(name = beanNameTx)
-		public HibernateTransactionManager systemTransactionManager(
-				@Qualifier(beanNameSf) final SessionFactory sessionFactory) {
-			return super.transactionManager(sessionFactory);
-		}
-	}
+    /** システムスキーマのHibernateコンポーネントを生成します。 */
+    @ConfigurationProperties(prefix = "extension.hibernate.system")
+    public static class SystemRepositoryConfig extends OrmRepositoryConfig {
+        @Bean(name = beanNameSf)
+        public LocalSessionFactoryBean systemSessionFactory(
+                @Qualifier(beanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
+            return super.sessionFactory(dataSource, interceptor);
+        }
 
-	/** システムスキーマのDataSourceを生成します。 */
-	@ConfigurationProperties(prefix = "extension.datasource.system")
-	public static class SystemDataSourceConfig extends OrmDataSourceConfig {
-		@Bean(name = beanNameDs, destroyMethod = "shutdown")
-		public DataSource systemDataSource() {
-			return super.dataSource();
-		}
-	}
+        @Bean(name = beanNameTx)
+        public HibernateTransactionManager systemTransactionManager(
+                @Qualifier(beanNameSf) final SessionFactory sessionFactory) {
+            return super.transactionManager(sessionFactory);
+        }
+    }
+
+    /** システムスキーマのDataSourceを生成します。 */
+    @ConfigurationProperties(prefix = "extension.datasource.system")
+    public static class SystemDataSourceConfig extends OrmDataSourceConfig {
+        @Bean(name = beanNameDs, destroyMethod = "shutdown")
+        public DataSource systemDataSource() {
+            return super.dataSource();
+        }
+    }
 
 }

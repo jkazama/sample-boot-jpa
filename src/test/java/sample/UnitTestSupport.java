@@ -23,11 +23,11 @@ import sample.model.DataFixtures;
 @Transactional
 public abstract class UnitTestSupport {
 
-	@Autowired
-	protected DefaultRepository rep;
-	@Autowired
-	protected DataFixtures fixtures;
-	@Autowired
-	protected Timestamper time;
-	
+    @Autowired
+    protected DefaultRepository rep;
+    @Autowired
+    protected DataFixtures fixtures;
+    @Autowired
+    protected Timestamper time;
+
 }

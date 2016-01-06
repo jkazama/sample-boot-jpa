@@ -21,13 +21,13 @@ import sample.usecase.AssetAdminService;
 @Setter
 public class AssetAdminController extends ControllerSupport {
 
-	@Autowired
-	private AssetAdminService service;
+    @Autowired
+    private AssetAdminService service;
 
-	/** 未処理の振込依頼情報を検索します。 */
-	@RequestMapping(value = "/cio/")
-	public List<CashInOut> findCashInOut(@Valid FindCashInOut p) {
-		return service.findCashInOut(p);
-	}
+    /** 未処理の振込依頼情報を検索します。 */
+    @RequestMapping(value = "/cio/")
+    public List<CashInOut> findCashInOut(@Valid FindCashInOut p) {
+        return service.findCashInOut(p);
+    }
 
 }

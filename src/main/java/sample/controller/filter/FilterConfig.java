@@ -15,9 +15,9 @@ import sample.context.security.SecurityFilters;
 @Configuration
 public class FilterConfig implements SecurityFilters {
 
-	@Override
-	public List<Filter> filters() {
-		return new ArrayList<>();
-	}
-	
+    @Override
+    public List<Filter> filters() {
+        return new ArrayList<>();
+    }
+
 }

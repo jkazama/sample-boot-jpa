@@ -17,27 +17,27 @@ import lombok.Data;
 @Data
 public class OrmDataSourceConfig {
 
-	private String driverClassName = "org.h2.Driver";
-	private String url;
-	private String username;
-	private String password;
-	private Properties props = new Properties();
+    private String driverClassName = "org.h2.Driver";
+    private String url;
+    private String username;
+    private String password;
+    private Properties props = new Properties();
 
-	/** 最低接続プーリング数 */
-	private int minIdle = 2;
-	/** 最大接続プーリング数 */
-	private int maxPoolSize = 20;
+    /** 最低接続プーリング数 */
+    private int minIdle = 2;
+    /** 最大接続プーリング数 */
+    private int maxPoolSize = 20;
 
-	public DataSource dataSource() {
-		HikariConfig config = new HikariConfig();
-		config.setDriverClassName(driverClassName);
-		config.setJdbcUrl(url);
-		config.setUsername(username);
-		config.setPassword(password);
-		config.setMinimumIdle(minIdle);
-		config.setMaximumPoolSize(maxPoolSize);
-		config.setDataSourceProperties(props);
-		return new HikariDataSource(config);
-	}
-	
+    public DataSource dataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName(driverClassName);
+        config.setJdbcUrl(url);
+        config.setUsername(username);
+        config.setPassword(password);
+        config.setMinimumIdle(minIdle);
+        config.setMaximumPoolSize(maxPoolSize);
+        config.setDataSourceProperties(props);
+        return new HikariDataSource(config);
+    }
+
 }

@@ -30,116 +30,119 @@ import sample.context.report.ReportFile;
 @Setter
 public class ControllerSupport {
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private MessageSource msg;
-	@Autowired
-	private ResourceBundleHandler label;
-	@Autowired
-	private Timestamper time;
-	@Autowired
-	private ActorSession session;
+    @Autowired
+    private MessageSource msg;
+    @Autowired
+    private ResourceBundleHandler label;
+    @Autowired
+    private Timestamper time;
+    @Autowired
+    private ActorSession session;
 
-	/** i18nメッセージ変換を行います。 */
-	protected String msg(String message) {
-		return msg(message, session.actor().getLocale());
-	}
-	protected String msg(String message, final Locale locale) {
-		return msg.getMessage(message, new String[0], locale);
-	}
-	
-	/**
-	 * リソースファイル([basename].properties)内のキー/値のMap情報を返します。
-	 * <p>API呼び出し側でi18n対応を行いたい時などに利用してください。
-	 */
-	protected Map<String, String> labels(String basename) {
-		return labels(basename, session.actor().getLocale());
-	}
-	protected Map<String, String> labels(String basename, final Locale locale) {
-		return label.labels(basename, locale);
-	}
+    /** i18nメッセージ変換を行います。 */
+    protected String msg(String message) {
+        return msg(message, session.actor().getLocale());
+    }
 
-	/** メッセージリソースアクセサを返します。 */
-	protected MessageSource msgResource() {
-		return msg;
-	}
+    protected String msg(String message, final Locale locale) {
+        return msg.getMessage(message, new String[0], locale);
+    }
 
-	/** 日時ユーティリティを返します。 */
-	protected Timestamper time() {
-		return time;
-	}
+    /**
+     * リソースファイル([basename].properties)内のキー/値のMap情報を返します。
+     * <p>API呼び出し側でi18n対応を行いたい時などに利用してください。
+     */
+    protected Map<String, String> labels(String basename) {
+        return labels(basename, session.actor().getLocale());
+    }
 
-	/**
-	 * 指定したキー/値をMapに変換します。
-	 * get等でnullを返す可能性があるときはこのメソッドでMap化してから返すようにしてください。
-	 * ※nullはJSONバインドされないため、クライアント側でStatusが200にもかかわらず例外扱いされる可能性があります。
-	 */
-	protected <T> Map<String, T> objectToMap(String key, final T t) {
-		Map<String, T> ret = new HashMap<>();
-		ret.put(key, t);
-		return ret;
-	}
-	
-	protected <T> Map<String, T> objectToMap(final T t) {
-		return objectToMap("result", t);
-	}
-	
-	/** 戻り値を生成して返します。(戻り値がプリミティブまたはnullを許容する時はこちらを利用してください) */
-	protected <T> ResponseEntity<T> result(Supplier<T> command) {
-		return ResponseEntity.status(HttpStatus.OK).body(command.get());
-	}
-	protected ResponseEntity<Void> resultEmpty(Runnable command) {
-		command.run();
-		return ResponseEntity.status(HttpStatus.OK).build();
-	}
- 
-	/** ファイルアップロード情報(MultipartFile)をReportFileへ変換します。 */
-	protected ReportFile uploadFile(final MultipartFile file) {
-		return uploadFile(file, (String[])null);
-	}
+    protected Map<String, String> labels(String basename, final Locale locale) {
+        return label.labels(basename, locale);
+    }
 
-	/**
-	 * ファイルアップロード情報(MultipartFile)をReportFileへ変換します。
-	 * <p>acceptExtensionsに許容するファイル拡張子(小文字統一)を設定してください。
-	 */
-	protected ReportFile uploadFile(final MultipartFile file, final String... acceptExtensions) {
-		String fname = StringUtils.lowerCase(file.getOriginalFilename());
-		if (acceptExtensions != null && !FilenameUtils.isExtension(fname, acceptExtensions)) {
-			throw new ValidationException("file", "アップロードファイルには[{0}]を指定してください",
-					new String[]{ StringUtils.join(acceptExtensions) });
-		}
-		try {
-			return new ReportFile(file.getOriginalFilename(), file.getBytes());
-		} catch (IOException e) {
-			throw new ValidationException("file", "アップロードファイルの解析に失敗しました");
-		}
-	}
+    /** メッセージリソースアクセサを返します。 */
+    protected MessageSource msgResource() {
+        return msg;
+    }
 
-	/**
-	 * ファイルダウンロード設定を行います。
-	 * <p>利用する際は戻り値をvoidで定義するようにしてください。
-	 */
-	protected void exportFile(final HttpServletResponse res, final ReportFile file) {
-		exportFile(res, file, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-	}
+    /** 日時ユーティリティを返します。 */
+    protected Timestamper time() {
+        return time;
+    }
 
-	protected void exportFile(final HttpServletResponse res, final ReportFile file, final String contentType) {
-		String filename;
-		try {
-			filename = URLEncoder.encode(file.getName(),"UTF-8").replace("+", "%20");
-		} catch (Exception e) {
-			throw new ValidationException("ファイル名が不正です");
-		}
-		res.setContentLength(file.size());
-		res.setContentType(contentType);
-		res.setHeader("Content-Disposition",
-				"attachment; filename=" + filename);
-		try {
-			IOUtils.write(file.getData(), res.getOutputStream());
-		} catch (IOException e) {
-			throw new ValidationException("ファイル出力に失敗しました");
-		}
-	}
+    /**
+     * 指定したキー/値をMapに変換します。
+     * get等でnullを返す可能性があるときはこのメソッドでMap化してから返すようにしてください。
+     * ※nullはJSONバインドされないため、クライアント側でStatusが200にもかかわらず例外扱いされる可能性があります。
+     */
+    protected <T> Map<String, T> objectToMap(String key, final T t) {
+        Map<String, T> ret = new HashMap<>();
+        ret.put(key, t);
+        return ret;
+    }
+
+    protected <T> Map<String, T> objectToMap(final T t) {
+        return objectToMap("result", t);
+    }
+
+    /** 戻り値を生成して返します。(戻り値がプリミティブまたはnullを許容する時はこちらを利用してください) */
+    protected <T> ResponseEntity<T> result(Supplier<T> command) {
+        return ResponseEntity.status(HttpStatus.OK).body(command.get());
+    }
+
+    protected ResponseEntity<Void> resultEmpty(Runnable command) {
+        command.run();
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /** ファイルアップロード情報(MultipartFile)をReportFileへ変換します。 */
+    protected ReportFile uploadFile(final MultipartFile file) {
+        return uploadFile(file, (String[]) null);
+    }
+
+    /**
+     * ファイルアップロード情報(MultipartFile)をReportFileへ変換します。
+     * <p>acceptExtensionsに許容するファイル拡張子(小文字統一)を設定してください。
+     */
+    protected ReportFile uploadFile(final MultipartFile file, final String... acceptExtensions) {
+        String fname = StringUtils.lowerCase(file.getOriginalFilename());
+        if (acceptExtensions != null && !FilenameUtils.isExtension(fname, acceptExtensions)) {
+            throw new ValidationException("file", "アップロードファイルには[{0}]を指定してください",
+                    new String[] { StringUtils.join(acceptExtensions) });
+        }
+        try {
+            return new ReportFile(file.getOriginalFilename(), file.getBytes());
+        } catch (IOException e) {
+            throw new ValidationException("file", "アップロードファイルの解析に失敗しました");
+        }
+    }
+
+    /**
+     * ファイルダウンロード設定を行います。
+     * <p>利用する際は戻り値をvoidで定義するようにしてください。
+     */
+    protected void exportFile(final HttpServletResponse res, final ReportFile file) {
+        exportFile(res, file, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    }
+
+    protected void exportFile(final HttpServletResponse res, final ReportFile file, final String contentType) {
+        String filename;
+        try {
+            filename = URLEncoder.encode(file.getName(), "UTF-8").replace("+", "%20");
+        } catch (Exception e) {
+            throw new ValidationException("ファイル名が不正です");
+        }
+        res.setContentLength(file.size());
+        res.setContentType(contentType);
+        res.setHeader("Content-Disposition",
+                "attachment; filename=" + filename);
+        try {
+            IOUtils.write(file.getData(), res.getOutputStream());
+        } catch (IOException e) {
+            throw new ValidationException("ファイル出力に失敗しました");
+        }
+    }
 
 }

@@ -23,50 +23,50 @@ import sample.usecase.ServiceUtils;
 @Setter
 public class ServiceReportExporter {
 
-	@Autowired
-	private DefaultRepository rep;
-	@Autowired
-	@Qualifier(DefaultRepository.beanNameTx)
-	private PlatformTransactionManager tx;
-	@Autowired
-	private ReportHandler report;
-	
-	/** トランザクション処理を実行します。 */
-	private <T> T tx(Supplier<T> callable) {
-		return ServiceUtils.tx(tx, callable);
-	}
-	
-	/** トランザクション処理を実行します。 */
-	private void tx(Runnable command) {
-		ServiceUtils.tx(tx, command);
-	}
-	
-	/**　振込入出金情報をCSV出力します。 */
-	public byte[] exportCashInOut(final FindCashInOut p) {
-		//low: バイナリ生成。条件指定を可能にしたオンラインダウンロードを想定。
-		return new byte[0];
-	}
+    @Autowired
+    private DefaultRepository rep;
+    @Autowired
+    @Qualifier(DefaultRepository.beanNameTx)
+    private PlatformTransactionManager tx;
+    @Autowired
+    private ReportHandler report;
 
-	public void exportAnyBigData(final InputStream ins, final FindCashInOut p) {
-		//low: サイズが多いケースではストリームへ都度書き出しする。
-	}
-	
-	/**　振込入出金情報を帳票出力します。 */
-	public void exportFileCashInOut(String baseDay) {
-		//low: 特定のディレクトリへのファイル出力。ジョブ等での利用を想定
-	}
-	
-	public int callbackSample() {// for warning
-		return tx(() -> {
-			report.hashCode();
-			return rep.hashCode();
-		});
-	}
+    /** トランザクション処理を実行します。 */
+    private <T> T tx(Supplier<T> callable) {
+        return ServiceUtils.tx(tx, callable);
+    }
 
-	public void commandSample() {// for warning
-		tx(() -> {
-			rep.hashCode();
-		});
-	}
-	
+    /** トランザクション処理を実行します。 */
+    private void tx(Runnable command) {
+        ServiceUtils.tx(tx, command);
+    }
+
+    /**　振込入出金情報をCSV出力します。 */
+    public byte[] exportCashInOut(final FindCashInOut p) {
+        //low: バイナリ生成。条件指定を可能にしたオンラインダウンロードを想定。
+        return new byte[0];
+    }
+
+    public void exportAnyBigData(final InputStream ins, final FindCashInOut p) {
+        //low: サイズが多いケースではストリームへ都度書き出しする。
+    }
+
+    /**　振込入出金情報を帳票出力します。 */
+    public void exportFileCashInOut(String baseDay) {
+        //low: 特定のディレクトリへのファイル出力。ジョブ等での利用を想定
+    }
+
+    public int callbackSample() {// for warning
+        return tx(() -> {
+            report.hashCode();
+            return rep.hashCode();
+        });
+    }
+
+    public void commandSample() {// for warning
+        tx(() -> {
+            rep.hashCode();
+        });
+    }
+
 }
