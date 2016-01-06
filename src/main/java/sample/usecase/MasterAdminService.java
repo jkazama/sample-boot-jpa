@@ -16,23 +16,22 @@ import sample.model.master.Holiday.RegHoliday;
 @Service
 public class MasterAdminService extends ServiceSupport {
 
-	/** 社員を取得します。 */
-	@Transactional(DefaultRepository.beanNameTx)
-	@Cacheable("MasterAdminService.getStaff")
-	public Optional<Staff> getStaff(String id) {
-		return Staff.get(rep(), id);
-	}
+    /** 社員を取得します。 */
+    @Transactional(DefaultRepository.beanNameTx)
+    @Cacheable("MasterAdminService.getStaff")
+    public Optional<Staff> getStaff(String id) {
+        return Staff.get(rep(), id);
+    }
 
-	/** 社員権限を取得します。 */
-	@Transactional(DefaultRepository.beanNameTx)
-	@Cacheable("MasterAdminService.findStaffAuthority")
-	public List<StaffAuthority> findStaffAuthority(String staffId) {
-		return StaffAuthority.find(rep(), staffId);
-	}
-	
-	public void registerHoliday(final RegHoliday p) {
-		audit().audit("休日情報を登録する", () -> tx(() ->
-			Holiday.register(rep(), p)));
-	}
-	
+    /** 社員権限を取得します。 */
+    @Transactional(DefaultRepository.beanNameTx)
+    @Cacheable("MasterAdminService.findStaffAuthority")
+    public List<StaffAuthority> findStaffAuthority(String staffId) {
+        return StaffAuthority.find(rep(), staffId);
+    }
+
+    public void registerHoliday(final RegHoliday p) {
+        audit().audit("休日情報を登録する", () -> tx(() -> Holiday.register(rep(), p)));
+    }
+
 }

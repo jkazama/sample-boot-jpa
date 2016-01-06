@@ -15,27 +15,27 @@ import sample.model.constraints.*;
 @EqualsAndHashCode(callSuper = false)
 public class SelfFiAccount extends OrmActiveRecord<SelfFiAccount> {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/** ID */
-	@Id
-	@GeneratedValue
-	private Long id;
-	/** 利用用途カテゴリ */
-	@Category
-	private String category;
-	/** 通貨 */
-	@Currency
-	private String currency;
-	/** 金融機関コード */
-	@IdStr
-	private String fiCode;
-	/** 金融機関口座ID */
-	@IdStr
-	private String fiAccountId;
+    /** ID */
+    @Id
+    @GeneratedValue
+    private Long id;
+    /** 利用用途カテゴリ */
+    @Category
+    private String category;
+    /** 通貨 */
+    @Currency
+    private String currency;
+    /** 金融機関コード */
+    @IdStr
+    private String fiCode;
+    /** 金融機関口座ID */
+    @IdStr
+    private String fiAccountId;
 
-	public static SelfFiAccount load(final OrmRepository rep, String category, String currency) {
-		return rep.tmpl().load("from SelfFiAccount a where a.category=?1 and a.currency=?2", category, currency);
-	}
+    public static SelfFiAccount load(final OrmRepository rep, String category, String currency) {
+        return rep.tmpl().load("from SelfFiAccount a where a.category=?1 and a.currency=?2", category, currency);
+    }
 
 }

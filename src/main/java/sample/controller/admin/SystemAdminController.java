@@ -26,31 +26,31 @@ import sample.usecase.SystemAdminService;
 @Setter
 public class SystemAdminController extends ControllerSupport {
 
-	@Autowired
-	private SystemAdminService service;
-	
-	/** 利用者監査ログを検索します。 */
-	@RequestMapping(value = "/audit/actor/")
-	public PagingList<AuditActor> findAuditActor(@Valid FindAuditActor p) {
-		return service.findAuditActor(p);
-	}
+    @Autowired
+    private SystemAdminService service;
 
-	/** イベント監査ログを検索します。 */
-	@RequestMapping(value = "/audit/event/")
-	public PagingList<AuditEvent> findAuditEvent(@Valid FindAuditEvent p) {
-		return service.findAuditEvent(p);
-	}
-	
-	/** アプリケーション設定一覧を検索します。 */
-	@RequestMapping(value = "/setting/")
-	public List<AppSetting> findAppSetting(@Valid FindAppSetting p) {
-		return service.findAppSetting(p);
-	}
-	
-	/** アプリケーション設定情報を変更します。 */
-	@RequestMapping(value = "/setting/{id}", method = RequestMethod.POST)
-	public ResponseEntity<Void> changeAppSetting(@PathVariable String id, String value) {
-		return resultEmpty(() -> service.changeAppSetting(id, value));
-	}
-	
+    /** 利用者監査ログを検索します。 */
+    @RequestMapping(value = "/audit/actor/")
+    public PagingList<AuditActor> findAuditActor(@Valid FindAuditActor p) {
+        return service.findAuditActor(p);
+    }
+
+    /** イベント監査ログを検索します。 */
+    @RequestMapping(value = "/audit/event/")
+    public PagingList<AuditEvent> findAuditEvent(@Valid FindAuditEvent p) {
+        return service.findAuditEvent(p);
+    }
+
+    /** アプリケーション設定一覧を検索します。 */
+    @RequestMapping(value = "/setting/")
+    public List<AppSetting> findAppSetting(@Valid FindAppSetting p) {
+        return service.findAppSetting(p);
+    }
+
+    /** アプリケーション設定情報を変更します。 */
+    @RequestMapping(value = "/setting/{id}", method = RequestMethod.POST)
+    public ResponseEntity<Void> changeAppSetting(@PathVariable String id, String value) {
+        return resultEmpty(() -> service.changeAppSetting(id, value));
+    }
+
 }

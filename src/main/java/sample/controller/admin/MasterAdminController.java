@@ -28,43 +28,44 @@ import sample.usecase.MasterAdminService;
 @Setter
 public class MasterAdminController extends ControllerSupport {
 
-	@Autowired
-	private MasterAdminService service;
-	@Autowired
-	private SecurityProperties securityProps;
-	
-	/** 社員ログイン状態を確認します。 */
-	@RequestMapping(value = "/loginStatus")
-	public boolean loginStatus() {
-		return true;
-	}
-	
-	/** 社員ログイン情報を取得します。 */
-	@RequestMapping(value = "/loginStaff")
-	public LoginStaff loadLoginStaff() {
-		if (securityProps.auth().isEnabled()) {
-			ActorDetails actorDetails = SecurityActorFinder.actorDetails().orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
-			Actor actor = actorDetails.actor();
-			return new LoginStaff(actor.getId(), actor.getName(), actorDetails.getAuthorityIds());
-		} else { // for dummy login
-			return new LoginStaff("sample", "sample", new ArrayList<>());
-		}
-	}
-	
-	/** クライアント利用用途に絞ったパラメタ */
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class LoginStaff {
-		private String id;
-		private String name;
-		private Collection<String> authorities;
-	}
+    @Autowired
+    private MasterAdminService service;
+    @Autowired
+    private SecurityProperties securityProps;
 
-	/** 休日を登録します。 */
-	@RequestMapping(value = "/holiday/", method = RequestMethod.POST)
-	public ResponseEntity<Void> registerHoliday(@Valid RegHoliday p) {
-		return resultEmpty(() -> service.registerHoliday(p)); 
-	}
-	
+    /** 社員ログイン状態を確認します。 */
+    @RequestMapping(value = "/loginStatus")
+    public boolean loginStatus() {
+        return true;
+    }
+
+    /** 社員ログイン情報を取得します。 */
+    @RequestMapping(value = "/loginStaff")
+    public LoginStaff loadLoginStaff() {
+        if (securityProps.auth().isEnabled()) {
+            ActorDetails actorDetails = SecurityActorFinder.actorDetails()
+                    .orElseThrow(() -> new ValidationException(ErrorKeys.Authentication));
+            Actor actor = actorDetails.actor();
+            return new LoginStaff(actor.getId(), actor.getName(), actorDetails.getAuthorityIds());
+        } else { // for dummy login
+            return new LoginStaff("sample", "sample", new ArrayList<>());
+        }
+    }
+
+    /** クライアント利用用途に絞ったパラメタ */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginStaff {
+        private String id;
+        private String name;
+        private Collection<String> authorities;
+    }
+
+    /** 休日を登録します。 */
+    @RequestMapping(value = "/holiday/", method = RequestMethod.POST)
+    public ResponseEntity<Void> registerHoliday(@Valid RegHoliday p) {
+        return resultEmpty(() -> service.registerHoliday(p));
+    }
+
 }

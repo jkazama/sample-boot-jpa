@@ -18,32 +18,32 @@ import sample.usecase.ServiceUtils;
 @Setter
 public class ServiceJobExecutor {
 
-	@Autowired
-	private DefaultRepository rep;
-	@Autowired
-	@Qualifier(DefaultRepository.beanNameTx)
-	private PlatformTransactionManager tx;
+    @Autowired
+    private DefaultRepository rep;
+    @Autowired
+    @Qualifier(DefaultRepository.beanNameTx)
+    private PlatformTransactionManager tx;
 
-	/** トランザクション処理を実行します。 */
-	private <T> T tx(Supplier<T> callable) {
-		return ServiceUtils.tx(tx, callable);
-	}
-	
-	/** トランザクション処理を実行します。 */
-	private void tx(Runnable command) {
-		ServiceUtils.tx(tx, command);
-	}
-	
-	public int callbackSample() {// for warning
-		return tx(() -> {
-			return rep.hashCode();
-		});
-	}
+    /** トランザクション処理を実行します。 */
+    private <T> T tx(Supplier<T> callable) {
+        return ServiceUtils.tx(tx, callable);
+    }
 
-	public void commandSample() {// for warning
-		tx(() -> {
-			rep.hashCode();
-		});
-	}
+    /** トランザクション処理を実行します。 */
+    private void tx(Runnable command) {
+        ServiceUtils.tx(tx, command);
+    }
+
+    public int callbackSample() {// for warning
+        return tx(() -> {
+            return rep.hashCode();
+        });
+    }
+
+    public void commandSample() {// for warning
+        tx(() -> {
+            rep.hashCode();
+        });
+    }
 
 }

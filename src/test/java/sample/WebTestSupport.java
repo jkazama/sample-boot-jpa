@@ -16,44 +16,44 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public abstract class WebTestSupport extends UnitTestSupport {
 
-	protected static final Logger logger = LoggerFactory.getLogger("ControllerTest");
+    protected static final Logger logger = LoggerFactory.getLogger("ControllerTest");
 
-	@Autowired
-	protected WebApplicationContext wac;
+    @Autowired
+    protected WebApplicationContext wac;
 
-	protected MockMvc mockMvc;
+    protected MockMvc mockMvc;
 
-	@Before
-	public void before() {
-		mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-	}
+    @Before
+    public void before() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    }
 
-	protected String url(String path) {
-		return prefix() + path;
-	}
+    protected String url(String path) {
+        return prefix() + path;
+    }
 
-	protected String prefix() {
-		return "/";
-	}
-	
-	/** 指定したパスをGET実行して結果を取得します。(status: 200) */
-	protected MvcResult performGet(String path) throws Exception {
-		return mockMvc.perform(get(url(path))).andExpect(status().isOk()).andReturn();
-	}
-	
-	/** 指定したパスをGET実行して結果を取得します。(status: 400) */
-	protected MvcResult performGetWarn(String path) throws Exception {
-		return mockMvc.perform(get(url(path))).andExpect(status().isBadRequest()).andReturn();
-	}
-	
-	/** 指定したパスをPOST実行して結果を取得します。(status: 200) */
-	protected MvcResult performPost(String path) throws Exception {
-		return mockMvc.perform(post(url(path))).andExpect(status().isOk()).andReturn();
-	}
-	
-	/** 指定したパスをPOST実行して結果を取得します。(status: 400) */
-	protected MvcResult performPostWarn(String path) throws Exception {
-		return mockMvc.perform(post(url(path))).andExpect(status().isBadRequest()).andReturn();
-	}
-	
+    protected String prefix() {
+        return "/";
+    }
+
+    /** 指定したパスをGET実行して結果を取得します。(status: 200) */
+    protected MvcResult performGet(String path) throws Exception {
+        return mockMvc.perform(get(url(path))).andExpect(status().isOk()).andReturn();
+    }
+
+    /** 指定したパスをGET実行して結果を取得します。(status: 400) */
+    protected MvcResult performGetWarn(String path) throws Exception {
+        return mockMvc.perform(get(url(path))).andExpect(status().isBadRequest()).andReturn();
+    }
+
+    /** 指定したパスをPOST実行して結果を取得します。(status: 200) */
+    protected MvcResult performPost(String path) throws Exception {
+        return mockMvc.perform(post(url(path))).andExpect(status().isOk()).andReturn();
+    }
+
+    /** 指定したパスをPOST実行して結果を取得します。(status: 400) */
+    protected MvcResult performPostWarn(String path) throws Exception {
+        return mockMvc.perform(post(url(path))).andExpect(status().isBadRequest()).andReturn();
+    }
+
 }

@@ -20,27 +20,27 @@ import sample.usecase.*;
 @Setter
 public class JobController extends ControllerSupport {
 
-	@Autowired
-	private AssetAdminService asset;
-	@Autowired
-	private SystemAdminService system;
+    @Autowired
+    private AssetAdminService asset;
+    @Autowired
+    private SystemAdminService system;
 
-	/** 営業日を進めます。 */
-	@RequestMapping(value = "/daily/processDay", method = RequestMethod.POST)
-	public ResponseEntity<Void> processDay() {
-		return resultEmpty(() -> system.processDay());
-	}
+    /** 営業日を進めます。 */
+    @RequestMapping(value = "/daily/processDay", method = RequestMethod.POST)
+    public ResponseEntity<Void> processDay() {
+        return resultEmpty(() -> system.processDay());
+    }
 
-	/** 振込出金依頼を締めます。 */
-	@RequestMapping(value = "/daily/closingCashOut",  method = RequestMethod.POST)
-	public ResponseEntity<Void> closingCashOut() {
-		return resultEmpty(() -> asset.closingCashOut());
-	}
+    /** 振込出金依頼を締めます。 */
+    @RequestMapping(value = "/daily/closingCashOut", method = RequestMethod.POST)
+    public ResponseEntity<Void> closingCashOut() {
+        return resultEmpty(() -> asset.closingCashOut());
+    }
 
-	/** キャッシュフローを実現します。 */
-	@RequestMapping(value = "/daily/realizeCashflow",  method = RequestMethod.POST)
-	public ResponseEntity<Void> realizeCashflow() {
-		return resultEmpty(() -> asset.realizeCashflow());
-	}
+    /** キャッシュフローを実現します。 */
+    @RequestMapping(value = "/daily/realizeCashflow", method = RequestMethod.POST)
+    public ResponseEntity<Void> realizeCashflow() {
+        return resultEmpty(() -> asset.realizeCashflow());
+    }
 
 }

@@ -5,7 +5,7 @@ package sample.model;
  */
 public interface DomainErrorKeys {
 
-	/** マイナスを含めない数字を入力してください */
-	String AbsAmountZero = "error.domain.AbsAmount.zero";
-	
+    /** マイナスを含めない数字を入力してください */
+    String AbsAmountZero = "error.domain.AbsAmount.zero";
+
 }
