@@ -95,13 +95,15 @@ main
 
 - JDK8以上のインストール
 - [Lombok](http://projectlombok.org/download.html)のパッチ当て(.jarを実行してインストーラの指示通りに実行)
-- Gradle Plugin (Pivotal) のインストール
+- Gradle Plugin [Buildship] のインストール
+    - Eclipse Mars 以降は Buildship 版が入っているので不要です
 
 次の手順で本サンプルをプロジェクト化してください。  
 
 1. パッケージエクスプローラから「右クリック -> Import -> Project」で*Gradle Project*を選択して*Next*を押下
-1. *Root folder:*にダウンロードした*sample-boot-hibernate*ディレクトリを指定して*Build Model*を押下
-1. *Project*で*sample-boot-hibernate*を選択後、*Finish*を押下(依存ライブラリダウンロードがここで行われます)
+1. *Project root directory* にダウンロードした *sample-boot-hibernate* ディレクトリを指定して *Next* を押下
+1. *Import Options* で *Next* を押下
+1. *Gradle project structure* に *sample-boot-hibernate* が表示されたら *Finish* を押下 (依存ライブラリダウンロードがここで行われます)
 
 次の手順で本サンプルを実行してください。
 
