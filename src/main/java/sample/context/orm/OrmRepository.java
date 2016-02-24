@@ -151,6 +151,8 @@ public abstract class OrmRepository implements Repository {
         private Class<?>[] annotatedClasses;
         /** クエリ置換設定 */
         private String substitutions = "true 1, false 0";
+        /** hibernate.properties へ追加対象するプロパティ情報 */
+        private Properties properties = new Properties();
 
         public LocalSessionFactoryBean sessionFactory(final DataSource dataSource, final OrmInterceptor interceptor) {
             LocalSessionFactoryBean bean = new LocalSessionFactoryBean();
@@ -170,6 +172,7 @@ public abstract class OrmRepository implements Repository {
             prop.put("hibernate.show_sql", showSql);
             prop.put("hibernate.query.substitutions", substitutions);
             prop.put("hibernate.hbm2ddl.auto", createDrop ? "create-drop" : "validate");
+            prop.putAll(properties);
             return prop;
         }
 
