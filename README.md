@@ -161,7 +161,7 @@ Spring Boot では Executable Jar ( ライブラリなども内包するjar ) �
 1. `build/libs`直下にjarが出力されるのでJava8以降の実行環境へ配布
 1. 実行環境でコンソールから「java -jar xxx.jar」を実行して起動
 
-*※実行引数に「-Dspring.profiles.active=[プロファイル名]」を追加する事でapplication.ymlの設定値を変更できます。*  
+*※実行引数に「--spring.profiles.active=[プロファイル名]」を追加する事でapplication.ymlの設定値を変更できます。*  
 
 ### 本サンプルを元にしたプロジェクトリソースの作成
 
@@ -176,9 +176,9 @@ Spring Boot では Executable Jar ( ライブラリなども内包するjar ) �
 
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 1.3.0    | Spring Boot基盤 (actuator/security/aop/cache/web) |
-| `spring-orm`            | 4.2.3    | Spring4のORM概念サポート |
-| `hibernate-*`           | 5.0.3    | DB永続化サポート (core/java8/ehcache) |
+| `spring-boot-starter-*` | 1.3.2    | Spring Boot基盤 (actuator/security/aop/cache/web) |
+| `spring-orm`            | 4.2.4    | Spring4のORM概念サポート |
+| `hibernate-*`           | 5.1.0    | DB永続化サポート (core/java8/ehcache) |
 | `ehcache-core`          | 2.6.+    | 最新のEhCache設定記法を利用するため |
 | `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
 | `jackson-datatype-*`    | 2.6.+    | JSON変換時のJava8/Hibernate対応 |
