@@ -2,6 +2,9 @@
 spring:
   application.name: sample-boot-hibernate
   aop.proxy-target-class: true
+  autoconfigure.exclude:
+    - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+    - org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration
   messages.basename: messages-validation, messages
   main.show-banner: false 
   jackson:
