@@ -17,14 +17,14 @@ import sample.model.master.Holiday.RegHoliday;
 public class MasterAdminService extends ServiceSupport {
 
     /** 社員を取得します。 */
-    @Transactional(DefaultRepository.beanNameTx)
+    @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("MasterAdminService.getStaff")
     public Optional<Staff> getStaff(String id) {
         return Staff.get(rep(), id);
     }
 
     /** 社員権限を取得します。 */
-    @Transactional(DefaultRepository.beanNameTx)
+    @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("MasterAdminService.findStaffAuthority")
     public List<StaffAuthority> findStaffAuthority(String staffId) {
         return StaffAuthority.find(rep(), staffId);

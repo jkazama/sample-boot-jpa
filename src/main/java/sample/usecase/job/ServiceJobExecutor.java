@@ -21,7 +21,7 @@ public class ServiceJobExecutor {
     @Autowired
     private DefaultRepository rep;
     @Autowired
-    @Qualifier(DefaultRepository.beanNameTx)
+    @Qualifier(DefaultRepository.BeanNameTx)
     private PlatformTransactionManager tx;
 
     /** トランザクション処理を実行します。 */

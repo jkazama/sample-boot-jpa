@@ -24,7 +24,7 @@ public class ServiceMailDeliver {
     @Autowired
     private DefaultRepository rep;
     @Autowired
-    @Qualifier(DefaultRepository.beanNameTx)
+    @Qualifier(DefaultRepository.BeanNameTx)
     private PlatformTransactionManager tx;
     @Autowired
     private MailHandler mail;

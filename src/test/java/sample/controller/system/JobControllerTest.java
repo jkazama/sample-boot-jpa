@@ -42,10 +42,10 @@ public class JobControllerTest extends WebTestSupport {
         CashInOut co = fixtures.cio("sample", "3000", true);
         co.setEventDay(time.day());
         co.save(rep);
-        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.UNPROCESSED)));
+        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.Unprocessed)));
         // 実行検証
         performPost("/daily/closingCashOut");
-        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.PROCESSED)));
+        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.Processed)));
     }
 
     @Test
@@ -54,12 +54,12 @@ public class JobControllerTest extends WebTestSupport {
         LocalDate day = businessDay.day();
         // 当日実現のキャッシュフローを準備
         Cashflow cf = fixtures.cf("sample", "3000", dayMinus1, day).save(rep);
-        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.UNPROCESSED)));
+        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.Unprocessed)));
         assertThat(CashBalance.getOrNew(rep, "sample", "JPY"),
                 hasProperty("amount", is(new BigDecimal("1000000.0000"))));
         // 実行検証
         performPost("/daily/realizeCashflow");
-        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.PROCESSED)));
+        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.Processed)));
         assertThat(CashBalance.getOrNew(rep, "sample", "JPY"),
                 hasProperty("amount", is(new BigDecimal("1003000.0000"))));
     }

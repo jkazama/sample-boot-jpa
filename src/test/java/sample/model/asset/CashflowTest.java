@@ -36,7 +36,7 @@ public class CashflowTest extends EntityTestSupport {
             assertThat(Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day)),
                     allOf(
                             hasProperty("amount", is(new BigDecimal("1000"))),
-                            hasProperty("statusType", is(ActionStatusType.UNPROCESSED)),
+                            hasProperty("statusType", is(ActionStatusType.Unprocessed)),
                             hasProperty("eventDay", is(baseDay)),
                             hasProperty("valueDay", is(basePlus1Day))));
         });
@@ -62,7 +62,7 @@ public class CashflowTest extends EntityTestSupport {
 
             // キャッシュフローの残高反映検証。  0 + 1000 = 1000
             Cashflow cfNormal = fixtures.cf("test1", "1000", baseMinus1Day, baseDay).save(rep);
-            assertThat(cfNormal.realize(rep), hasProperty("statusType", is(ActionStatusType.PROCESSED)));
+            assertThat(cfNormal.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
             assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
                     hasProperty("amount", is(new BigDecimal("1000"))));
 
@@ -76,7 +76,7 @@ public class CashflowTest extends EntityTestSupport {
 
             // 過日キャッシュフローの残高反映検証。 1000 + 2000 = 3000
             Cashflow cfPast = fixtures.cf("test1", "2000", baseMinus2Day, baseMinus1Day).save(rep);
-            assertThat(cfPast.realize(rep), hasProperty("statusType", is(ActionStatusType.PROCESSED)));
+            assertThat(cfPast.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
             assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
                     hasProperty("amount", is(new BigDecimal("3000"))));
         });

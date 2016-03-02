@@ -76,13 +76,13 @@ public class BusinessDayHandler {
         @Autowired
         private DefaultRepository rep;
 
-        @Transactional(DefaultRepository.beanNameTx)
+        @Transactional(DefaultRepository.BeanNameTx)
         @Cacheable(cacheNames = "HolidayAccessor.getHoliday")
         public Optional<Holiday> getHoliday(LocalDate day) {
             return Holiday.get(rep, day);
         }
 
-        @Transactional(DefaultRepository.beanNameTx)
+        @Transactional(DefaultRepository.BeanNameTx)
         @CacheEvict(cacheNames = "HolidayAccessor.getHoliday", allEntries = true)
         public void register(final DefaultRepository rep, final RegHoliday p) {
             Holiday.register(rep, p);

@@ -48,7 +48,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
     /** イベント監査ログを完了状態にします。 */
     public AuditEvent finish(final SystemRepository rep) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.PROCESSED);
+        setStatusType(ActionStatusType.Processed);
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
         return update(rep);
@@ -57,7 +57,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
     /** イベント監査ログを取消状態にします。 */
     public AuditEvent cancel(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.CANCELLED);
+        setStatusType(ActionStatusType.Cancelled);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
@@ -67,7 +67,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
     /** イベント監査ログを例外状態にします。 */
     public AuditEvent error(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.ERROR);
+        setStatusType(ActionStatusType.Error);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
@@ -124,7 +124,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
             AuditEvent event = new AuditEvent();
             event.setCategory(category);
             event.setMessage(message);
-            event.setStatusType(ActionStatusType.PROCESSING);
+            event.setStatusType(ActionStatusType.Processing);
             event.setStartDate(now);
             return event;
         }

@@ -17,12 +17,12 @@ import lombok.Setter;
 @Setter
 public class SystemRepository extends OrmRepository {
 
-    public static final String beanNameDs = "systemDataSource";
-    public static final String beanNameSf = "systemSessionFactory";
-    public static final String beanNameTx = "systemTransactionManager";
+    public static final String BeanNameDs = "systemDataSource";
+    public static final String BeanNameSf = "systemSessionFactory";
+    public static final String BeanNameTx = "systemTransactionManager";
 
     @Autowired
-    @Qualifier(beanNameSf)
+    @Qualifier(BeanNameSf)
     private SessionFactory sessionFactory;
 
     @Override
@@ -33,15 +33,15 @@ public class SystemRepository extends OrmRepository {
     /** システムスキーマのHibernateコンポーネントを生成します。 */
     @ConfigurationProperties(prefix = "extension.hibernate.system")
     public static class SystemRepositoryConfig extends OrmRepositoryConfig {
-        @Bean(name = beanNameSf)
+        @Bean(name = BeanNameSf)
         public LocalSessionFactoryBean systemSessionFactory(
-                @Qualifier(beanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
+                @Qualifier(BeanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
             return super.sessionFactory(dataSource, interceptor);
         }
 
-        @Bean(name = beanNameTx)
+        @Bean(name = BeanNameTx)
         public HibernateTransactionManager systemTransactionManager(
-                @Qualifier(beanNameSf) final SessionFactory sessionFactory) {
+                @Qualifier(BeanNameSf) final SessionFactory sessionFactory) {
             return super.transactionManager(sessionFactory);
         }
     }
@@ -49,7 +49,7 @@ public class SystemRepository extends OrmRepository {
     /** システムスキーマのDataSourceを生成します。 */
     @ConfigurationProperties(prefix = "extension.datasource.system")
     public static class SystemDataSourceConfig extends OrmDataSourceConfig {
-        @Bean(name = beanNameDs, destroyMethod = "shutdown")
+        @Bean(name = BeanNameDs, destroyMethod = "shutdown")
         public DataSource systemDataSource() {
             return super.dataSource();
         }

@@ -7,27 +7,27 @@ import java.util.*;
  */
 public enum ActionStatusType {
     /** 未処理 */
-    UNPROCESSED,
+    Unprocessed,
     /** 処理中 */
-    PROCESSING,
+    Processing,
     /** 処理済 */
-    PROCESSED,
+    Processed,
     /** 取消 */
-    CANCELLED,
+    Cancelled,
     /** エラー */
-    ERROR;
+    Error;
 
     /** 完了済みのステータス一覧 */
     public static final List<ActionStatusType> finishTypes = Collections.unmodifiableList(
-            Arrays.asList(PROCESSED, CANCELLED));
+            Arrays.asList(Processed, Cancelled));
 
     /** 未完了のステータス一覧(処理中は含めない) */
     public static final List<ActionStatusType> unprocessingTypes = Collections.unmodifiableList(
-            Arrays.asList(UNPROCESSED, ERROR));
+            Arrays.asList(Unprocessed, Error));
 
     /** 未完了のステータス一覧(処理中も含める) */
     public static final List<ActionStatusType> unprocessedTypes = Collections.unmodifiableList(
-            Arrays.asList(UNPROCESSED, PROCESSING, ERROR));
+            Arrays.asList(Unprocessed, Processing, Error));
 
     /** 完了済みのステータスの時はtrue */
     public boolean isFinish() {

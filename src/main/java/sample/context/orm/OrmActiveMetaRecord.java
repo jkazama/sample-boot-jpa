@@ -11,7 +11,6 @@ import sample.context.Entity;
  * @see OrmInterceptor
  */
 public abstract class OrmActiveMetaRecord<T extends Entity> extends OrmActiveRecord<T> implements Serializable, Entity {
-
     private static final long serialVersionUID = 1L;
 
     /** 登録利用者ID */

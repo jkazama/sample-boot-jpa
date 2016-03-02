@@ -60,11 +60,11 @@ public class AccountTest extends EntityTestSupport {
             // 通常時取得
             assertThat(Account.loadValid(rep, "normal"), allOf(
                     hasProperty("id", is("normal")),
-                    hasProperty("statusType", is(AccountStatusType.NORMAL))));
+                    hasProperty("statusType", is(AccountStatusType.Normal))));
 
             // 退会時取得
             Account withdrawal = fixtures.acc("withdrawal");
-            withdrawal.setStatusType(AccountStatusType.WITHDRAWAL);
+            withdrawal.setStatusType(AccountStatusType.Withdrawal);
             withdrawal.save(rep);
             try {
                 Account.loadValid(rep, "withdrawal");

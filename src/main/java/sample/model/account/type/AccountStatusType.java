@@ -3,12 +3,12 @@ package sample.model.account.type;
 /** 口座状態を表現します。 */
 public enum AccountStatusType {
     /** 通常 */
-    NORMAL,
+    Normal,
     /** 退会 */
-    WITHDRAWAL;
+    Withdrawal;
 
     public boolean valid() {
-        return this == NORMAL;
+        return this == Normal;
     }
 
     public boolean invalid() {

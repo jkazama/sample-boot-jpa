@@ -24,8 +24,8 @@ import sample.context.orm.SystemRepository;
 @Component
 @Setter
 public class AuditHandler {
-    public static final Logger loggerActor = LoggerFactory.getLogger("Audit.Actor");
-    public static final Logger loggerEvent = LoggerFactory.getLogger("Audit.Event");
+    public static final Logger LoggerActor = LoggerFactory.getLogger("Audit.Actor");
+    public static final Logger LoggerEvent = LoggerFactory.getLogger("Audit.Event");
     protected Logger loggerSystem = LoggerFactory.getLogger(getClass());
 
     @Autowired
@@ -76,7 +76,7 @@ public class AuditHandler {
     }
 
     private Logger logger() {
-        return session.actor().getRoleType().isSystem() ? loggerEvent : loggerActor;
+        return session.actor().getRoleType().isSystem() ? LoggerEvent : LoggerActor;
     }
 
     private String message(String message, String prefix, Long startMillis) {
@@ -178,42 +178,42 @@ public class AuditHandler {
         @Autowired
         private SystemRepository rep;
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor start(RegAuditActor p) {
             return AuditActor.register(rep, p);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor finish(AuditActor audit) {
             return audit.finish(rep);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor cancel(AuditActor audit, String errorReason) {
             return audit.cancel(rep, errorReason);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor error(AuditActor audit, String errorReason) {
             return audit.error(rep, errorReason);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent start(RegAuditEvent p) {
             return AuditEvent.register(rep, p);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent finish(AuditEvent event) {
             return event.finish(rep);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent cancel(AuditEvent event, String errorReason) {
             return event.cancel(rep, errorReason);
         }
 
-        @Transactional(value = SystemRepository.beanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent error(AuditEvent event, String errorReason) {
             return event.error(rep, errorReason);
         }

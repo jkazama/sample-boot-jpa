@@ -62,7 +62,7 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
     /** 利用者監査ログを完了状態にします。 */
     public AuditActor finish(final SystemRepository rep) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.PROCESSED);
+        setStatusType(ActionStatusType.Processed);
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
         return update(rep);
@@ -71,7 +71,7 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
     /** 利用者監査ログを取消状態にします。 */
     public AuditActor cancel(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.CANCELLED);
+        setStatusType(ActionStatusType.Cancelled);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
@@ -81,7 +81,7 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
     /** 利用者監査ログを例外状態にします。 */
     public AuditActor error(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.ERROR);
+        setStatusType(ActionStatusType.Error);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
@@ -120,7 +120,7 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         @DescriptionEmpty
         private String keyword;
         @NotNull
-        private ActorRoleType roleType = ActorRoleType.USER;
+        private ActorRoleType roleType = ActorRoleType.User;
         private ActionStatusType statusType;
         @ISODate
         private LocalDate fromDay;
@@ -146,7 +146,7 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
             audit.setSource(actor.getSource());
             audit.setCategory(category);
             audit.setMessage(ConvertUtils.left(message, 300));
-            audit.setStatusType(ActionStatusType.PROCESSING);
+            audit.setStatusType(ActionStatusType.Processing);
             audit.setStartDate(now);
             return audit;
         }

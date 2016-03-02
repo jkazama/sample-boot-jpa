@@ -26,7 +26,7 @@ public class ServiceReportExporter {
     @Autowired
     private DefaultRepository rep;
     @Autowired
-    @Qualifier(DefaultRepository.beanNameTx)
+    @Qualifier(DefaultRepository.BeanNameTx)
     private PlatformTransactionManager tx;
     @Autowired
     private ReportHandler report;

@@ -23,19 +23,19 @@ public class SystemAdminService extends ServiceSupport {
     private SystemRepository rep;
 
     /** 利用者監査ログを検索します。 */
-    @Transactional(SystemRepository.beanNameTx)
+    @Transactional(SystemRepository.BeanNameTx)
     public PagingList<AuditActor> findAuditActor(FindAuditActor p) {
         return AuditActor.find(rep, p);
     }
 
     /** イベント監査ログを検索します。 */
-    @Transactional(SystemRepository.beanNameTx)
+    @Transactional(SystemRepository.BeanNameTx)
     public PagingList<AuditEvent> findAuditEvent(FindAuditEvent p) {
         return AuditEvent.find(rep, p);
     }
 
     /** アプリケーション設定一覧を検索します。 */
-    @Transactional(SystemRepository.beanNameTx)
+    @Transactional(SystemRepository.BeanNameTx)
     public List<AppSetting> findAppSetting(FindAppSetting p) {
         return AppSetting.find(rep, p);
     }

@@ -114,23 +114,23 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // Target URL
         http
-                .authorizeRequests()
-                .antMatchers(props.auth().excludesPath).permitAll();
+            .authorizeRequests()
+            .antMatchers(props.auth().excludesPath).permitAll();
         http
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers(props.auth().pathAdmin).hasRole("ADMIN")
-                .antMatchers(props.auth().path).hasRole("USER");
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers(props.auth().pathAdmin).hasRole("ADMIN")
+            .antMatchers(props.auth().path).hasRole("USER");
         // common
         http
-                .exceptionHandling().authenticationEntryPoint(entryPoint);
+            .exceptionHandling().authenticationEntryPoint(entryPoint);
         http
-                .sessionManagement()
-                .maximumSessions(props.auth().maximumSessions)
-                .and()
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+            .sessionManagement()
+            .maximumSessions(props.auth().maximumSessions)
+            .and()
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
         http
-                .addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
+            .addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
         if (corsFilter != null) {
             http.addFilterBefore(corsFilter, LogoutFilter.class);
         }
@@ -142,14 +142,14 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 
         // login/logout
         http
-                .formLogin().loginPage(props.auth().loginPath)
-                .usernameParameter(props.auth().loginKey).passwordParameter(props.auth().passwordKey)
-                .successHandler(loginHandler).failureHandler(loginHandler)
-                .permitAll()
-                .and()
-                .logout().logoutUrl(props.auth().logoutPath)
-                .logoutSuccessHandler(loginHandler)
-                .permitAll();
+            .formLogin().loginPage(props.auth().loginPath)
+            .usernameParameter(props.auth().loginKey).passwordParameter(props.auth().passwordKey)
+            .successHandler(loginHandler).failureHandler(loginHandler)
+            .permitAll()
+            .and()
+            .logout().logoutUrl(props.auth().logoutPath)
+            .logoutSuccessHandler(loginHandler)
+            .permitAll();
     }
 
     /** Spring Securityに対する拡張設定情報。(ScurityConfig#SecurityPropertiesによって管理されています) */

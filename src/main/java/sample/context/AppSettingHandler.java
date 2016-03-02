@@ -33,7 +33,7 @@ public class AppSettingHandler {
 
     /** アプリケーション設定情報を取得します。 */
     @Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
-    @Transactional(value = SystemRepository.beanNameTx)
+    @Transactional(value = SystemRepository.BeanNameTx)
     public AppSetting setting(String id) {
         if (mockMap.isPresent())
             return mockSetting(id);
@@ -48,7 +48,7 @@ public class AppSettingHandler {
 
     /** アプリケーション設定情報を変更します。 */
     @CacheEvict(cacheNames = "AppSettingHandler.appSetting", key = "#id")
-    @Transactional(value = SystemRepository.beanNameTx)
+    @Transactional(value = SystemRepository.BeanNameTx)
     public AppSetting update(String id, String value) {
         return mockMap.isPresent() ? mockSetting(id) : AppSetting.load(rep, id).update(rep, value);
     }

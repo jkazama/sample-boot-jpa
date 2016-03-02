@@ -13,7 +13,7 @@ import org.springframework.util.Assert;
  */
 public abstract class DateUtils {
 
-    private static WeekendQuery weekendQuery = new WeekendQuery();
+    private static WeekendQuery WeekendQuery = new WeekendQuery();
 
     /** 指定された文字列(YYYY-MM-DD)を元に日付へ変換します。 */
     public static LocalDate day(String dayStr) {
@@ -108,7 +108,7 @@ public abstract class DateUtils {
     /** 指定営業日が週末(土日)か判定します。(引数は必須) */
     public static boolean isWeekend(LocalDate day) {
         Assert.notNull(day);
-        return day.query(weekendQuery);
+        return day.query(WeekendQuery);
     }
 
     /** 指定年の最終日を取得します。 */

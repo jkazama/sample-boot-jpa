@@ -12,7 +12,6 @@ import sample.context.Dto;
  */
 @Value
 public class PagingList<T> implements Dto {
-
     private static final long serialVersionUID = 1L;
 
     private List<T> list;

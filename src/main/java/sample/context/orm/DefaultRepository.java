@@ -14,12 +14,12 @@ import lombok.Setter;
 @org.springframework.stereotype.Repository
 @Setter
 public class DefaultRepository extends OrmRepository {
-    public static final String beanNameDs = "dataSource";
-    public static final String beanNameSf = "sessionFactory";
-    public static final String beanNameTx = "transactionManager";
+    public static final String BeanNameDs = "dataSource";
+    public static final String BeanNameSf = "sessionFactory";
+    public static final String BeanNameTx = "transactionManager";
 
     @Autowired
-    @Qualifier(beanNameSf)
+    @Qualifier(BeanNameSf)
     private SessionFactory sessionFactory;
 
     @Override
@@ -30,17 +30,17 @@ public class DefaultRepository extends OrmRepository {
     /** 標準スキーマのHibernateコンポーネントを生成します。 */
     @ConfigurationProperties(prefix = "extension.hibernate.default")
     public static class DefaultRepositoryConfig extends OrmRepositoryConfig {
-        @Bean(name = beanNameSf)
+        @Bean(name = BeanNameSf)
         @Override
         public LocalSessionFactoryBean sessionFactory(
-                @Qualifier(beanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
+                @Qualifier(BeanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
             return super.sessionFactory(dataSource, interceptor);
         }
 
-        @Bean(name = beanNameTx)
+        @Bean(name = BeanNameTx)
         @Override
         public HibernateTransactionManager transactionManager(
-                @Qualifier(beanNameSf) final SessionFactory sessionFactory) {
+                @Qualifier(BeanNameSf) final SessionFactory sessionFactory) {
             return super.transactionManager(sessionFactory);
         }
     }
@@ -48,7 +48,7 @@ public class DefaultRepository extends OrmRepository {
     /** 標準スキーマのDataSourceを生成します。 */
     @ConfigurationProperties(prefix = "extension.datasource.default")
     public static class DefaultDataSourceConfig extends OrmDataSourceConfig {
-        @Bean(name = beanNameDs, destroyMethod = "shutdown")
+        @Bean(name = BeanNameDs, destroyMethod = "shutdown")
         public DataSource dataSource() {
             return super.dataSource();
         }

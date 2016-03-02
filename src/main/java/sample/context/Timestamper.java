@@ -12,7 +12,7 @@ import sample.util.*;
  */
 @Component
 public class Timestamper {
-    public static final String KEY_DAY = "system.businessDay.day";
+    public static final String KeyDay = "system.businessDay.day";
 
     @Autowired(required = false)
     private AppSettingHandler setting;
@@ -29,7 +29,7 @@ public class Timestamper {
 
     /** 営業日を返します。 */
     public LocalDate day() {
-        return setting == null ? LocalDate.now(clock) : DateUtils.day(setting.setting(KEY_DAY).str());
+        return setting == null ? LocalDate.now(clock) : DateUtils.day(setting.setting(KeyDay).str());
     }
 
     /** 日時を返します。 */
@@ -49,7 +49,7 @@ public class Timestamper {
      */
     public Timestamper proceedDay(LocalDate day) {
         if (setting != null)
-            setting.update(KEY_DAY, DateUtils.dayFormat(day));
+            setting.update(KeyDay, DateUtils.dayFormat(day));
         return this;
     }
 

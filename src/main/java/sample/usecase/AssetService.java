@@ -29,7 +29,7 @@ public class AssetService extends ServiceSupport {
      */
     public List<CashInOut> findUnprocessedCashOut() {
         final String accId = actor().getId();
-        return tx(accId, LockType.READ, () -> {
+        return tx(accId, LockType.Read, () -> {
             return CashInOut.findUnprocessed(rep(), accId);
         });
     }
@@ -45,7 +45,7 @@ public class AssetService extends ServiceSupport {
         return audit().audit("振込出金依頼をします", () -> {
             p.setAccountId(actor().getId()); // 顧客側はログイン利用者で強制上書き
             // low: 口座IDロック(WRITE)とトランザクションをかけて振込処理
-            CashInOut cio = tx(actor().getId(), LockType.WRITE, () -> {
+            CashInOut cio = tx(actor().getId(), LockType.Write, () -> {
                 return CashInOut.withdraw(rep(), businessDay(), p);
             });
             // low: トランザクション確定後に出金依頼を受付した事をメール通知します。

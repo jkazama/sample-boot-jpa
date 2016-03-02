@@ -26,7 +26,6 @@ import sample.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
-
     private static final long serialVersionUID = 1L;
 
     /** ID */
@@ -81,7 +80,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
             v.verify(statusType.isUnprocessing(), ErrorKeys.ActionUnprocessing); // 「既に処理中/処理済です」
         });
 
-        setStatusType(ActionStatusType.PROCESSED);
+        setStatusType(ActionStatusType.Processed);
         update(rep);
         CashBalance.getOrNew(rep, accountId, currency).add(rep, amount);
         return this;
@@ -95,7 +94,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
     public Cashflow error(final OrmRepository rep) {
         validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
 
-        setStatusType(ActionStatusType.ERROR);
+        setStatusType(ActionStatusType.Error);
         return update(rep);
     }
 
@@ -172,7 +171,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
             m.setEventDay(eventDate.getDay());
             m.setEventDate(eventDate.getDate());
             m.setValueDay(valueDay);
-            m.setStatusType(ActionStatusType.UNPROCESSED);
+            m.setStatusType(ActionStatusType.Unprocessed);
             return m;
         }
     }
