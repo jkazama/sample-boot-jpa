@@ -7,10 +7,10 @@ import com.ibm.icu.text.Transliterator;
 
 /** 各種型/文字列変換をサポートします。(ICU4Jライブラリに依存しています) */
 public abstract class ConvertUtils {
-    private static Transliterator zenkakuToHan = Transliterator.getInstance("Fullwidth-Halfwidth");
-    private static Transliterator hankakuToZen = Transliterator.getInstance("Halfwidth-Fullwidth");
-    private static Transliterator katakanaToHira = Transliterator.getInstance("Katakana-Hiragana");
-    private static Transliterator hiraganaToKana = Transliterator.getInstance("Hiragana-Katakana");
+    private static Transliterator ZenkakuToHan = Transliterator.getInstance("Fullwidth-Halfwidth");
+    private static Transliterator HankakuToZen = Transliterator.getInstance("Halfwidth-Fullwidth");
+    private static Transliterator KatakanaToHira = Transliterator.getInstance("Katakana-Hiragana");
+    private static Transliterator HiraganaToKana = Transliterator.getInstance("Hiragana-Katakana");
 
     /** 例外無しにLongへ変換します。(変換できない時はnull) */
     public static Long quietlyLong(Object value) {
@@ -46,17 +46,17 @@ public abstract class ConvertUtils {
 
     /** 全角文字を半角にします。 */
     public static String zenkakuToHan(String text) {
-        return Optional.ofNullable(text).map((v) -> zenkakuToHan.transliterate(v)).orElse(null);
+        return Optional.ofNullable(text).map((v) -> ZenkakuToHan.transliterate(v)).orElse(null);
     }
 
     /** 半角文字を全角にします。 */
     public static String hankakuToZen(String text) {
-        return Optional.ofNullable(text).map((v) -> hankakuToZen.transliterate(v)).orElse(null);
+        return Optional.ofNullable(text).map((v) -> HankakuToZen.transliterate(v)).orElse(null);
     }
 
     /** カタカナをひらがなにします。 */
     public static String katakanaToHira(String text) {
-        return Optional.ofNullable(text).map((v) -> katakanaToHira.transliterate(v)).orElse(null);
+        return Optional.ofNullable(text).map((v) -> KatakanaToHira.transliterate(v)).orElse(null);
     }
 
     /**
@@ -64,7 +64,7 @@ public abstract class ConvertUtils {
      * <p>low: 実際の挙動は厳密ではないので単体検証(ConvertUtilsTest)などで事前に確認して下さい。
      */
     public static String hiraganaToZenKana(String text) {
-        return Optional.ofNullable(text).map((v) -> hiraganaToKana.transliterate(v)).orElse(null);
+        return Optional.ofNullable(text).map((v) -> HiraganaToKana.transliterate(v)).orElse(null);
     }
 
     /**

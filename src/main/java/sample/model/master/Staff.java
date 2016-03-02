@@ -38,7 +38,7 @@ public class Staff extends OrmActiveRecord<Staff> {
     private String password;
 
     public Actor actor() {
-        return new Actor(id, name, ActorRoleType.INTERNAL);
+        return new Actor(id, name, ActorRoleType.Internal);
     }
 
     /** パスワードを変更します。 */

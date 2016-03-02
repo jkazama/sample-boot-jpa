@@ -44,12 +44,12 @@ public class DataFixtures {
     @Autowired
     private DefaultRepository rep;
     @Autowired
-    @Qualifier(DefaultRepository.beanNameTx)
+    @Qualifier(DefaultRepository.BeanNameTx)
     private PlatformTransactionManager tx;
     @Autowired
     private SystemRepository repSystem;
     @Autowired
-    @Qualifier(SystemRepository.beanNameTx)
+    @Qualifier(SystemRepository.BeanNameTx)
     private PlatformTransactionManager txSystem;
 
     @PostConstruct
@@ -66,7 +66,7 @@ public class DataFixtures {
 
     public void initializeInTxSystem() {
         String day = DateUtils.dayFormat(LocalDate.now());
-        new AppSetting(Timestamper.KEY_DAY, "system", "営業日", day).save(repSystem);
+        new AppSetting(Timestamper.KeyDay, "system", "営業日", day).save(repSystem);
     }
 
     public void initializeInTx() {
@@ -95,7 +95,7 @@ public class DataFixtures {
         m.setId(id);
         m.setName(id);
         m.setMail("hoge@example.com");
-        m.setStatusType(AccountStatusType.NORMAL);
+        m.setStatusType(AccountStatusType.Normal);
         return m;
     }
 
@@ -151,7 +151,7 @@ public class DataFixtures {
         m.setTargetFiAccountId("tFiAccId");
         m.setSelfFiCode("sFiCode");
         m.setSelfFiAccountId("sFiAccId");
-        m.setStatusType(ActionStatusType.UNPROCESSED);
+        m.setStatusType(ActionStatusType.Unprocessed);
         return m;
     }
 
@@ -184,7 +184,7 @@ public class DataFixtures {
     /** 祝日の簡易生成 */
     public Holiday holiday(String dayStr) {
         Holiday m = new Holiday();
-        m.setCategory(Holiday.categoryDefault);
+        m.setCategory(Holiday.CategoryDefault);
         m.setName("休日サンプル");
         m.setDay(DateUtils.day(dayStr));
         return m;

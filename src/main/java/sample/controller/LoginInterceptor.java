@@ -16,6 +16,7 @@ import sample.context.security.SecurityAuthConfig;
 @Aspect
 @Configuration
 public class LoginInterceptor {
+    
     @Autowired
     private ActorSession session;
 
@@ -42,12 +43,12 @@ public class LoginInterceptor {
 
         @Before("execution(* *..controller.*Controller.*(..))")
         public void bindUser() {
-            session.bind(new Actor("sample", ActorRoleType.USER));
+            session.bind(new Actor("sample", ActorRoleType.User));
         }
 
         @Before("execution(* *..controller.admin.*Controller.*(..))")
         public void bindAdmin() {
-            session.bind(new Actor("admin", ActorRoleType.INTERNAL));
+            session.bind(new Actor("admin", ActorRoleType.Internal));
         }
     }
 

@@ -29,21 +29,21 @@ import sample.context.orm.OrmRepository.OrmNamingStrategy;
  */
 public class DdlExporter {
 
-    private static final String packageRoot = "sample";
-    private static final String packageDefault = packageRoot + ".model";
-    private static final String packageSystem = packageRoot + ".context";
-    private static final String ormDialect = "org.hibernate.dialect.H2Dialect";
-    private static final String outputRoot = "build/";
+    private static final String PackageRoot = "sample";
+    private static final String PackageDefault = PackageRoot + ".model";
+    private static final String PackageSystem = PackageRoot + ".context";
+    private static final String OrmDialect = "org.hibernate.dialect.H2Dialect";
+    private static final String OutputRoot = "build/";
 
     public static void main(String[] args) {
         DdlExporter exporter = new DdlExporter();
-        exporter.outputDdl(packageSystem, ormDialect, "ddl-system.sql");
-        exporter.outputDdl(packageDefault, ormDialect, "ddl-default.sql");
+        exporter.outputDdl(PackageSystem, OrmDialect, "ddl-system.sql");
+        exporter.outputDdl(PackageDefault, OrmDialect, "ddl-default.sql");
     }
 
     public void outputDdl(String packageName, String dialect, String fileName) {
         try {
-            String outputFile = outputRoot + fileName;
+            String outputFile = OutputRoot + fileName;
             Files.deleteIfExists(Paths.get(outputFile));
             SchemaExport export = new SchemaExport();
             export.setDelimiter(";");

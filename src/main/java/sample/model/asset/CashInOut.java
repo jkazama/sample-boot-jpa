@@ -32,7 +32,6 @@ import sample.util.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
-
     private static final long serialVersionUID = 1L;
 
     /** ID(振込依頼No) */
@@ -105,7 +104,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
             v.verify(now.afterEqualsDay(eventDay), AssetErrorKeys.CashInOutAfterEqualsDay);
         });
         // 処理済状態を反映
-        setStatusType(ActionStatusType.PROCESSED);
+        setStatusType(ActionStatusType.Processed);
         setCashflowId(Cashflow.register(rep, regCf()).getId());
         return update(rep);
     }
@@ -130,7 +129,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
             v.verify(now.beforeDay(eventDay), AssetErrorKeys.CashInOutBeforeEqualsDay);
         });
         // 取消状態を反映
-        setStatusType(ActionStatusType.CANCELLED);
+        setStatusType(ActionStatusType.Cancelled);
         return update(rep);
     }
 
@@ -142,7 +141,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
     public CashInOut error(final OrmRepository rep) {
         validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
 
-        setStatusType(ActionStatusType.ERROR);
+        setStatusType(ActionStatusType.Error);
         return update(rep);
     }
 
@@ -251,7 +250,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
             m.setTargetFiAccountId(acc.getFiAccountId());
             m.setSelfFiCode(selfAcc.getFiCode());
             m.setSelfFiAccountId(selfAcc.getFiAccountId());
-            m.setStatusType(ActionStatusType.UNPROCESSED);
+            m.setStatusType(ActionStatusType.Unprocessed);
             return m;
         }
     }

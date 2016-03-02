@@ -44,7 +44,7 @@ public class Account extends OrmActiveRecord<Account> {
     private AccountStatusType statusType;
 
     public Actor actor() {
-        return new Actor(id, name, ActorRoleType.USER);
+        return new Actor(id, name, ActorRoleType.User);
     }
 
     /** 口座に紐付くログイン情報を取得します。 */
@@ -109,7 +109,7 @@ public class Account extends OrmActiveRecord<Account> {
             m.setId(id);
             m.setName(name);
             m.setMail(mail);
-            m.setStatusType(AccountStatusType.NORMAL);
+            m.setStatusType(AccountStatusType.Normal);
             return m;
         }
 

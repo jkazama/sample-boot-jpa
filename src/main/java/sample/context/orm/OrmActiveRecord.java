@@ -23,7 +23,6 @@ import sample.util.Validator;
  * </pre>
  */
 public class OrmActiveRecord<T extends Entity> implements Serializable, Entity {
-
     private static final long serialVersionUID = 1L;
 
     /** 審査処理をします。 */

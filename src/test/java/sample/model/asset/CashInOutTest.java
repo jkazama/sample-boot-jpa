@@ -52,13 +52,13 @@ public class CashInOutTest extends EntityTestSupport {
                     CashInOut.find(rep, findParam(baseDay, basePlus1Day)),
                     hasSize(1));
             assertThat(
-                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.UNPROCESSED)),
+                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.Unprocessed)),
                     hasSize(1));
             assertThat(
-                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.PROCESSED)),
+                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.Processed)),
                     empty());
             assertThat(
-                    CashInOut.find(rep, findParam(basePlus1Day, basePlus2Day, ActionStatusType.UNPROCESSED)),
+                    CashInOut.find(rep, findParam(basePlus1Day, basePlus2Day, ActionStatusType.Unprocessed)),
                     empty());
         });
     }
@@ -101,7 +101,7 @@ public class CashInOutTest extends EntityTestSupport {
                     hasProperty("targetFiAccountId", is("FI" + accId)),
                     hasProperty("selfFiCode", is(Remarks.CashOut + "-" + ccy)),
                     hasProperty("selfFiAccountId", is("xxxxxx")),
-                    hasProperty("statusType", is(ActionStatusType.UNPROCESSED)),
+                    hasProperty("statusType", is(ActionStatusType.Unprocessed)),
                     hasProperty("cashflowId", is(nullValue()))));
 
             // 拘束額を考慮した出金依頼 [例外]
@@ -120,7 +120,7 @@ public class CashInOutTest extends EntityTestSupport {
         tx(() -> {
             // CF未発生の依頼を取消
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
-            assertThat(normal.cancel(rep), hasProperty("statusType", is(ActionStatusType.CANCELLED)));
+            assertThat(normal.cancel(rep), hasProperty("statusType", is(ActionStatusType.Cancelled)));
 
             // 発生日を迎えた場合は取消できない [例外]
             CashInOut today = fixtures.cio(accId, "300", true);
@@ -140,12 +140,12 @@ public class CashInOutTest extends EntityTestSupport {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
-            assertThat(normal.error(rep), hasProperty("statusType", is(ActionStatusType.ERROR)));
+            assertThat(normal.error(rep), hasProperty("statusType", is(ActionStatusType.Error)));
 
             // 処理済の時はエラーにできない [例外]
             CashInOut today = fixtures.cio(accId, "300", true);
             today.setEventDay(baseDay);
-            today.setStatusType(ActionStatusType.PROCESSED);
+            today.setStatusType(ActionStatusType.Processed);
             today.save(rep);
             try {
                 today.error(rep);
@@ -176,7 +176,7 @@ public class CashInOutTest extends EntityTestSupport {
             normal.setEventDay(baseDay);
             normal.save(rep);
             assertThat(normal.process(rep), allOf(
-                    hasProperty("statusType", is(ActionStatusType.PROCESSED)),
+                    hasProperty("statusType", is(ActionStatusType.Processed)),
                     hasProperty("cashflowId", not(nullValue()))));
             // 発生させたキャッシュフローの検証
             assertThat(Cashflow.load(rep, normal.getCashflowId()), allOf(
@@ -187,7 +187,7 @@ public class CashInOutTest extends EntityTestSupport {
                     hasProperty("remark", is(Remarks.CashOut)),
                     hasProperty("eventDay", is(baseDay)),
                     hasProperty("valueDay", is(basePlus3Day)),
-                    hasProperty("statusType", is(ActionStatusType.UNPROCESSED))));
+                    hasProperty("statusType", is(ActionStatusType.Unprocessed))));
         });
     }
 

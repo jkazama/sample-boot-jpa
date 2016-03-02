@@ -21,7 +21,7 @@ public class AssetAdminService extends ServiceSupport {
      * 振込入出金依頼を検索します。
      * low: 口座横断的なので割り切りでREADロックはかけません。
      */
-    @Transactional(DefaultRepository.beanNameTx)
+    @Transactional(DefaultRepository.BeanNameTx)
     public List<CashInOut> findCashInOut(final FindCashInOut p) {
         return CashInOut.find(rep(), p);
     }
@@ -40,7 +40,7 @@ public class AssetAdminService extends ServiceSupport {
             //low: TX内のロックが適切に動くかはIdLockHandlerの実装次第。
             // 調整が難しいようなら大人しく営業停止時間(IdLock必要な処理のみ非活性化されている状態)を作って、
             // ロック無しで一気に処理してしまう方がシンプル。
-            idLock().call(cio.getAccountId(), LockType.WRITE, () -> {
+            idLock().call(cio.getAccountId(), LockType.Write, () -> {
                 try {
                     cio.process(rep());
                     //low: SQLの発行担保。扱う情報に相互依存が無く、セッションキャッシュはリークしがちなので都度消しておく。
@@ -70,7 +70,7 @@ public class AssetAdminService extends ServiceSupport {
         //low: 日回し後の実行を想定
         LocalDate day = dh().time().day();
         for (final Cashflow cf : Cashflow.findDoRealize(rep(), day)) {
-            idLock().call(cf.getAccountId(), LockType.WRITE, () -> {
+            idLock().call(cf.getAccountId(), LockType.Write, () -> {
                 try {
                     cf.realize(rep());
                     rep().flushAndClear();

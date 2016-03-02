@@ -14,7 +14,6 @@ import sample.model.constraints.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class SelfFiAccount extends OrmActiveRecord<SelfFiAccount> {
-
     private static final long serialVersionUID = 1L;
 
     /** ID */

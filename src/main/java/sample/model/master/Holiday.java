@@ -21,7 +21,7 @@ import sample.util.DateUtils;
 @EqualsAndHashCode(callSuper = false)
 public class Holiday extends OrmActiveMetaRecord<Holiday> {
     private static final long serialVersionUID = 1l;
-    public static final String categoryDefault = "default";
+    public static final String CategoryDefault = "default";
 
     /** ID */
     @Id
@@ -47,7 +47,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 
     /** 休日マスタを取得します。 */
     public static Optional<Holiday> get(final OrmRepository rep, LocalDate day) {
-        return get(rep, day, categoryDefault);
+        return get(rep, day, CategoryDefault);
     }
 
     public static Optional<Holiday> get(final OrmRepository rep, LocalDate day, String category) {
@@ -56,7 +56,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 
     /** 休日マスタを取得します。(例外付) */
     public static Holiday load(final OrmRepository rep, LocalDate day) {
-        return load(rep, day, categoryDefault);
+        return load(rep, day, CategoryDefault);
     }
 
     public static Holiday load(final OrmRepository rep, LocalDate day, String category) {
@@ -65,7 +65,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
 
     /** 休日情報を検索します。 */
     public static List<Holiday> find(final OrmRepository rep, final int year) {
-        return find(rep, year, categoryDefault);
+        return find(rep, year, CategoryDefault);
     }
 
     public static List<Holiday> find(final OrmRepository rep, final int year, final String category) {
@@ -87,7 +87,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
     public static class RegHoliday implements Dto {
         private static final long serialVersionUID = 1l;
         @CategoryEmpty
-        private String category = categoryDefault;
+        private String category = CategoryDefault;
         @Year
         private int year;
         @Valid

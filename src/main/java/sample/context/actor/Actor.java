@@ -12,13 +12,12 @@ import sample.context.Dto;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Actor implements Dto {
-
     private static final long serialVersionUID = 1L;
 
     /** 匿名利用者定数 */
-    public static Actor Anonymous = new Actor("unknown", ActorRoleType.ANONYMOUS);
+    public static Actor Anonymous = new Actor("unknown", ActorRoleType.Anonymous);
     /** システム利用者定数 */
-    public static Actor System = new Actor("system", ActorRoleType.SYSTEM);
+    public static Actor System = new Actor("system", ActorRoleType.System);
 
     /** 利用者ID */
     private String id;
@@ -46,22 +45,22 @@ public class Actor implements Dto {
      */
     public static enum ActorRoleType {
         /** 匿名利用者(ID等の特定情報を持たない利用者) */
-        ANONYMOUS,
+        Anonymous,
         /** 利用者(主にBtoCの顧客, BtoB提供先社員) */
-        USER,
+        User,
         /** 内部利用者(主にBtoCの社員, BtoB提供元社員) */
-        INTERNAL,
+        Internal,
         /** システム管理者(ITシステム担当社員またはシステム管理会社の社員) */
-        ADMINISTRATOR,
+        Administrator,
         /** システム(システム上の自動処理) */
-        SYSTEM;
+        System;
 
         public boolean isAnonymous() {
-            return this == ANONYMOUS;
+            return this == Anonymous;
         }
 
         public boolean isSystem() {
-            return this == SYSTEM;
+            return this == System;
         }
 
         public boolean notSystem() {

@@ -14,7 +14,7 @@ import sample.util.Calculator;
 @AllArgsConstructor
 public class Pagination implements Dto {
     private static final long serialVersionUID = 1l;
-    public static final int defaultSize = 100;
+    public static final int DefaultSize = 100;
     /** ページ数(1開始) */
     private int page;
     /** ページあたりの件数 */
@@ -31,7 +31,7 @@ public class Pagination implements Dto {
     }
 
     public Pagination(int page) {
-        this(page, defaultSize, null, false, new Sort());
+        this(page, DefaultSize, null, false, new Sort());
     }
 
     public Pagination(int page, int size) {
