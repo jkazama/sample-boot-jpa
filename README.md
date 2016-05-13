@@ -176,8 +176,8 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 1.3.3    | Spring Boot 基盤 (actuator/security/aop/cache/web) |
-| `spring-orm`            | 4.2.5    | Spring4 の ORM 概念サポート |
+| `spring-boot-starter-*` | 1.3.5    | Spring Boot 基盤 (actuator/security/aop/cache/web) |
+| `spring-orm`            | 4.2.6    | Spring4 の ORM 概念サポート |
 | `hibernate-*`           | 5.1.0    | DB 永続化サポート (core/java8/ehcache) |
 | `ehcache-core`          | 2.6.+    | 最新の EhCache 設定記法を利用するため |
 | `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
