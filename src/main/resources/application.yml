@@ -12,11 +12,11 @@ spring:
       indent_output: true
       write_dates_as_timestamps: false
 
-server.port: 8080
-
-error:
-  whitelabel.enabled: false
-  path: /api/error
+server:
+  port: 8080
+  error:
+    whitelabel.enabled: false
+    path: /api/error
 
 security.basic.enabled: false
 
