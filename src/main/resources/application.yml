@@ -4,13 +4,17 @@ spring:
   aop.proxy-target-class: true
   autoconfigure.exclude:
     - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-    - org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration
   messages.basename: messages-validation, messages
-  main.show-banner: false 
+  cache.jcache.config: ehcache.xml
   jackson:
     serialization:
-      indent_output: true
-      write_dates_as_timestamps: false
+      indent-output: true
+      write-dates-as-timestamps: false
+  http.multipart:
+    max-file-size: 20MB
+    max-request-size: 20MB
+
+banner.location: banner.txt
 
 server:
   port: 8080
@@ -18,11 +22,9 @@ server:
     whitelabel.enabled: false
     path: /api/error
 
-security.basic.enabled: false
-
-multipart:
-  maxFileSize: 20MB
-  maxRequestSize: 20MB
+security:
+  basic.enabled: false
+  user.password: unused 
 
 management:
   context-path: /api/management
@@ -34,12 +36,10 @@ management:
 extension:
   datasource:
     default:
-      driver-class-name: org.h2.Driver
       url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
       username:
       password:
     system:
-      driver-class-name: org.h2.Driver
       url: jdbc:h2:mem:system;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
       username:
       password:

@@ -95,8 +95,8 @@ main
 
 - JDK8 以上のインストール
 - [Lombok](http://projectlombok.org/download.html) のパッチ当て ( .jar を実行してインストーラの指示通りに実行 )
-- Gradle Plugin [ Buildship ] のインストール
-    - Eclipse Mars 以降は Buildship 版が入っているので不要です
+
+> 以降は Gradle Plugin [ Buildship ] の利用を前提としているため、 Eclipse Mars 以降を推奨します。
 
 次の手順で本サンプルをプロジェクト化してください。  
 
@@ -176,14 +176,13 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 1.3.5    | Spring Boot 基盤 (actuator/security/aop/cache/web) |
-| `spring-orm`            | 4.2.6    | Spring4 の ORM 概念サポート |
-| `hibernate-*`           | 5.1.0    | DB 永続化サポート (core/java8/ehcache) |
-| `ehcache-core`          | 2.6.+    | 最新の EhCache 設定記法を利用するため |
+| `spring-boot-starter-*` | 1.4.0    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
+| `hibernate-*`           | 5.0.9    | DB 永続化サポート (core/java8/ehcache) |
+| `ehcache`               | 3.1.+    | JCache 実装 |
 | `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
-| `jackson-datatype-*`    | 2.6.+    | JSON 変換時の Java8 / Hibernate 対応 |
+| `jackson-datatype-*`    | 2.8.+    | JSON 変換時の Java8 / Hibernate 対応 |
 | `commons-*`             | -        | 汎用ユーティリティライブラリ |
-| `icu4j-*`               | 54.1.+   | 文字変換ライブラリ |
+| `icu4j-*`               | 57.1.+   | 文字変換ライブラリ |
 
 *※実際の詳細な定義は `build.gradle` を参照してください*
 
@@ -199,8 +198,6 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。単純な readOnly な処理のみ `@Transactional([Bean名称])` を利用してメソッド単位の対応を取ります。
 
 スキーマは標準のビジネスロジック用途 ( `DefaultRepository` ) とシステム用途 ( `SystemRepository` ) の2種類を想定しています。 Entity 実装ではスキーマに依存させず、引数に渡す側 ( 主にアプリケーション層 ) で判断させます。
-
-JPA 標準の機能だけでは十分ではないケースがあるため、 HibernateORM 依存を明確にして Hibernate 固有機能を利用できるようにしています。
 
 #### 認証/認可
 
@@ -228,7 +225,7 @@ JPA 標準の機能だけでは十分ではないケースがあるため、 Hib
 #### テスト
 
 パターンとしては通常の Spring コンテナを用いる 2 パターン ( WebMock テスト / コンテナテスト ) と、 Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) の合計 3 パターンで考えます。 （ それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport` ）  
-テスト対象に Service まで含めるてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけとしています。
+テスト対象に Service まで含めてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけとしています。
 
 ### License
 

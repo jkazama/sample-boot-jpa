@@ -30,7 +30,7 @@ public class AssetController extends ControllerSupport {
     private AssetService service;
 
     /** 未処理の振込依頼情報を検索します。 */
-    @RequestMapping(value = "/cio/unprocessedOut/")
+    @GetMapping("/cio/unprocessedOut/")
     public List<CashOutUI> findUnprocessedCashOut() {
         return service.findUnprocessedCashOut().stream().map((cio) -> CashOutUI.of(cio)).collect(Collectors.toList());
     }
@@ -40,7 +40,7 @@ public class AssetController extends ControllerSupport {
      * low: RestControllerの標準の振る舞いとしてvoidやプリミティブ型はJSON化されないので注意してください。
      * (解析時の優先順位の関係だと思いますが)
      */
-    @RequestMapping(value = "/cio/withdraw", method = RequestMethod.POST)
+    @PostMapping("/cio/withdraw")
     public ResponseEntity<Long> withdraw(@Valid RegCashOut p) {
         return result(() -> service.withdraw(p));
     }

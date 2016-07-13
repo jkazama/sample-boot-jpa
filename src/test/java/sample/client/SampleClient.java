@@ -90,7 +90,7 @@ public class SampleClient {
         public ClientHttpResponse dump(ClientHttpResponse res) throws Exception {
             System.out.println(String.format("status: %d, text: %s", res.getRawStatusCode(), res.getStatusText()));
             try {
-                System.out.println(IOUtils.toString(res.getBody()));
+                System.out.println(IOUtils.toString(res.getBody(), "UTF-8"));
             } catch (IOException e) {
                 /* nothing. */ }
             return res;
