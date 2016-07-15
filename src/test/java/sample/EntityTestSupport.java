@@ -1,30 +1,31 @@
 package sample;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.util.*;
 import java.util.function.Supplier;
 
+import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.hibernate.SessionFactory;
 import org.junit.*;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import sample.context.*;
+import sample.context.Entity;
 import sample.context.actor.ActorSession;
 import sample.context.orm.*;
-import sample.context.orm.DefaultRepository.DefaultRepositoryConfig;
+import sample.context.orm.DefaultRepository.DefaultDataSourceConfig;
+import sample.context.orm.SystemRepository.SystemDataSourceConfig;
 import sample.model.*;
 import sample.support.MockDomainHelper;
 
 /**
- * Springコンテナを用いないHibernateのみに特化した検証用途。
- * <p>modelパッケージでのみ利用してください。
+ * Spring コンテナを用いない JPA のみに特化した検証用途。
+ * <p>model パッケージでのみ利用してください。
  */
 public class EntityTestSupport {
     protected Clock clock = Clock.systemDefaultZone();
@@ -33,9 +34,10 @@ public class EntityTestSupport {
     protected PasswordEncoder encoder;
     protected ActorSession session;
     protected MockDomainHelper dh;
-    protected SessionFactory sf;
+    protected EntityManagerFactory emf;
     protected DefaultRepository rep;
     protected PlatformTransactionManager txm;
+    protected EntityManagerFactory emfSystem;
     protected SystemRepository repSystem;
     protected PlatformTransactionManager txmSystem;
     protected DataFixtures fixtures;
@@ -103,17 +105,18 @@ public class EntityTestSupport {
 
     @After
     public void cleanup() {
-        sf.close();
+        emf.close();
+        emfSystem.close();
     }
 
     protected void setupRepository() {
-        SessionFactory sf = createSessionFactory();
+        EntityManagerFactory emf = createEntityManagerFactory();
         rep = new DefaultRepository();
         rep.setDh(dh);
-        rep.setSessionFactory(sf);
+        rep.setEm(SharedEntityManagerCreator.createSharedEntityManager(emf));
         repSystem = new SystemRepository();
         repSystem.setDh(dh);
-        repSystem.setSessionFactory(sf);
+        repSystem.setEm(SharedEntityManagerCreator.createSharedEntityManager(emfSystem));
     }
 
     protected void setupDataFixtures() {
@@ -127,29 +130,40 @@ public class EntityTestSupport {
         fixtures.setTxSystem(txmSystem);
     }
 
-    private SessionFactory createSessionFactory() {
+    private EntityManagerFactory createEntityManagerFactory() {
         DataSource ds = EntityTestFactory.dataSource();
-        DefaultRepositoryConfig config = new DefaultRepository.DefaultRepositoryConfig();
-        config.setShowSql(true);
-        config.setCreateDrop(true);
+        DefaultDataSourceConfig config = new DefaultDataSourceConfig();
+        config.getJpa().setShowSql(true);
+        config.getJpa().getHibernate().setDdlAuto("create-drop");
         if (targetEntities.isEmpty()) {
-            config.setPackageToScan(packageToScan);
+            config.getJpa().setPackageToScan(packageToScan);
         } else {
-            config.setAnnotatedClasses(targetEntities.toArray(new Class[0]));
+            config.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
         }
+        
+        //TODO: はめ込み
         OrmInterceptor interceptor = new OrmInterceptor();
         interceptor.setTime(time);
         interceptor.setSession(session);
-        LocalSessionFactoryBean sfBean = config.sessionFactory(ds, interceptor);
-        try {
-            sfBean.afterPropertiesSet();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        
+        LocalContainerEntityManagerFactoryBean emfBean = config.entityManagerFactoryBean(ds);
+        emfBean.afterPropertiesSet();
+        emf = emfBean.getObject();
+        txm = config.transactionManager(emf);
+        
+        SystemDataSourceConfig configSystem = new SystemDataSourceConfig();
+        configSystem.getJpa().setShowSql(true);
+        configSystem.getJpa().getHibernate().setDdlAuto("create-drop");
+        if (targetEntities.isEmpty()) {
+            configSystem.getJpa().setPackageToScan(packageToScan);
+        } else {
+            configSystem.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
         }
-        sf = sfBean.getObject();
-        txm = config.transactionManager(sf);
-        txmSystem = config.transactionManager(sf);
-        return sf;
+        LocalContainerEntityManagerFactoryBean emfSystemBean = configSystem.systemEntityManagerFactoryBean(ds);
+        emfSystemBean.afterPropertiesSet();
+        emfSystem = emfSystemBean.getObject();
+        txmSystem = configSystem.systemTransactionManager(emfSystem);
+        return emf;
     }
 
     // 簡易コンポーネントFactory
@@ -186,6 +200,7 @@ public class EntityTestSupport {
     public void tx(Runnable command) {
         tx(() -> {
             command.run();
+            rep.flush();
             return true;
         });
     }

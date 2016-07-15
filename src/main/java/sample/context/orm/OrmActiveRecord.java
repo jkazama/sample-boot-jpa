@@ -24,7 +24,7 @@ import sample.util.Validator;
  */
 public class OrmActiveRecord<T extends Entity> implements Serializable, Entity {
     private static final long serialVersionUID = 1L;
-
+    
     /** 審査処理をします。 */
     @SuppressWarnings("unchecked")
     protected T validate(Consumer<Validator> proc) {

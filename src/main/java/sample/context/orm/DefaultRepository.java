@@ -1,57 +1,56 @@
 package sample.context.orm;
 
+import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.orm.hibernate5.*;
+import org.springframework.orm.jpa.*;
 
-import lombok.Setter;
+import lombok.*;
 
 /** 標準スキーマのRepositoryを表現します。 */
 @org.springframework.stereotype.Repository
 @Setter
 public class DefaultRepository extends OrmRepository {
     public static final String BeanNameDs = "dataSource";
-    public static final String BeanNameSf = "sessionFactory";
+    public static final String BeanNameEmf = "entityManagerFactory";
     public static final String BeanNameTx = "transactionManager";
 
-    @Autowired
-    @Qualifier(BeanNameSf)
-    private SessionFactory sessionFactory;
+    @PersistenceContext(unitName = BeanNameEmf)
+    private EntityManager em;
 
     @Override
-    public SessionFactory sf() {
-        return sessionFactory;
-    }
-
-    /** 標準スキーマのHibernateコンポーネントを生成します。 */
-    @ConfigurationProperties(prefix = "extension.hibernate.default")
-    public static class DefaultRepositoryConfig extends OrmRepositoryConfig {
-        @Bean(name = BeanNameSf)
-        @Override
-        public LocalSessionFactoryBean sessionFactory(
-                @Qualifier(BeanNameDs) final DataSource dataSource, final OrmInterceptor interceptor) {
-            return super.sessionFactory(dataSource, interceptor);
-        }
-
-        @Bean(name = BeanNameTx)
-        @Override
-        public HibernateTransactionManager transactionManager(
-                @Qualifier(BeanNameSf) final SessionFactory sessionFactory) {
-            return super.transactionManager(sessionFactory);
-        }
+    public EntityManager em() {
+        return em;
     }
 
     /** 標準スキーマのDataSourceを生成します。 */
     @ConfigurationProperties(prefix = "extension.datasource.default")
+    @Data
+    @EqualsAndHashCode(callSuper = false)
     public static class DefaultDataSourceConfig extends OrmDataSourceConfig {
+        
+        private OrmRepositoryConfig jpa = new OrmRepositoryConfig();
+        
         @Bean(name = BeanNameDs, destroyMethod = "shutdown")
         public DataSource dataSource() {
             return super.dataSource();
         }
-    }
+        
+        @Bean(name = BeanNameEmf)
+        public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
+                @Qualifier(BeanNameDs) final DataSource dataSource) {
+            return jpa.entityManagerFactoryBean(BeanNameEmf, dataSource);
+        }
 
+        @Bean(name = BeanNameTx)
+        public JpaTransactionManager transactionManager(
+                @Qualifier(BeanNameEmf) final EntityManagerFactory emf) {
+            return jpa.transactionManager(emf);
+        }
+
+    }
+    
 }

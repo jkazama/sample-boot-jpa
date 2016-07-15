@@ -86,8 +86,7 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
                     .equal("category", p.category)
                     .equal("statusType", p.statusType)
                     .like(new String[] { "message", "errorReason" }, p.keyword, MatchMode.ANYWHERE)
-                    .between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay))
-                    .result();
+                    .between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
         }, p.page.sortIfEmpty(SortOrder.desc("startDate")));
     }
 

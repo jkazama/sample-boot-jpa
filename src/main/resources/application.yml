@@ -39,21 +39,18 @@ extension:
       url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
       username:
       password:
+      jpa:
+        package-to-scan: sample.model
+        show-sql: true
+        hibernate.ddl-auto: create-drop
     system:
       url: jdbc:h2:mem:system;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
       username:
       password:
-  hibernate:
-    default:
-      dialect: org.hibernate.dialect.H2Dialect
-      packageToScan: sample.model
-      showSql: true
-      createDrop: true
-    system:
-      dialect: org.hibernate.dialect.H2Dialect
-      packageToScan: sample.context
-      showSql: true
-      createDrop: true
+      jpa:
+        package-to-scan: sample.context
+        show-sql: true
+        hibernate.ddl-auto: create-drop
   security:
     auth:
       enabled: false
@@ -71,24 +68,19 @@ management.security.enabled: true
 extension:
   datasource:
     default:
-      driver-class-name: oracle.jdbc.OracleDriver
       url: jdbc:oracle:thin:@xxx.xxx.xxx.xxx:1521:xx
       username: XXXXXX
       password: XXXXXX
+      jpa:
+        show-sql: false
+        hibernate.ddl-auto: none
     system:
-      driver-class-name: oracle.jdbc.OracleDriver
       url: jdbc:oracle:thin:@xxx.xxx.xxx.xxx:1521:xx
       username: XXXXXX
       password: XXXXXX
-  hibernate:
-    default:
-      dialect: org.hibernate.dialect.Oracle10gDialect
-      showSql: false
-      createDrop: false
-    system:
-      dialect: org.hibernate.dialect.Oracle10gDialect
-      showSql: false
-      createDrop: false
+      jpa:
+        show-sql: false
+        hibernate.ddl-auto: none
   security:
     auth.enabled: true
     cors.enabled: false

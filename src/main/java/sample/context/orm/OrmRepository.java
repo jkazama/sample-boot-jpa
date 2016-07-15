@@ -3,26 +3,28 @@ package sample.context.orm;
 import java.io.Serializable;
 import java.util.*;
 
+import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.*;
-import org.hibernate.boot.model.naming.*;
-import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy;
-import org.springframework.orm.hibernate5.*;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder.Builder;
+import org.springframework.orm.jpa.*;
+import org.springframework.orm.jpa.vendor.*;
 
 import lombok.*;
 import sample.ValidationException;
 import sample.ValidationException.ErrorKeys;
 import sample.context.*;
+import sample.context.Entity;
 
 /**
- * HibernateのRepository基底実装。
- * <p>本コンポーネントはRepositoryとEntityの1-n関係を実現するためにSpringDataの基盤を
- * 利用しない形で単純なORM実装を提供します。
- * <p>OrmRepositoryを継承して作成されるRepositoryの粒度はデータソース単位となります。
+ * JPA ( Hibernate ) の Repository 基底実装。
+ * <p>本コンポーネントは Repository と Entity の 1-n 関係を実現するために SpringData の基盤を
+ * 利用しない形で単純な ORM 実装を提供します。
+ * <p>OrmRepository を継承して作成される Repository の粒度はデータソース単位となります。
  */
 @Setter
 public abstract class OrmRepository implements Repository {
@@ -30,8 +32,13 @@ public abstract class OrmRepository implements Repository {
     @Autowired
     private DomainHelper dh;
 
-    public abstract SessionFactory sf();
+    /**
+     * 管理するEntityManagerを返します。
+     * <p>継承先で管理したいデータソースのEntityManagerを返してください。
+     */
+    public abstract EntityManager em();
 
+    /** {@inheritDoc} */
     @Override
     public DomainHelper dh() {
         return dh;
@@ -42,75 +49,87 @@ public abstract class OrmRepository implements Repository {
      * <p>OrmTemplateは呼出しの都度生成されます。
      */
     public OrmTemplate tmpl() {
-        return new OrmTemplate(sf());
+        return new OrmTemplate(em());
+    }
+    
+    public OrmTemplate tmpl(OrmQueryMetadata metadata) {
+        return new OrmTemplate(em(), metadata);
     }
 
     /** 指定したEntityクラスを軸にしたCriteriaを生成します。 */
     public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz) {
-        return new OrmCriteria<T>(clazz);
+        return OrmCriteria.of(em(), clazz);
     }
 
     /** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
     public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz, String alias) {
-        return new OrmCriteria<T>(clazz, alias);
+        return OrmCriteria.of(em(), clazz, alias);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> Optional<T> get(Class<T> clazz, Serializable id) {
-        return Optional.ofNullable(tmpl().origin().get(clazz, id));
+        T m = em().find(clazz, id);
+        if (m != null) m.hashCode(); // force loading
+        return Optional.ofNullable(m);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T load(Class<T> clazz, Serializable id) {
         try {
-            T m = tmpl().origin().load(clazz, id);
+            T m = em().getReference(clazz, id);
             m.hashCode(); // force loading
             return m;
-        } catch (HibernateObjectRetrievalFailureException e) {
+        } catch (EntityNotFoundException e) {
             throw new ValidationException(ErrorKeys.EntityNotFound);
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T loadForUpdate(Class<T> clazz, Serializable id) {
-        try {
-            T m = tmpl().origin().load(clazz, id, LockMode.UPGRADE_NOWAIT);
-            m.hashCode(); // force loading
-            return m;
-        } catch (HibernateObjectRetrievalFailureException e) {
-            throw new ValidationException(ErrorKeys.EntityNotFound);
-        }
+        T m = em().find(clazz, id, LockModeType.PESSIMISTIC_WRITE);
+        if (m == null) throw new ValidationException(ErrorKeys.EntityNotFound);
+        m.hashCode(); // force loading
+        return m;
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> boolean exists(Class<T> clazz, Serializable id) {
-        return get(clazz, id) != null;
+        return get(clazz, id).isPresent();
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> List<T> findAll(Class<T> clazz) {
-        return tmpl().origin().loadAll(clazz);
+        return tmpl().loadAll(clazz);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T save(T entity) {
-        tmpl().origin().save(entity);
+        em().persist(entity);
         return entity;
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T saveOrUpdate(T entity) {
-        return tmpl().origin().merge(entity);
+        return em().merge(entity);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T update(T entity) {
-        return tmpl().origin().merge(entity);
+        return em().merge(entity);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends Entity> T delete(T entity) {
-        tmpl().origin().delete(entity);
+        em().remove(entity);
         return entity;
     }
 
@@ -120,7 +139,7 @@ public abstract class OrmRepository implements Repository {
      * メモリを逼迫するケースでは#flushAndClearを定期的に呼び出してセッションキャッシュの肥大化を防ぐようにしてください。
      */
     public OrmRepository flush() {
-        tmpl().origin().flush();
+        em().flush();
         return this;
     }
 
@@ -131,92 +150,56 @@ public abstract class OrmRepository implements Repository {
      * サイズを定量に維持するようにしてください。
      */
     public OrmRepository flushAndClear() {
-        tmpl().origin().flush();
-        tmpl().origin().clear();
+        em().flush();
+        em().clear();
         return this;
     }
 
-    /** Hibernateコンポーネントを生成するための設定情報を表現します。 */
+    /** JPA コンポーネントを生成するための設定情報を表現します。 */
     @Data
-    public static class OrmRepositoryConfig {
-        /** 接続するDBのDialect */
-        private String dialect = "org.hibernate.dialect.H2Dialect";
+    @EqualsAndHashCode(callSuper = false)
+    public static class OrmRepositoryConfig extends JpaProperties {
         /** スキーマ紐付け対象とするパッケージ。(annotatedClassesとどちらかを設定) */
-        private String packageToScan;
-        /** SQLログを表示する時はtrue */
-        private boolean showSql;
-        /** DDLを自動生成して流す時はtrue */
-        private boolean createDrop;
+        private String[] packageToScan;
         /** Entityとして登録するクラス。(packageToScanとどちらかを設定) */
         private Class<?>[] annotatedClasses;
-        /** クエリ置換設定 */
-        private String substitutions = "true 1, false 0";
-        /** hibernate.properties へ追加対象するプロパティ情報 */
-        private Properties properties = new Properties();
 
-        public LocalSessionFactoryBean sessionFactory(final DataSource dataSource, final OrmInterceptor interceptor) {
-            LocalSessionFactoryBean bean = new LocalSessionFactoryBean();
-            bean.setDataSource(dataSource);
-            bean.setAnnotatedClasses(annotatedClasses);
-            bean.setPackagesToScan(packageToScan != null ? packageToScan.split(",") : null);
-            bean.setHibernateProperties(hibernateProperties());
-            bean.setPhysicalNamingStrategy(new OrmNamingStrategy());
-            bean.setImplicitNamingStrategy(ImplicitNamingStrategyJpaCompliantImpl.INSTANCE);
-            bean.setEntityInterceptor(interceptor);
-            return bean;
-        }
-
-        public Properties hibernateProperties() {
-            Properties prop = new Properties();
-            prop.put("hibernate.dialect", dialect);
-            prop.put("hibernate.show_sql", showSql);
-            prop.put("hibernate.query.substitutions", substitutions);
-            prop.put("hibernate.hbm2ddl.auto", createDrop ? "create-drop" : "validate");
-            prop.putAll(properties);
-            return prop;
-        }
-
-        public HibernateTransactionManager transactionManager(
-                final SessionFactory sessionFactory) {
-            return new HibernateTransactionManager(sessionFactory);
-        }
-    }
-
-    /** Hibernate5用のPhysicalNamingStrategy。 */
-    public static class OrmNamingStrategy implements PhysicalNamingStrategy {
-        private SpringNamingStrategy strategy = new SpringNamingStrategy();
-
-        @Override
-        public Identifier toPhysicalCatalogName(Identifier identifier, JdbcEnvironment jdbcEnv) {
-            return convert(identifier);
-        }
-
-        @Override
-        public Identifier toPhysicalColumnName(Identifier identifier, JdbcEnvironment jdbcEnv) {
-            return convert(identifier);
-        }
-
-        @Override
-        public Identifier toPhysicalSchemaName(Identifier identifier, JdbcEnvironment jdbcEnv) {
-            return convert(identifier);
-        }
-
-        @Override
-        public Identifier toPhysicalSequenceName(Identifier identifier, JdbcEnvironment jdbcEnv) {
-            return convert(identifier);
-        }
-
-        @Override
-        public Identifier toPhysicalTableName(Identifier identifier, JdbcEnvironment jdbcEnv) {
-            return convert(identifier);
-        }
-
-        private Identifier convert(Identifier identifier) {
-            if (identifier == null || StringUtils.isBlank(identifier.getText())) {
-                return identifier;
+        public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(String name, final DataSource dataSource) {
+            EntityManagerFactoryBuilder emfBuilder = new EntityManagerFactoryBuilder(
+                    vendorAdapter(), getProperties(), null);
+            Builder builder = emfBuilder
+                    .dataSource(dataSource)
+                    .persistenceUnit(name)
+                    .properties(getHibernateProperties(dataSource))
+                    .jta(false);
+            if (ArrayUtils.isNotEmpty(annotatedClasses)) {
+                builder.packages(annotatedClasses);
+            } else {
+                builder.packages(packageToScan);
             }
-            return Identifier.toIdentifier(strategy.tableName(identifier.getText()));
+            return builder.build();
         }
+        
+        private JpaVendorAdapter vendorAdapter() {
+            AbstractJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+            adapter.setShowSql(isShowSql());
+            adapter.setDatabase(getDatabase());
+            adapter.setDatabasePlatform(getDatabasePlatform());
+            adapter.setGenerateDdl(isGenerateDdl());
+            return adapter;
+        }
+
+        public JpaTransactionManager transactionManager(EntityManagerFactory emf) {
+            return new JpaTransactionManager(emf);
+        }
+        
+        public void setPackageToScan(String... packageToScan) {
+            this.packageToScan = packageToScan;
+        }
+        public void setAnnotatedClasses(Class<?>... annotatedClasses) {
+            this.annotatedClasses = annotatedClasses;
+        }
+        
     }
 
 }
