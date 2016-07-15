@@ -89,7 +89,7 @@ public class Account extends OrmActiveRecord<Account> {
     
     public static PagingList<Account> find(OrmRepository rep) {
         return rep.tmpl().find(Account.class, (criteria) -> {
-            return criteria.equal("name", "sample");
+            return criteria.isNotNull("name");
         }, new Pagination(1, 2));
     }
 

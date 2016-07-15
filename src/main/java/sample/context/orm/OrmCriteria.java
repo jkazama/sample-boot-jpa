@@ -20,8 +20,11 @@ import sample.context.orm.Sort.SortOrder;
  * <p>ビルド結果としての CriteriaQuery は result* メソッドで受け取って下さい。
  */
 public class OrmCriteria<T> {
+    
+    public static final String DefaultAlias = "m";
 
     private final Class<T> clazz;
+    private final String alias;
     private final Metamodel metamodel;
     private final CriteriaBuilder builder;
     private final CriteriaQuery<T> query;
@@ -29,17 +32,14 @@ public class OrmCriteria<T> {
     private final Set<Predicate> predicates = new LinkedHashSet<>();
     private final Set<Order> orders = new LinkedHashSet<>();
 
-    private OrmCriteria(EntityManager em, Class<T> clazz) {
+    /** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
+    private OrmCriteria(EntityManager em, Class<T> clazz, String alias) {
         this.clazz = clazz;
         this.metamodel = em.getMetamodel();
         this.builder = em.getCriteriaBuilder();
         this.query = builder.createQuery(clazz);
         this.root = query.from(clazz);
-    }
-
-    /** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
-    private OrmCriteria(EntityManager em, Class<T> clazz, String alias) {
-        this(em, clazz);
+        this.alias = alias;
         this.root.alias(alias);
     }
 
@@ -98,12 +98,13 @@ public class OrmCriteria<T> {
     @SuppressWarnings("unchecked")
     public CriteriaQuery<Long> resultCount(Function<CriteriaQuery<?>, CriteriaQuery<?>> extension) {
         CriteriaQuery<Long> q = builder.createQuery(Long.class);
+        q.from(clazz).alias(alias);
+        q.where(predicates.toArray(new Predicate[0]));
         if (q.isDistinct()) {
             q.select(builder.countDistinct(root));
         } else {
             q.select(builder.count(root));
         }
-        q.where(predicates.toArray(new Predicate[0]));
         return (CriteriaQuery<Long>)extension.apply(q);
     }
 
@@ -136,8 +137,12 @@ public class OrmCriteria<T> {
 
     /** 一致条件を付与します。( 値が null の時は無視されます ) */
     public OrmCriteria<T> equal(String field, final Object value) {
+        return equal(root, field, value);
+    }
+    
+    public OrmCriteria<T> equal(Path<?> path, String field, final Object value) {
         if (isValid(value)) {
-            add(builder.equal(root.get(field), value));
+            add(builder.equal(path.get(field), value));
         }
         return this;
     }
@@ -292,7 +297,7 @@ public class OrmCriteria<T> {
     
     /** 指定した Entity クラスを軸にしたCriteriaを生成します。 */    
     public static <T> OrmCriteria<T> of(EntityManager em, Class<T> clazz) {
-        return new OrmCriteria<>(em, clazz);
+        return new OrmCriteria<>(em, clazz, DefaultAlias);
     }
 
     /** 指定した Entity クラスにエイリアスを紐付けたCriteriaを生成します。 */
