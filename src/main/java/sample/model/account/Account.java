@@ -86,12 +86,6 @@ public class Account extends OrmActiveRecord<Account> {
         p.createLogin(encoder.encode(p.plainPassword)).save(rep);
         return p.create().save(rep);
     }
-    
-    public static PagingList<Account> find(OrmRepository rep) {
-        return rep.tmpl().find(Account.class, (criteria) -> {
-            return criteria.isNotNull("name");
-        }, new Pagination(1, 2));
-    }
 
     /** 登録パラメタ */
     @Data

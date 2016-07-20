@@ -2,8 +2,6 @@ package sample.context.orm;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +10,7 @@ import sample.context.Timestamper;
 import sample.context.actor.*;
 
 /**
- * Entityの永続化タイミングでAOP処理を差し込むHibernateInterceptor。
+ * Entityの永続化タイミングでAOP処理を差し込む Interceptor。
  */
 @Component
 @Getter
@@ -25,7 +23,6 @@ public class OrmInterceptor {
     private Timestamper time;
 
     /** 登録時の事前差し込み処理を行います。  */
-    @PrePersist
     public void touchForCreate(Object entity) {
         if (entity instanceof OrmActiveMetaRecord) {
             Actor staff = session.actor();
@@ -39,7 +36,6 @@ public class OrmInterceptor {
     }
 
     /** 変更時の事前差し込み処理を行います。   */
-    @PreUpdate
     public boolean touchForUpdate(final Object entity) {
         if (entity instanceof OrmActiveMetaRecord) {
             Actor staff = session.actor();

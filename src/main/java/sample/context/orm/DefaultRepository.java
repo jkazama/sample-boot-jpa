@@ -5,7 +5,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.*;
 import org.springframework.orm.jpa.*;
 
 import lombok.*;
@@ -35,17 +35,20 @@ public class DefaultRepository extends OrmRepository {
         private OrmRepositoryConfig jpa = new OrmRepositoryConfig();
         
         @Bean(name = BeanNameDs, destroyMethod = "shutdown")
+        @Primary
         public DataSource dataSource() {
             return super.dataSource();
         }
         
         @Bean(name = BeanNameEmf)
+        @Primary
         public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
                 @Qualifier(BeanNameDs) final DataSource dataSource) {
             return jpa.entityManagerFactoryBean(BeanNameEmf, dataSource);
         }
 
         @Bean(name = BeanNameTx)
+        @Primary
         public JpaTransactionManager transactionManager(
                 @Qualifier(BeanNameEmf) final EntityManagerFactory emf) {
             return jpa.transactionManager(emf);

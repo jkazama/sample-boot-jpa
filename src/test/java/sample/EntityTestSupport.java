@@ -108,6 +108,7 @@ public class EntityTestSupport {
         setupEntityManagerFactory();
         rep = new DefaultRepository();
         rep.setDh(dh);
+        rep.setInterceptor(entityInterceptor());
         rep.setEm(SharedEntityManagerCreator.createSharedEntityManager(emf));
     }
 
@@ -124,15 +125,12 @@ public class EntityTestSupport {
         DataSource ds = EntityTestFactory.dataSource();
         DefaultDataSourceConfig config = new DefaultDataSourceConfig();
         config.getJpa().setShowSql(true);
-        config.getJpa().getProperties().put("hibernate.ejb.interceptor", "sample.support.Hb8TestInterceptor");
         config.getJpa().getHibernate().setDdlAuto("create-drop");
         if (targetEntities.isEmpty()) {
             config.getJpa().setPackageToScan(packageToScan);
         } else {
             config.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
         }
-        // for Hb8TestInterceptor
-        MockTemporaryContext.register(entityInterceptor());
         
         LocalContainerEntityManagerFactoryBean emfBean = config.entityManagerFactoryBean(ds);
         emfBean.afterPropertiesSet();

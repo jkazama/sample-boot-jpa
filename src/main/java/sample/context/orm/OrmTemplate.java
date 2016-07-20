@@ -7,6 +7,7 @@ import java.util.function.*;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaQuery;
 
+import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.util.Assert;
 
@@ -119,10 +120,7 @@ public class OrmTemplate {
         return find(func.apply(OrmCriteria.of(em, entityClass, alias)));
     }
 
-    /**
-     * Criteriaでページング検索します。
-     * <p>クロージャ戻り値は引数に取るOrmCriteriaのresult*の実行結果を返すようにしてください。
-     */
+    /** Criteriaでページング検索します。  */
     public <T> PagingList<T> find(Class<T> entityClass, Function<OrmCriteria<T>, OrmCriteria<T>> func,
             final Pagination page) {
         OrmCriteria<T> criteria = OrmCriteria.of(em, entityClass);
@@ -130,18 +128,29 @@ public class OrmTemplate {
         return find(criteria.result(), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount()), page);
     }
     
+    public <T> PagingList<T> find(Class<T> entityClass, String alias, Function<OrmCriteria<T>, OrmCriteria<T>> func,
+            final Pagination page) {
+        OrmCriteria<T> criteria = OrmCriteria.of(em, entityClass, alias);
+        func.apply(criteria);
+        return find(criteria.result(), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount()), page);
+    }
+    
+    /**
+     * Criteriaでページング検索します。
+     * <p>CriteriaQuery が提供する subquery や groupBy 等の構文を利用したい時はこちらの extension で指定してください。
+     */
     public <T> PagingList<T> find(Class<T> entityClass, Function<OrmCriteria<T>, OrmCriteria<T>> func,
             Function<CriteriaQuery<?>, CriteriaQuery<?>> extension, final Pagination page) {
         OrmCriteria<T> criteria = OrmCriteria.of(em, entityClass);
         func.apply(criteria);
         return find(criteria.result(extension), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount(extension)), page);
     }
-
+    
     public <T> PagingList<T> find(Class<T> entityClass, String alias, Function<OrmCriteria<T>, OrmCriteria<T>> func,
-            final Pagination page) {
+            Function<CriteriaQuery<?>, CriteriaQuery<?>> extension, final Pagination page) {
         OrmCriteria<T> criteria = OrmCriteria.of(em, entityClass, alias);
         func.apply(criteria);
-        return find(criteria.result(), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount()), page);
+        return find(criteria.result(extension), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount(extension)), page);
     }
 
     /** JPQL で一件取得します。*/
@@ -175,21 +184,9 @@ public class OrmTemplate {
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> find(final String qlString, final Pagination page, final Object... args) {
-        long total = page.isIgnoreTotal() ? -1L : 0; //TODO
+        long total = page.isIgnoreTotal() ? -1L : load(QueryUtils.createCountQueryFor(qlString), args);
         List<T> list = bindArgs(em.createQuery(qlString), args, page).getResultList();
         return new PagingList<>(list, new Pagination(page, total));
-//        return new PagingList<T>(tmpl.executeWithNativeSession((session) -> {
-//            if (page.isIgnoreTotal()) {
-//                page.setTotal(-1L);
-//            } else {
-//                String hqlCnt = "select count(*) " + hql.substring(hql.toLowerCase().indexOf("from"));
-//                int orderPos = hqlCnt.indexOf("order");
-//                if (0 <= orderPos)
-//                    hqlCnt = hqlCnt.substring(0, orderPos);
-//                page.setTotal(load(hqlCnt, args));
-//            }
-//            return bindArgs(session.createQuery(hql), page, args).list();
-//        }), page);
     }
 
     /** 名前付き JPQL で一件取得します。 */
@@ -216,8 +213,8 @@ public class OrmTemplate {
      * 別途通常の検索でトータル件数を算出するようにして下さい。
      */
     @SuppressWarnings("unchecked")
-    public <T> PagingList<T> findNamed(final String name, final Pagination page, final Object... args) {
-        long total = page.isIgnoreTotal() ? -1L : 0; //TODO
+    public <T> PagingList<T> findNamed(final String name, final String nameCount, final Pagination page, final Map<String, Object> args) {
+        long total = page.isIgnoreTotal() ? -1L : loadNamed(nameCount, args);
         List<T> list = bindArgs(em.createNamedQuery(name), page, args).getResultList();
         return new PagingList<>(list, new Pagination(page, total));
     }
@@ -241,23 +238,21 @@ public class OrmTemplate {
 
     /**
      * SQLでページング検索します。
-     * <p>常にPagination#ignoreTotalがtrueな状態となります。
-     * 件数が必要な時は別途カウント算出を行うようにしてください。
      * <p>検索結果としてselectの値配列一覧が返されます。
      */
     @SuppressWarnings("unchecked")
-    public <T> PagingList<T> findBySql(String sql, final Pagination page, final Object... args) {
-        return new PagingList<T>(bindArgs(em.createNativeQuery(sql), page, args).getResultList(), page);
+    public <T> PagingList<T> findBySql(String sql, String sqlCount, final Pagination page, final Object... args) {
+        long total = page.isIgnoreTotal() ? -1L : findBySql(sqlCount, args).stream().findFirst().map(v -> Long.parseLong(v.toString())).orElse(0L);
+        return new PagingList<T>(bindArgs(em.createNativeQuery(sql), page, args).getResultList(), new Pagination(page, total));
     }
     
     /**
      * SQLでページング検索します。
-     * <p>常にPagination#ignoreTotalがtrueな状態となります。
-     * 件数が必要な時は別途カウント算出を行うようにしてください。
      */
     @SuppressWarnings("unchecked")
-    public <T> PagingList<T> findBySql(String sql, Class<T> clazz, final Pagination page, final Object... args) {
-        return new PagingList<T>(bindArgs(em.createNativeQuery(sql, clazz), page, args).getResultList(), page);
+    public <T> PagingList<T> findBySql(String sql, String sqlCount, Class<T> clazz, final Pagination page, final Object... args) {
+        long total = page.isIgnoreTotal() ? -1L : findBySql(sqlCount, args).stream().findFirst().map(v -> Long.parseLong(v.toString())).orElse(0L);
+        return new PagingList<T>(bindArgs(em.createNativeQuery(sql, clazz), page, args).getResultList(), new Pagination(page, total));
     }
 
     /** JPQL を実行します。 */

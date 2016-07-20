@@ -31,6 +31,8 @@ public abstract class OrmRepository implements Repository {
 
     @Autowired
     private DomainHelper dh;
+    @Autowired(required = false)
+    private OrmInterceptor interceptor;
 
     /**
      * 管理するEntityManagerを返します。
@@ -42,6 +44,10 @@ public abstract class OrmRepository implements Repository {
     @Override
     public DomainHelper dh() {
         return dh;
+    }
+    
+    protected Optional<OrmInterceptor> interceptor() {
+        return Optional.ofNullable(interceptor);
     }
 
     /**
@@ -110,6 +116,7 @@ public abstract class OrmRepository implements Repository {
     /** {@inheritDoc} */
     @Override
     public <T extends Entity> T save(T entity) {
+        interceptor().ifPresent(i -> i.touchForCreate(entity));
         em().persist(entity);
         return entity;
     }
@@ -117,12 +124,14 @@ public abstract class OrmRepository implements Repository {
     /** {@inheritDoc} */
     @Override
     public <T extends Entity> T saveOrUpdate(T entity) {
+        interceptor().ifPresent(i -> i.touchForUpdate(entity));
         return em().merge(entity);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends Entity> T update(T entity) {
+        interceptor().ifPresent(i -> i.touchForUpdate(entity));
         return em().merge(entity);
     }
 

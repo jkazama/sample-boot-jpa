@@ -19,13 +19,8 @@ public class AccountTest extends EntityTestSupport {
 
     @Override
     protected void before() {
-        tx(() -> fixtures.acc("normal").save(rep));
-    }
-    
-    @Test
-    public void check() {
         tx(() -> {
-           Account.find(rep); 
+            fixtures.acc("normal").save(rep);
         });
     }
 
