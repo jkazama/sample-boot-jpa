@@ -197,10 +197,12 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 #### DB / トランザクション
 
-`sample.context.orm` 直下。ドメイン実装をより Entity に寄せるための ORM サポート実装です。 Repository ( スキーマ単位で定義 ) にドメイン処理を記載しないアプローチのため、 Spring Boot が提供する JPA 実装は利用していません。  
+`sample.context.orm` 直下。ドメイン実装をより Entity に寄せるための ORM サポート実装です。 Repository ( スキーマ単位で定義 ) にドメイン処理を記載しないアプローチのため、 Spring Boot が提供する JpaRepository は利用していません。  
 トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。単純な readOnly な処理のみ `@Transactional([Bean名称])` を利用してメソッド単位の対応を取ります。
 
 スキーマは標準のビジネスロジック用途 ( `DefaultRepository` ) とシステム用途 ( `SystemRepository` ) の2種類を想定しています。 Entity 実装ではスキーマに依存させず、引数に渡す側 ( 主にアプリケーション層 ) で判断させます。
+
+> Spring Data JPA が提供する JpaRepository を利用することも可能です。 ( 標準で　DefaultRepository　が管理しているスキーマへ接続します )
 
 #### 認証/認可
 
