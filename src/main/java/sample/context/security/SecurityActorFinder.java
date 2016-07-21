@@ -6,21 +6,18 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.stereotype.Component;
 
+import lombok.Setter;
 import sample.context.actor.Actor;
-import sample.context.security.SecurityConfig.SecurityProperties;
 
 /**
  * Spring Securityで利用される認証/認可対象となるユーザ情報を提供します。
  */
-@Component
-@ConditionalOnBean(SecurityAuthConfig.class)
+@Setter
 public class SecurityActorFinder {
 
     @Autowired

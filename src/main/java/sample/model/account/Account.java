@@ -1,6 +1,6 @@
 package sample.model.account;
 
-import java.util.Optional;
+import java.util.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -81,7 +81,7 @@ public class Account extends OrmActiveRecord<Account> {
      * 口座の登録を行います。
      * <p>ログイン情報も同時に登録されます。
      */
-    public static Account register(final OrmRepository rep, final PasswordEncoder encoder, RegAccount p) {
+    public static Account register(final OrmRepository rep, final PasswordEncoder encoder, final RegAccount p) {
         Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
         p.createLogin(encoder.encode(p.plainPassword)).save(rep);
         return p.create().save(rep);

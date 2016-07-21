@@ -1,7 +1,6 @@
 package sample.context;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import lombok.Setter;
 import sample.context.actor.*;
@@ -9,7 +8,6 @@ import sample.context.actor.*;
 /**
  * ドメイン処理を行う上で必要となるインフラ層コンポーネントへのアクセサを提供します。
  */
-@Component
 @Setter
 public class DomainHelper {
 

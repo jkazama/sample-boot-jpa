@@ -18,7 +18,7 @@ import sample.context.*;
 import sample.context.Entity;
 import sample.context.actor.ActorSession;
 import sample.context.orm.*;
-import sample.context.orm.DefaultRepository.DefaultDataSourceConfig;
+import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
 import sample.model.*;
 import sample.support.*;
 
@@ -123,19 +123,19 @@ public class EntityTestSupport {
 
     protected void setupEntityManagerFactory() {
         DataSource ds = EntityTestFactory.dataSource();
-        DefaultDataSourceConfig config = new DefaultDataSourceConfig();
-        config.getJpa().setShowSql(true);
-        config.getJpa().getHibernate().setDdlAuto("create-drop");
+        DefaultDataSourceProperties props = new DefaultDataSourceProperties();
+        props.getJpa().setShowSql(true);
+        props.getJpa().getHibernate().setDdlAuto("create-drop");
         if (targetEntities.isEmpty()) {
-            config.getJpa().setPackageToScan(packageToScan);
+            props.getJpa().setPackageToScan(packageToScan);
         } else {
-            config.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
+            props.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
         }
         
-        LocalContainerEntityManagerFactoryBean emfBean = config.entityManagerFactoryBean(ds);
+        LocalContainerEntityManagerFactoryBean emfBean = props.entityManagerFactoryBean(ds);
         emfBean.afterPropertiesSet();
         emf = emfBean.getObject();
-        txm = config.transactionManager(emf);
+        txm = props.transactionManager(emf);
     }
 
     private OrmInterceptor entityInterceptor() {
@@ -176,7 +176,7 @@ public class EntityTestSupport {
         }
 
         private static DataSource createDataSource() {
-            OrmDataSourceConfig ds = new OrmDataSourceConfig();
+            OrmDataSourceProperties ds = new OrmDataSourceProperties();
             ds.setUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
             ds.setUsername("");
             ds.setPassword("");

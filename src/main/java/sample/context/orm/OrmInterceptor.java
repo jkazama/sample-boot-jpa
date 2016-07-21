@@ -3,7 +3,6 @@ package sample.context.orm;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import lombok.*;
 import sample.context.Timestamper;
@@ -12,7 +11,6 @@ import sample.context.actor.*;
 /**
  * Entityの永続化タイミングでAOP処理を差し込む Interceptor。
  */
-@Component
 @Getter
 @Setter
 public class OrmInterceptor {

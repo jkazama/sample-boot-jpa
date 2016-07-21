@@ -35,9 +35,10 @@ UI 層の公開処理は通常 JSP や Thymeleaf を用いて行いますが、�
 Spring Boot は様々な利用方法が可能ですが、本サンプルでは以下のポリシーで利用します。
 
 - 設定ファイルは yml を用いる。 Bean 定義に xml 等の拡張ファイルは用いない。
-- ライブラリ化しないので @Bean による将来拡張性を考慮せずにクラス単位で Bean ベタ登録。
+- インフラ層のコンポーネントは @Bean で、 それ以外のコンポーネントは @Component 等でベタに登録していく。
+    - `ApplicationConfig` / `ApplicationDbConfig` / `ApplicationSecurityConfig`
 - 例外処理は終端 ( RestErrorAdvice / RestErrorCotroller ) で定義。 whitelabel 機能は無効化。
-- ORM 実装として Hibernate に特化。
+- JPA 実装として Hibernate に特化。
 - Spring Security の認証方式はベーシック認証でなく、昔からよくある HttpSession で。
 - 基礎的なユーティリティで Spring がサポートしていないのは簡易な実装を用意。
 
@@ -69,7 +70,7 @@ main
   resources
     - application.yml                 … 設定ファイル
     - ehcache.xml                     … Spring Cache 設定ファイル
-    - logback.xml                     … ロギング設定ファイル
+    - logback-spring.xml                     … ロギング設定ファイル
     - messages-validation.properties  … 例外メッセージリソース
     - messages.properties             … メッセージリソース
 ```
@@ -110,6 +111,8 @@ main
 1. *Application.java* に対し 「 右クリック -> Run As -> Java Application 」
 1. *Console* タブに 「 Started Application 」 という文字列が出力されればポート 8080 で起動が完了
 1. ブラウザを立ち上げて 「 http://localhost:8080/api/management/health 」 で状態を確認
+
+> STS (Spring Tool Suite) のプラグインを利用すると上記 main クラスを GUI の Boot Dashboard 経由で簡単に実行できます。
 
 #### サーバ起動 （ コンソール ）
 
@@ -212,7 +215,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 #### 例外
 
 汎用概念としてフィールド単位にスタックした例外を持つ `ValidationException` を提供します。  
-例外は末端の UI 層でまとめて処理します。具体的にはアプリケーション層、ドメイン層では用途別の実行時例外をそのまま上位に投げるだけとし、例外捕捉は `sample.context.rest` 直下のコンポーネントにおいて AOP を用いた暗黙的差し込みを行います。
+例外は末端の UI 層でまとめて処理します。具体的にはアプリケーション層、ドメイン層では用途別の実行時例外をそのまま上位に投げるだけとし、例外捕捉は `sample.controller.RestErrorAdvise` において AOP を用いた暗黙的差し込みを行っています。
 
 #### 日付/日時
 
@@ -220,12 +223,11 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 #### キャッシング
 
-`AccountService` 等で Spring が提供する @Cacheable を利用しています。 UI 層かアプリケーション層のどちらかに統一した方が良いですが、本サンプルではアプリケーション層だけ付与しています。 Hibernate の 2nd / Query キャッシュは Entity 内で必要になる以外、利用しないことを推奨します。
+`AccountService` 等で Spring が提供する @Cacheable を利用しています。 UI 層かアプリケーション層のどちらかに統一した方が良いですが、本サンプルではアプリケーション層だけ付与しています。 JPA のキャッシュ機構は Entity 内で必要となるケース以外では、利用しないことを推奨します。
 
 #### テスト
 
 パターンとしては通常の Spring コンテナを用いる 2 パターン ( WebMock テスト / コンテナテスト ) と、 Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) の合計 3 パターンで考えます。 （ それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport` ）  
-テスト対象に Service まで含めてしまうと冗長なので、そこら辺のカバレッジはあまり頑張らずに必要なものだけとしています。
 
 ### License
 

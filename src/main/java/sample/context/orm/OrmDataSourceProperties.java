@@ -18,7 +18,7 @@ import lombok.Data;
  * <p>ベース実装にHikariCPを利用しています。必要に応じて設定可能フィールドを増やすようにしてください。
  */
 @Data
-public class OrmDataSourceConfig {
+public class OrmDataSourceProperties {
 
     /** ドライバクラス名称 ( 未設定時は url から自動登録 ) */
     private String driverClassName;

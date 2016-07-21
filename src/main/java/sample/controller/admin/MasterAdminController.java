@@ -1,7 +1,6 @@
 package sample.controller.admin;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 import javax.validation.Valid;
 
@@ -13,9 +12,8 @@ import lombok.*;
 import sample.ValidationException;
 import sample.ValidationException.ErrorKeys;
 import sample.context.actor.Actor;
-import sample.context.security.SecurityActorFinder;
+import sample.context.security.*;
 import sample.context.security.SecurityActorFinder.ActorDetails;
-import sample.context.security.SecurityConfig.SecurityProperties;
 import sample.controller.ControllerSupport;
 import sample.model.master.Holiday.RegHoliday;
 import sample.usecase.MasterAdminService;

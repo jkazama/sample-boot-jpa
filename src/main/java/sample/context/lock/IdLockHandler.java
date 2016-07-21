@@ -5,8 +5,6 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-import org.springframework.stereotype.Component;
-
 import sample.InvocationException;
 
 /**
@@ -14,7 +12,6 @@ import sample.InvocationException;
  * low: ここではシンプルに口座単位のIDロックのみをターゲットにします。
  * low: 通常はDBのロックテーブルに"for update"要求で悲観的ロックをとったりしますが、サンプルなのでメモリロックにしてます。
  */
-@Component
 public class IdLockHandler {
 
     private Map<Serializable, ReentrantReadWriteLock> lockMap = new HashMap<>();

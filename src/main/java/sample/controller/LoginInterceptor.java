@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import sample.context.actor.*;
 import sample.context.actor.Actor.ActorRoleType;
-import sample.context.security.SecurityAuthConfig;
+import sample.context.security.SecurityConfigurer;
 
 /**
  * Spring Securityの設定状況に応じてスレッドローカルへ利用者を紐付けるAOPInterceptor。
@@ -36,7 +36,7 @@ public class LoginInterceptor {
      */
     @Aspect
     @Component
-    @ConditionalOnMissingBean(SecurityAuthConfig.class)
+    @ConditionalOnMissingBean(SecurityConfigurer.class)
     public static class DummyLoginInterceptor {
         @Autowired
         private ActorSession session;

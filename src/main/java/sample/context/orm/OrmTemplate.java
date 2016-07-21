@@ -15,10 +15,8 @@ import sample.ValidationException;
 import sample.ValidationException.ErrorKeys;
 
 /**
- * Jpa の EntityManager に対する簡易アクセサ。
- * セッション毎に生成して利用してください。
- * <p>EntityManager のメソッドで利用したい処理があれば
- * 必要に応じてラップメソッドを追加してください。
+ * JPA の EntityManager に対する簡易アクセサ。 ( セッション毎に生成して利用してください )
+ * <p>EntityManager のメソッドで利用したい処理があれば必要に応じてラップメソッドを追加してください。
  */
 public class OrmTemplate {
 
@@ -120,7 +118,10 @@ public class OrmTemplate {
         return find(func.apply(OrmCriteria.of(em, entityClass, alias)));
     }
 
-    /** Criteriaでページング検索します。  */
+    /**
+     * Criteriaでページング検索します。
+     * <p>Pagination に設定された検索条件は無視されます。 OrmCriteria 構築時に設定するようにしてください。
+     */
     public <T> PagingList<T> find(Class<T> entityClass, Function<OrmCriteria<T>, OrmCriteria<T>> func,
             final Pagination page) {
         OrmCriteria<T> criteria = OrmCriteria.of(em, entityClass);
@@ -138,6 +139,7 @@ public class OrmTemplate {
     /**
      * Criteriaでページング検索します。
      * <p>CriteriaQuery が提供する subquery や groupBy 等の構文を利用したい時はこちらの extension で指定してください。
+     * <p>Pagination に設定された検索条件は無視されます。 OrmCriteria 構築時に設定するようにしてください。
      */
     public <T> PagingList<T> find(Class<T> entityClass, Function<OrmCriteria<T>, OrmCriteria<T>> func,
             Function<CriteriaQuery<?>, CriteriaQuery<?>> extension, final Pagination page) {
@@ -153,13 +155,19 @@ public class OrmTemplate {
         return find(criteria.result(extension), page.isIgnoreTotal() ? Optional.empty() : Optional.of(criteria.resultCount(extension)), page);
     }
 
-    /** JPQL で一件取得します。*/
+    /**
+     * JPQL で一件取得します。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     public <T> Optional<T> get(final String qlString, final Object... args) {
         List<T> list = find(qlString, args);
         return list.stream().findFirst();
     }
 
-    /** JPQL で一件取得します。(存在しない時はValidationException) */
+    /**
+     * JPQL で一件取得します。(存在しない時は ValidationException )
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     public <T> T load(final String qlString, final Object... args) {
         Optional<T> v = get(qlString, args);
         return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
@@ -170,7 +178,10 @@ public class OrmTemplate {
         return find(OrmCriteria.of(em, entityClass).result());
     }
 
-    /** JPQL で検索します。 */
+    /**
+     * JPQL で検索します。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     @SuppressWarnings("unchecked")
     public <T> List<T> find(final String qlString, final Object... args) {
         return bindArgs(em.createQuery(qlString), args).getResultList();
@@ -180,7 +191,8 @@ public class OrmTemplate {
      * JPQL でページング検索します。
      * <p>カウント句がうまく構築されない時はPagination#ignoreTotalをtrueにして、
      * 別途通常の検索でトータル件数を算出するようにして下さい。
-     * <p>page に設定されたソート条件は無視されるので、明示的に記述してください。
+     * <p>page に設定されたソート条件は無視されるので、 qlString 構築時に明示的な設定をしてください。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> find(final String qlString, final Pagination page, final Object... args) {
@@ -189,28 +201,41 @@ public class OrmTemplate {
         return new PagingList<>(list, new Pagination(page, total));
     }
 
-    /** 名前付き JPQL で一件取得します。 */
-    public <T> Optional<T> getNamed(final String name, final Map<String, Object> args) {
+    /**
+     * 定義済み JPQL で一件取得します。
+     * <p>事前に name に合致する @NamedQuery 定義が必要です。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
+    public <T> Optional<T> getNamed(final String name, final Object... args) {
         List<T> list = findNamed(name, args);
         return list.stream().findFirst();
     }
 
-    /** 名前付き JPQL で一件取得をします。(存在しない時はValidationException) */
-    public <T> T loadNamed(final String name, final Map<String, Object> args) {
+    /**
+     * 定義済み JPQL で一件取得をします。(存在しない時は ValidationException )
+     * <p>事前に name に合致する @NamedQuery 定義が必要です。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
+    public <T> T loadNamed(final String name, final Object... args) {
         Optional<T> v = getNamed(name, args);
         return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
     }
 
-    /** 名前付きHQLで検索します。 */
+    /**
+     * 定義済み JPQL で検索します。
+     * <p>事前に name に合致する @NamedQuery 定義が必要です。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     @SuppressWarnings("unchecked")
-    public <T> List<T> findNamed(final String name, final Map<String, Object> args) {
+    public <T> List<T> findNamed(final String name, final Object... args) {
         return bindArgs(em.createNamedQuery(name), args).getResultList();
     }
 
-    /** 
-     * 名前付きHQLでページング検索します。
-     * <p>カウント句がうまく構築されない時はPagination#ignoreTotalをtrueにして、
-     * 別途通常の検索でトータル件数を算出するようにして下さい。
+    /**
+     * 定義済み JPQL でページング検索します。
+     * <p>事前に name に合致する @NamedQuery 定義が必要です。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * <p>page に設定されたソート条件は無視されます。
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> findNamed(final String name, final String nameCount, final Pagination page, final Map<String, Object> args) {
@@ -222,6 +247,7 @@ public class OrmTemplate {
     /**
      * SQLで検索します。
      * <p>検索結果としてselectの値配列一覧が返されます。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> findBySql(final String sql, final Object... args) {
@@ -229,7 +255,8 @@ public class OrmTemplate {
     }
     
     /**
-     * SQLで検索します。
+     * SQL で検索します。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> findBySql(String sql, Class<T> clazz, final Object... args) {
@@ -237,8 +264,9 @@ public class OrmTemplate {
     }
 
     /**
-     * SQLでページング検索します。
-     * <p>検索結果としてselectの値配列一覧が返されます。
+     * SQL でページング検索します。
+     * <p>検索結果として select の値配列一覧が返されます。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> findBySql(String sql, String sqlCount, final Pagination page, final Object... args) {
@@ -247,7 +275,9 @@ public class OrmTemplate {
     }
     
     /**
-     * SQLでページング検索します。
+     * SQL でページング検索します。
+     * <p>page に設定されたソート条件は無視されるので、 sql 構築時に明示的な設定をしてください。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> findBySql(String sql, String sqlCount, Class<T> clazz, final Pagination page, final Object... args) {
@@ -255,17 +285,27 @@ public class OrmTemplate {
         return new PagingList<T>(bindArgs(em.createNativeQuery(sql, clazz), page, args).getResultList(), new Pagination(page, total));
     }
 
-    /** JPQL を実行します。 */
+    /**
+     * JPQL を実行します。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     public int execute(String qlString, final Object... args) {
         return bindArgs(em.createQuery(qlString), args).executeUpdate();
     }
     
-    /** 名前付き JPQL を実行します。 */
-    public int executeNamed(String name, final Map<String, Object> args) {
+    /**
+     * 定義済み JPQL を実行します。
+     * <p>事前に name に合致する @NamedQuery 定義が必要です。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
+    public int executeNamed(String name, final Object... args) {
         return bindArgs(em.createNamedQuery(name), args).executeUpdate();
     }
     
-    /** SQL を実行をします。*/
+    /**
+     * SQL を実行をします。
+     * <p>args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     */
     public int executeSql(String sql, final Object... args) {
         return bindArgs(em.createNativeQuery(sql), args).executeUpdate();
     }

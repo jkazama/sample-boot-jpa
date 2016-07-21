@@ -10,9 +10,8 @@ import lombok.*;
 import sample.ValidationException;
 import sample.ValidationException.ErrorKeys;
 import sample.context.actor.Actor;
-import sample.context.security.SecurityActorFinder;
+import sample.context.security.*;
 import sample.context.security.SecurityActorFinder.ActorDetails;
-import sample.context.security.SecurityConfig.SecurityProperties;
 import sample.usecase.AccountService;
 
 /**

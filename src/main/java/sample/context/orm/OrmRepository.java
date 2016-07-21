@@ -167,7 +167,7 @@ public abstract class OrmRepository implements Repository {
     /** JPA コンポーネントを生成するための設定情報を表現します。 */
     @Data
     @EqualsAndHashCode(callSuper = false)
-    public static class OrmRepositoryConfig extends JpaProperties {
+    public static class OrmRepositoryProperties extends JpaProperties {
         /** スキーマ紐付け対象とするパッケージ。(annotatedClassesとどちらかを設定) */
         private String[] packageToScan;
         /** Entityとして登録するクラス。(packageToScanとどちらかを設定) */

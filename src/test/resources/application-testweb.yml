@@ -1,0 +1,9 @@
+---
+spring:
+  profiles: testweb
+
+extension:
+  datasource:
+    default.jpa.hibernate.ddl-auto: none
+    system.jpa.hibernate.ddl-auto: none
+  security.auth.enabled: false

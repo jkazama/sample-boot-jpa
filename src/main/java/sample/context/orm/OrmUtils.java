@@ -6,6 +6,9 @@ import javax.persistence.EntityManager;
 
 import org.springframework.data.jpa.repository.support.*;
 
+/**
+ * Orm 関連のユーティリティを提供します。
+ */
 public abstract class OrmUtils {
 
     /** 指定したクラスのエンティティ情報を返します ( ID 概念含む ) */

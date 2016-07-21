@@ -3,9 +3,7 @@ package sample.context.orm;
 import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.orm.jpa.*;
 
 import lombok.*;
@@ -31,24 +29,19 @@ public class SystemRepository extends OrmRepository {
     @ConfigurationProperties(prefix = "extension.datasource.system")
     @Data
     @EqualsAndHashCode(callSuper = false)
-    public static class SystemDataSourceConfig extends OrmDataSourceConfig {
+    public static class SystemDataSourceProperties extends OrmDataSourceProperties {
+        private OrmRepositoryProperties jpa = new OrmRepositoryProperties();
         
-        private OrmRepositoryConfig jpa = new OrmRepositoryConfig();
-        
-        @Bean(name = BeanNameDs, destroyMethod = "shutdown")
-        public DataSource systemDataSource() {
+        public DataSource dataSource() {
             return super.dataSource();
         }
         
-        @Bean(name = BeanNameEmf)
-        public LocalContainerEntityManagerFactoryBean systemEntityManagerFactoryBean(
-                @Qualifier(BeanNameDs) final DataSource dataSource) {
+        public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
+                final DataSource dataSource) {
             return jpa.entityManagerFactoryBean(BeanNameEmf, dataSource);
         }
 
-        @Bean(name = BeanNameTx)
-        public JpaTransactionManager systemTransactionManager(
-                @Qualifier(BeanNameEmf) final EntityManagerFactory emf) {
+        public JpaTransactionManager transactionManager(final EntityManagerFactory emf) {
             return jpa.transactionManager(emf);
         }
     }

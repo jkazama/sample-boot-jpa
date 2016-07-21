@@ -3,15 +3,12 @@ package sample.context.orm;
 import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.*;
 import org.springframework.orm.jpa.*;
 
 import lombok.*;
 
 /** 標準スキーマのRepositoryを表現します。 */
-@org.springframework.stereotype.Repository
 @Setter
 public class DefaultRepository extends OrmRepository {
     public static final String BeanNameDs = "dataSource";
@@ -30,30 +27,21 @@ public class DefaultRepository extends OrmRepository {
     @ConfigurationProperties(prefix = "extension.datasource.default")
     @Data
     @EqualsAndHashCode(callSuper = false)
-    public static class DefaultDataSourceConfig extends OrmDataSourceConfig {
+    public static class DefaultDataSourceProperties extends OrmDataSourceProperties {        
+        private OrmRepositoryProperties jpa = new OrmRepositoryProperties();
         
-        private OrmRepositoryConfig jpa = new OrmRepositoryConfig();
-        
-        @Bean(name = BeanNameDs, destroyMethod = "shutdown")
-        @Primary
         public DataSource dataSource() {
             return super.dataSource();
         }
         
-        @Bean(name = BeanNameEmf)
-        @Primary
         public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
-                @Qualifier(BeanNameDs) final DataSource dataSource) {
+                final DataSource dataSource) {
             return jpa.entityManagerFactoryBean(BeanNameEmf, dataSource);
         }
 
-        @Bean(name = BeanNameTx)
-        @Primary
-        public JpaTransactionManager transactionManager(
-                @Qualifier(BeanNameEmf) final EntityManagerFactory emf) {
+        public JpaTransactionManager transactionManager(final EntityManagerFactory emf) {
             return jpa.transactionManager(emf);
         }
-
     }
     
 }

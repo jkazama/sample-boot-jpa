@@ -1,3 +1,9 @@
 ---
 spring:
   profiles: test
+
+extension:
+  datasource:
+    default.jpa.show-sql: true
+    system.jpa.show-sql: true
+  security.auth.enabled: false

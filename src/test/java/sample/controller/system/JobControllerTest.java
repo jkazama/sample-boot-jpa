@@ -1,24 +1,26 @@
 package sample.controller.system;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import static org.mockito.BDDMockito.*;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import sample.*;
-import sample.model.BusinessDayHandler;
-import sample.model.asset.*;
+import sample.usecase.*;
 
-//low: 簡易な正常系検証が中心。100万保有のsampleを前提としてしまっています。
+/**
+ * JobController の単体検証です。
+ * <p>low: 簡易な正常系検証が中心
+ */
+@WebMvcTest(JobController.class)
 public class JobControllerTest extends WebTestSupport {
 
-    @Autowired
-    private BusinessDayHandler businessDay;
-
+    @MockBean
+    private AssetAdminService asset;
+    @MockBean
+    private SystemAdminService system;
+    
     @Override
     protected String prefix() {
         return "/api/system/job";
@@ -26,42 +28,20 @@ public class JobControllerTest extends WebTestSupport {
 
     @Test
     public void processDay() throws Exception {
-        LocalDate day = businessDay.day();
-        LocalDate dayPlus1 = businessDay.day(1);
-        LocalDate dayPlus2 = businessDay.day(2);
-        assertThat(time.day(), is(day));
-        performPost("/daily/processDay");
-        assertThat(time.day(), is(dayPlus1));
-        performPost("/daily/processDay");
-        assertThat(time.day(), is(dayPlus2));
+        willDoNothing().given(system).processDay();
+        performPost("/daily/processDay", JsonExpects.success());
     }
 
     @Test
     public void closingCashOut() throws Exception {
-        // 当日発生の振込出金依頼を準備
-        CashInOut co = fixtures.cio("sample", "3000", true);
-        co.setEventDay(time.day());
-        co.save(rep);
-        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.Unprocessed)));
-        // 実行検証
-        performPost("/daily/closingCashOut");
-        assertThat(CashInOut.load(rep, co.getId()), hasProperty("statusType", is(ActionStatusType.Processed)));
+        willDoNothing().given(asset).closingCashOut();
+        performPost("/daily/closingCashOut", JsonExpects.success());
     }
 
     @Test
     public void realizeCashflow() throws Exception {
-        LocalDate dayMinus1 = businessDay.day(-1);
-        LocalDate day = businessDay.day();
-        // 当日実現のキャッシュフローを準備
-        Cashflow cf = fixtures.cf("sample", "3000", dayMinus1, day).save(rep);
-        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.Unprocessed)));
-        assertThat(CashBalance.getOrNew(rep, "sample", "JPY"),
-                hasProperty("amount", is(new BigDecimal("1000000.0000"))));
-        // 実行検証
-        performPost("/daily/realizeCashflow");
-        assertThat(Cashflow.load(rep, cf.getId()), hasProperty("statusType", is(ActionStatusType.Processed)));
-        assertThat(CashBalance.getOrNew(rep, "sample", "JPY"),
-                hasProperty("amount", is(new BigDecimal("1003000.0000"))));
+        willDoNothing().given(asset).realizeCashflow();
+        performPost("/daily/realizeCashflow", JsonExpects.success());
     }
 
 }

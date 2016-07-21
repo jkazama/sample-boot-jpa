@@ -1,11 +1,8 @@
 package sample.context.actor;
 
-import org.springframework.stereotype.Component;
-
 /**
  * スレッドローカルスコープの利用者セッション。
  */
-@Component
 public class ActorSession {
 
     private ThreadLocal<Actor> actorLocal = new ThreadLocal<>();
