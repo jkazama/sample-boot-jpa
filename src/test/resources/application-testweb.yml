@@ -2,6 +2,8 @@
 spring:
   profiles: testweb
 
+logging.config: classpath:logback.xml
+
 extension:
   datasource:
     default.jpa.hibernate.ddl-auto: none

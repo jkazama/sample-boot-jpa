@@ -96,11 +96,15 @@ task copyProject << {
             include(name: "src/main/resources/banner.txt")
         }
     }
-    ant.replace(token: "packageToScan: sample", value: "packageToScan: ${yourProjectPackage}") {
+    ant.replace(token: "version = \"${version}\"", value: "version = \"1.0.0\"") {
+        fileset(dir: projectPath) { include(name: "build.gradle") }
+    }
+    ant.replace(token: "package-to-scan: sample", value: "package-to-scan: ${yourProjectPackage}") {
         fileset(dir: projectPath) { include(name: "src/main/resources/application.yml") }
     }
     ant.replace(token: "logger name=\"sample\"", value: "logger name=\"${yourProjectPackage}\"") {
         fileset(dir: projectPath) { include(name: "src/main/resources/logback-spring.xml") }
+        fileset(dir: projectPath) { include(name: "src/test/resources/logback.xml") }
     }
     ant.replace(token: "import sample", value: "import ${yourProjectPackage}") {
         fileset(dir: javaPath) { include(name: "**/*.java") }
@@ -109,6 +113,12 @@ task copyProject << {
     ant.replace(token: "package sample", value: "package ${yourProjectPackage}") {
         fileset(dir: javaPath) { include(name: "**/*.java") }
         fileset(dir: testPath) { include(name: "**/*.java") }
+    }
+    ant.replace(token: "PackageRoot = \"sample\"", value: "PackageRoot = \"${yourProjectPackage}\"") {
+        fileset(dir: testPath) { include(name: "**/DdlExporter.java") }
+    }
+    ant.replace(token: "packageToScan = \"sample\"", value: "packageToScan = \"${yourProjectPackage}\"") {
+        fileset(dir: testPath) { include(name: "**/EntityTestSupport.java") }
     }
     
 }

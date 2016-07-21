@@ -2,6 +2,8 @@
 spring:
   profiles: test
 
+logging.config: classpath:logback.xml
+
 extension:
   datasource:
     default.jpa.show-sql: true
