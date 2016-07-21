@@ -164,7 +164,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 1. `build/libs` 直下に jar が出力されるので Java8 以降の実行環境へ配布
 1. 実行環境でコンソールから 「 java -jar xxx.jar 」 を実行して起動
 
-*※実行引数に 「 --spring.profiles.active=[プロファイル名]」 を追加する事で application.yml の設定値を変更できます。*  
+> 実行引数に 「 --spring.profiles.active=[プロファイル名]」 を追加する事で application.yml の設定値をプロファイル単位に変更できます。
 
 ### 本サンプルを元にしたプロジェクトリソースの作成
 
@@ -187,13 +187,13 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 | `commons-*`             | -        | 汎用ユーティリティライブラリ |
 | `icu4j-*`               | 57.1.+   | 文字変換ライブラリ |
 
-*※実際の詳細な定義は `build.gradle` を参照してください*
+> 実際の詳細な定義は `build.gradle` を参照してください
 
 ### 補足解説（インフラ層）
 
 インフラ層の簡単な解説です。
 
-*※細かい概要は実際にコードを読むか、 「 `gradlew javadoc` 」 を実行して 「 `build/docs` 」 に出力されるドキュメントを参照してください*
+※細かい概要は実際にコードを読むか、 「 `gradlew javadoc` 」 を実行して 「 `build/docs` 」 に出力されるドキュメントを参照してください
 
 #### DB / トランザクション
 
@@ -202,7 +202,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 スキーマは標準のビジネスロジック用途 ( `DefaultRepository` ) とシステム用途 ( `SystemRepository` ) の2種類を想定しています。 Entity 実装ではスキーマに依存させず、引数に渡す側 ( 主にアプリケーション層 ) で判断させます。
 
-> Spring Data JPA が提供する JpaRepository を利用することも可能です。 ( 標準で　DefaultRepository　が管理しているスキーマへ接続します )
+> Spring Data JPA が提供する JpaRepository を利用することも可能です。 ( 標準で DefaultRepository が管理しているスキーマへ接続します )
 
 #### 認証/認可
 
