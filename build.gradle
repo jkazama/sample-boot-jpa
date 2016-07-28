@@ -19,16 +19,17 @@ targetCompatibility = '1.8'
 def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
 
-springBoot {
-    executable = true
-}
-
 javadoc {
     options.encoding = defaultEncoding
+    options.addBooleanOption('Xdoclint:none', true)
 }
 
 test {
-    include "**/model/**", "**/controller/**", "**/util/**", "**/context/**"
+    include "**/model/**", "**/controller/**", "**/usecase/**", "**/util/**", "**/context/**"
+}
+
+springBoot {
+    executable = true
 }
 
 repositories {
@@ -57,7 +58,7 @@ dependencies {
     compile "com.ibm.icu:icu4j:57.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2:1.4.+"
-    testCompile "org.projectlombok:lombok:1.16.8"
+    testCompileOnly "org.projectlombok:lombok:1.16.8"
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 

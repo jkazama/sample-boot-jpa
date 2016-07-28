@@ -70,7 +70,7 @@ main
   resources
     - application.yml                 … 設定ファイル
     - ehcache.xml                     … Spring Cache 設定ファイル
-    - logback-spring.xml                     … ロギング設定ファイル
+    - logback-spring.xml              … ロギング設定ファイル
     - messages-validation.properties  … 例外メッセージリソース
     - messages.properties             … メッセージリソース
 ```
@@ -180,12 +180,12 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
 | `spring-boot-starter-*` | 1.4.0    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
-| `hibernate-*`           | 5.0.9    | DB 永続化サポート (core/java8/ehcache) |
+| `hibernate-*`           | 5.0.9    | DB 永続化サポート (core/java8) |
 | `ehcache`               | 3.1.+    | JCache 実装 |
 | `HikariCP`              | 2.3.+    | コネクションプーリング実装の組み立て用途 |
 | `jackson-datatype-*`    | 2.8.+    | JSON 変換時の Java8 / Hibernate 対応 |
 | `commons-*`             | -        | 汎用ユーティリティライブラリ |
-| `icu4j-*`               | 57.1.+   | 文字変換ライブラリ |
+| `icu4j-*`               | 57.+   | 文字変換ライブラリ |
 
 > 実際の詳細な定義は `build.gradle` を参照してください
 
