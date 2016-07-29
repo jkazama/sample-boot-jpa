@@ -1,4 +1,4 @@
-package sample.context.rest;
+package sample.controller;
 
 import java.io.IOException;
 import java.util.*;

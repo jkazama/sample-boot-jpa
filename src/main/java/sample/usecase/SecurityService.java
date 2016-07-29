@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import sample.ValidationException.ErrorKeys;
 import sample.context.security.SecurityActorFinder.*;
-import sample.context.security.SecurityAuthConfig;
+import sample.context.security.SecurityConfigurer;
 import sample.util.ConvertUtils;
 
 /**
@@ -21,7 +21,7 @@ public class SecurityService {
 
     /** 一般利用者情報を提供します。(see SecurityActorFinder) */
     @Bean
-    @ConditionalOnBean(SecurityAuthConfig.class)
+    @ConditionalOnBean(SecurityConfigurer.class)
     public SecurityUserService securityUserService(final AccountService service) {
         return new SecurityUserService() {
             /**
@@ -47,7 +47,7 @@ public class SecurityService {
 
     /** 社内管理向けの利用者情報を提供します。(see SecurityActorFinder) */
     @Bean
-    @ConditionalOnBean(SecurityAuthConfig.class)
+    @ConditionalOnBean(SecurityConfigurer.class)
     @ConditionalOnProperty(prefix = "extension.security.auth", name = "admin", matchIfMissing = false)
     public SecurityAdminService securityAdminService(final MasterAdminService service) {
         return new SecurityAdminService() {

@@ -72,6 +72,7 @@ public class BusinessDayHandler {
 
     /** 祝日マスタを検索/登録するアクセサ。 */
     @Component
+    @Setter
     public static class HolidayAccessor {
         @Autowired
         private DefaultRepository rep;

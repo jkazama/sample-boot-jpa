@@ -20,14 +20,6 @@ public class Sort implements Dto {
     /** ソート条件 */
     private final List<SortOrder> orders = new ArrayList<SortOrder>();
 
-    public Sort(final SortOrder... orders) {
-        this.orders.addAll(Arrays.asList(orders));
-    }
-
-    public Sort(final List<SortOrder> orders) {
-        this.orders.addAll(orders);
-    }
-
     /** ソート条件を追加します。 */
     public Sort add(SortOrder order) {
         orders.add(order);

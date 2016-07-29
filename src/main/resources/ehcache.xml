@@ -1,53 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ehcache
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
-	 name="spring-cache" updateCheck="false">
-  <diskStore path="java.io.tmpdir"/>
-  <defaultCache
-     maxEntriesLocalHeap="10000"
-     eternal="false"
-     timeToIdleSeconds="120"
-     timeToLiveSeconds="120"
-     maxEntriesLocalDisk="100000"
-     diskExpiryThreadIntervalSeconds="120"
-     memoryStoreEvictionPolicy="LRU">
-     <persistence strategy="localTempSwap"/>
-  </defaultCache>
+<config
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns='http://www.ehcache.org/v3'
+    xmlns:jsr107='http://www.ehcache.org/v3/jsr107'
+    xsi:schemaLocation="
+        http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+        http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+   
+  <service>
+    <jsr107:defaults enable-management="false" enable-statistics="false"/>
+  </service>
+
+  <cache-template name="default">
+    <expiry>
+      <ttl unit="seconds">1800</ttl>
+    </expiry>
+    <resources>
+      <heap unit="entries">1000</heap>
+    </resources>
+  </cache-template>
 
   <!-- ### Component Method ### -->
 
   <!-- AppSettingHandler -->
-  <cache name="AppSettingHandler.appSetting"
-    maxEntriesLocalHeap="1000"
-    timeToIdleSeconds="30"
-    timeToLiveSeconds="30" />
+  <cache alias="AppSettingHandler.appSetting" uses-template="default"> 
+    <expiry>
+      <ttl unit="seconds">30</ttl>
+    </expiry>
+    <heap unit="entries">1000</heap>
+  </cache>
 
   <!-- HolidayMasterAccessor -->
-  <cache name="HolidayAccessor.getHoliday"
-    maxEntriesLocalHeap="1000"
-    timeToIdleSeconds="1800"
-    timeToLiveSeconds="1800" />
+  <cache alias="HolidayAccessor.getHoliday" uses-template="default" />
 
   <!-- ### Service Method ### -->
 
   <!-- AccountService -->
-  <cache name="AccountService.getAccount"
-    maxEntriesLocalHeap="1000"
-    timeToIdleSeconds="1800"
-    timeToLiveSeconds="1800" />
-  <cache name="AccountService.getLoginByLoginId"
-    maxEntriesLocalHeap="1000"
-    timeToIdleSeconds="1800"
-    timeToLiveSeconds="1800" />
+  <cache alias="AccountService.getAccount" uses-template="default" />
+  <cache alias="AccountService.getLoginByLoginId" uses-template="default" />
 
   <!-- MasterAdminService -->
-  <cache name="MasterAdminService.getStaff"
-    maxEntriesLocalHeap="100"
-    timeToIdleSeconds="1800"
-    timeToLiveSeconds="1800" />
-  <cache name="MasterAdminService.findStaffAuthority"
-    maxEntriesLocalHeap="10000"
-    timeToIdleSeconds="1800"
-    timeToLiveSeconds="1800" />
-</ehcache>
+  <cache alias="MasterAdminService.getStaff" uses-template="default">
+    <heap unit="entries">100</heap>
+  </cache>
+  <cache alias="MasterAdminService.findStaffAuthority" uses-template="default">
+    <heap unit="entries">10000</heap>
+  </cache>
+</config>

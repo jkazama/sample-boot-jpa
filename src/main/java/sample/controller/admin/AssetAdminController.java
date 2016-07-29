@@ -25,7 +25,7 @@ public class AssetAdminController extends ControllerSupport {
     private AssetAdminService service;
 
     /** 未処理の振込依頼情報を検索します。 */
-    @RequestMapping(value = "/cio/")
+    @GetMapping("/cio/")
     public List<CashInOut> findCashInOut(@Valid FindCashInOut p) {
         return service.findCashInOut(p);
     }

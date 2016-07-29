@@ -1,120 +1,148 @@
 package sample.context.orm;
 
-import java.time.temporal.Temporal;
-import java.util.Optional;
+import java.time.*;
+import java.util.*;
+import java.util.function.Function;
 
-import org.apache.commons.lang3.*;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.*;
-import org.hibernate.sql.JoinType;
-import org.hibernate.transform.ResultTransformer;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.Metamodel;
 
-import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.criterion.MatchMode;
+
+import sample.context.orm.Sort.SortOrder;
 
 /**
- * ORMのCriteriaBuilderラッパー。
- * <p>Criteriaの簡易的な取り扱いを可能にします。
- * <p>Criteriaで利用する条件句は必要に応じて追加してください。
- * <p>ビルド結果としてのDetatchedCriteriaはresult*メソッドで受け取って下さい。
+ * ORM の可変条件を取り扱う CriteriaBuilder ラッパー。
+ * <p>Criteria の簡易的な取り扱いを可能にします。
+ * <p>Criteria で利用する条件句は必要に応じて追加してください。
+ * <p>ビルド結果としての CriteriaQuery は result* メソッドで受け取って下さい。
  */
-@Getter
 public class OrmCriteria<T> {
+    
+    public static final String DefaultAlias = "m";
 
-    private final DetachedCriteria criteria;
-
-    /** 指定したEntityクラスを軸にしたCriteriaを生成します。 */
-    public OrmCriteria(Class<T> clazz) {
-        this.criteria = DetachedCriteria.forClass(clazz);
-    }
+    private final Class<T> clazz;
+    private final String alias;
+    private final Metamodel metamodel;
+    private final CriteriaBuilder builder;
+    private final CriteriaQuery<T> query;
+    private final Root<T> root;
+    private final Set<Predicate> predicates = new LinkedHashSet<>();
+    private final Set<Order> orders = new LinkedHashSet<>();
 
     /** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
-    public OrmCriteria(Class<T> clazz, String alias) {
-        this.criteria = DetachedCriteria.forClass(clazz, alias);
+    private OrmCriteria(EntityManager em, Class<T> clazz, String alias) {
+        this.clazz = clazz;
+        this.metamodel = em.getMetamodel();
+        this.builder = em.getCriteriaBuilder();
+        this.query = builder.createQuery(clazz);
+        this.root = query.from(clazz);
+        this.alias = alias;
+        this.root.alias(alias);
     }
 
-    /** 組み上げたDetachedCriteriaを返します。 */
-    public DetachedCriteria result() {
-        return SerializationUtils.clone(criteria);
+    /** 内部に保有するエンティティクラスを返します。 */
+    public Class<T> entityClass() {
+        return clazz;
     }
-
+    
+    /** エンティティのメタ情報を返します。 */
+    public Metamodel metamodel() {
+        return metamodel;
+    }
+    
+    /** 内部に保有する　CriteriaBuilder を返します。 */
+    public CriteriaBuilder builder() {
+        return builder;
+    }
+    
+    /** 内部に保有する Root を返します。 */
+    public Root<T> root() {
+        return root;
+    }
+    
     /**
-     * 組み上げたDetachedCriteriaを返します。
-     * エイリアス(key)とEntity(value)を1行にMapマッピングした結果を返します。
-     */
-    public DetachedCriteria resultJoinToMap() {
-        return result(Criteria.ALIAS_TO_ENTITY_MAP);
-    }
-
-    /** 組み上げたDetachedCriteriaを返します。(Criteria.PROJECTION相当の戻り値) */
-    public DetachedCriteria resultJoin() {
-        return result(Criteria.PROJECTION);
-    }
-
-    /** 組み上げたDetachedCriteriaを返します。(Criteria.DISTINCT_ROOT_ENTITY相当の戻り値) */
-    public DetachedCriteria resultJoinDistinct() {
-        return result(Criteria.DISTINCT_ROOT_ENTITY);
-    }
-
-    /** 組み上げたDetachedCriteriaに戻り値フォーマットを紐付けて返します。 */
-    public DetachedCriteria result(final ResultTransformer transformer) {
-        return criteria.setResultTransformer(transformer);
-    }
-
-    /**
-     * 関連条件を追加します。
+     * 関連付けを行います。
      * <p>引数にはJoin可能なフィールド(@ManyToOne 等)を指定してください。
+     * <p>Join した要素は呼び出し元で保持して必要に応じて利用してください。
      */
-    public OrmCriteria<T> join(String associationPath, String alias) {
-        this.criteria.createAlias(associationPath, alias);
-        return this;
+    public <Y> Join<T, Y> join(String associationPath) {
+        return root.join(associationPath);
     }
-
-    public OrmCriteria<T> join(String associationPath, String alias,
-            JoinType joinType) {
-        this.criteria.createAlias(associationPath, alias, joinType);
-        return this;
+    
+    public <Y> Join<T, Y> join(String associationPath, String alias) {
+        Join<T, Y> v = join(associationPath);
+        v.alias(alias);
+        return v;
+    }
+    
+    /**
+     * 組み上げた CriteriaQuery を返します。
+     * <p>複雑なクエリや集計関数は本メソッドで返却された query を元に追加構築してください。
+     */
+    public CriteriaQuery<T> result() {
+        return result(q -> q);
+    }
+    @SuppressWarnings("unchecked")
+    public CriteriaQuery<T> result(Function<CriteriaQuery<?>, CriteriaQuery<?>> extension) {
+        CriteriaQuery<T> q = query.where(predicates.toArray(new Predicate[0]));
+        q = (CriteriaQuery<T>)extension.apply(q);
+        return orders.isEmpty() ? q : q.orderBy(orders.toArray(new Order[0]));
+    }
+    
+    public CriteriaQuery<Long> resultCount() {
+        return resultCount(q -> q);
+    }
+    @SuppressWarnings("unchecked")
+    public CriteriaQuery<Long> resultCount(Function<CriteriaQuery<?>, CriteriaQuery<?>> extension) {
+        CriteriaQuery<Long> q = builder.createQuery(Long.class);
+        q.from(clazz).alias(alias);
+        q.where(predicates.toArray(new Predicate[0]));
+        if (q.isDistinct()) {
+            q.select(builder.countDistinct(root));
+        } else {
+            q.select(builder.count(root));
+        }
+        return (CriteriaQuery<Long>)extension.apply(q);
     }
 
     /**
-     * Projection(max/min 等)の条件句を設定します。
-     * <p>引数にはProjectionsで生成したProjectionを追加してください。
+     * 条件句 ( or 条件含む ) を追加します。
+     * <p>引数には CriteriaBuilder で生成した Predicate を追加してください。
      */
-    public OrmCriteria<T> projection(final Projection projection) {
-        this.criteria.setProjection(projection);
+    public OrmCriteria<T> add(final Predicate predicate) {
+        this.predicates.add(predicate);
         return this;
     }
 
-    /**
-     * 条件句(or条件含む)を追加します。
-     * <p>引数にはRestrictionsで生成したCriterionを追加してください。
-     */
-    public OrmCriteria<T> add(final Criterion criterion) {
-        this.criteria.add(criterion);
-        return this;
-    }
-
-    /** or条件を付与します。 */
-    public OrmCriteria<T> or(Criterion[] predicates) {
+    /** or 条件を付与します。 */
+    public OrmCriteria<T> or(final Predicate... predicates) {
         if (predicates.length != 0) {
-            add(Restrictions.or(predicates));
+            add(builder.or(predicates));
         }
         return this;
     }
 
-    /** null一致条件を付与します。 */
+    /** null 一致条件を付与します。 */
     public OrmCriteria<T> isNull(String field) {
-        return add(Restrictions.isNull(field));
+        return add(builder.isNull(root.get(field)));
     }
 
-    /** null不一致条件を付与します。 */
+    /** null 不一致条件を付与します。 */
     public OrmCriteria<T> isNotNull(String field) {
-        return add(Restrictions.isNotNull(field));
+        return add(builder.isNotNull(root.get(field)));
     }
 
-    /** 一致条件を付与します。(値がnullの時は無視されます) */
+    /** 一致条件を付与します。( 値が null の時は無視されます ) */
     public OrmCriteria<T> equal(String field, final Object value) {
+        return equal(root, field, value);
+    }
+    
+    public OrmCriteria<T> equal(Path<?> path, String field, final Object value) {
         if (isValid(value)) {
-            add(Restrictions.eq(field, value));
+            add(builder.equal(path.get(field), value));
         }
         return this;
     }
@@ -132,21 +160,21 @@ public class OrmCriteria<T> {
     /** 不一致条件を付与します。(値がnullの時は無視されます) */
     public OrmCriteria<T> equalNot(String field, final Object value) {
         if (isValid(value)) {
-            add(Restrictions.ne(field, value));
+            add(builder.notEqual(root.get(field), value));
         }
         return this;
     }
 
     /** 一致条件を付与します。(値がnullの時は無視されます) */
     public OrmCriteria<T> equalProp(String field, final String fieldOther) {
-        add(Restrictions.eqProperty(field, fieldOther));
+        add(builder.equal(root.get(field), root.get(fieldOther)));
         return this;
     }
 
     /** like条件を付与します。(値がnullの時は無視されます) */
     public OrmCriteria<T> like(String field, String value, MatchMode mode) {
         if (isValid(value)) {
-            add(Restrictions.like(field, value, mode));
+            add(builder.like(root.get(field), mode.toMatchString(value)));
         }
         return this;
     }
@@ -154,11 +182,11 @@ public class OrmCriteria<T> {
     /** like条件を付与します。[複数フィールドに対するOR結合](値がnullの時は無視されます) */
     public OrmCriteria<T> like(String[] fields, String value, MatchMode mode) {
         if (isValid(value)) {
-            Criterion[] predicates = new Criterion[fields.length];
+            Predicate[] predicates = new Predicate[fields.length];
             for (int i = 0; i < fields.length; i++) {
-                predicates[i] = Restrictions.like(fields[i], value, mode);
+                predicates[i] = builder.like(root.get(fields[i]), mode.toMatchString(value));
             }
-            add(Restrictions.or(predicates));
+            add(builder.or(predicates));
         }
         return this;
     }
@@ -166,15 +194,31 @@ public class OrmCriteria<T> {
     /** in条件を付与します。 */
     public OrmCriteria<T> in(String field, final Object[] values) {
         if (values != null && 0 < values.length) {
-            add(Restrictions.in(field, values));
+            add(root.get(field).in(values));
         }
         return this;
     }
 
     /** between条件を付与します。 */
-    public OrmCriteria<T> between(String field, final Temporal from, final Temporal to) {
+    public OrmCriteria<T> between(String field, final Date from, final Date to) {
         if (from != null && to != null) {
-            add(Restrictions.between(field, from, to));
+            predicates.add(builder.between(root.get(field), from, to));
+        }
+        return this;
+    }
+    
+    /** between条件を付与します。 */
+    public OrmCriteria<T> between(String field, final LocalDate from, final LocalDate to) {
+        if (from != null && to != null) {
+            predicates.add(builder.between(root.get(field), from, to));
+        }
+        return this;
+    }
+    
+    /** between条件を付与します。 */
+    public OrmCriteria<T> between(String field, final LocalDateTime from, final LocalDateTime to) {
+        if (from != null && to != null) {
+            predicates.add(builder.between(root.get(field), from, to));
         }
         return this;
     }
@@ -182,53 +226,83 @@ public class OrmCriteria<T> {
     /** between条件を付与します。 */
     public OrmCriteria<T> between(String field, final String from, final String to) {
         if (isValid(from) && isValid(to)) {
-            add(Restrictions.between(field, from, to));
+            predicates.add(builder.between(root.get(field), from, to));
         }
         return this;
     }
 
     /** [フィールド]&gt;=[値] 条件を付与します。(値がnullの時は無視されます) */
-    public OrmCriteria<T> gte(String field, final Object value) {
+    public <Y extends Comparable<? super Y>> OrmCriteria<T> gte(String field, final Y value) {
         if (isValid(value)) {
-            add(Restrictions.ge(field, value));
+            add(builder.greaterThanOrEqualTo(root.get(field), value));
         }
         return this;
     }
 
     /** [フィールド]&gt;[値] 条件を付与します。(値がnullの時は無視されます) */
-    public OrmCriteria<T> gt(String field, final Object value) {
+    public <Y extends Comparable<? super Y>> OrmCriteria<T> gt(String field, final Y value) {
         if (isValid(value)) {
-            add(Restrictions.gt(field, value));
+            add(builder.greaterThan(root.get(field), value));
         }
         return this;
     }
 
     /** [フィールド]&lt;=[値] 条件を付与します。 */
-    public OrmCriteria<T> lte(String field, final Object value) {
+    public <Y extends Comparable<? super Y>> OrmCriteria<T> lte(String field, final Y value) {
         if (isValid(value)) {
-            add(Restrictions.le(field, value));
+            add(builder.lessThanOrEqualTo(root.get(field), value));
         }
         return this;
     }
 
     /** [フィールド]&lt;[値] 条件を付与します。 */
-    public OrmCriteria<T> lt(String field, final Object value) {
+    public <Y extends Comparable<? super Y>>  OrmCriteria<T> lt(String field, final Y value) {
         if (isValid(value)) {
-            add(Restrictions.lt(field, value));
+            add(builder.lessThan(root.get(field), value));
         }
         return this;
     }
 
+    /** ソート条件を加えます。 */
+    public OrmCriteria<T> sort(Sort sort) {
+        sort.getOrders().forEach(this::sort);
+        return this;
+    }
+    
+    /** ソート条件を加えます。 */
+    public OrmCriteria<T> sort(SortOrder order) {
+        if (order.isAscending()) {
+            sort(order.getProperty());
+        } else {
+            sortDesc(order.getProperty());
+        }
+        return this;
+    }
+    
     /** 昇順条件を加えます。 */
     public OrmCriteria<T> sort(String field) {
-        criteria.addOrder(Order.asc(field));
+        orders.add(builder.asc(root.get(field)));
         return this;
     }
 
     /** 降順条件を加えます。 */
     public OrmCriteria<T> sortDesc(String field) {
-        criteria.addOrder(Order.desc(field));
+        orders.add(builder.desc(root.get(field)));
         return this;
     }
+    
+    public boolean emptySort() {
+        return !orders.isEmpty();
+    }
+    
+    /** 指定した Entity クラスを軸にしたCriteriaを生成します。 */    
+    public static <T> OrmCriteria<T> of(EntityManager em, Class<T> clazz) {
+        return new OrmCriteria<>(em, clazz, DefaultAlias);
+    }
 
+    /** 指定した Entity クラスにエイリアスを紐付けたCriteriaを生成します。 */
+    public static <T> OrmCriteria<T> of(EntityManager em, Class<T> clazz, String alias) {
+        return new OrmCriteria<>(em, clazz, alias);
+    }
+    
 }

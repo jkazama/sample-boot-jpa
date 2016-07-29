@@ -3,14 +3,14 @@ package sample.context;
 import java.time.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
+import lombok.Setter;
 import sample.util.*;
 
 /**
  * 日時ユーティリティコンポーネント。
  */
-@Component
+@Setter
 public class Timestamper {
     public static final String KeyDay = "system.businessDay.day";
 

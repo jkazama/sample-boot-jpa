@@ -2,19 +2,14 @@ package sample;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.EnumSet;
+import java.util.Properties;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hibernate.boot.*;
-import org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl;
+import org.hibernate.boot.registry.*;
 import org.hibernate.boot.spi.MetadataImplementor;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
+import org.springframework.boot.orm.jpa.hibernate.*;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-
-import sample.context.orm.DefaultRepository.DefaultRepositoryConfig;
-import sample.context.orm.OrmRepository.OrmNamingStrategy;
 
 /**
  * Entity 定義を元に DDL を生成します。  
@@ -34,6 +29,7 @@ public class DdlExporter {
     private static final String PackageSystem = PackageRoot + ".context";
     private static final String OrmDialect = "org.hibernate.dialect.H2Dialect";
     private static final String OutputRoot = "build/";
+    private static final boolean FormatSql = false;
 
     public static void main(String[] args) {
         DdlExporter exporter = new DdlExporter();
@@ -41,40 +37,52 @@ public class DdlExporter {
         exporter.outputDdl(PackageDefault, OrmDialect, "ddl-default.sql");
     }
 
-    public void outputDdl(String packageName, String dialect, String fileName) {
+    private void outputDdl(String packageName, String dialect, String fileName) {
+        LocalSessionFactoryBean sfBean = sfBean(packageName, dialect);
+        StandardServiceRegistry serviceRegistry = sfBean.getConfiguration().getStandardServiceRegistryBuilder().build();
         try {
             String outputFile = OutputRoot + fileName;
             Files.deleteIfExists(Paths.get(outputFile));
-            SchemaExport export = new SchemaExport();
+            MetadataImplementor metadata = metadata(sfBean, serviceRegistry);
+            
+            SchemaExport export = new SchemaExport(serviceRegistry, metadata, false);
             export.setDelimiter(";");
+            export.setFormat(FormatSql);
             export.setOutputFile(outputFile);
-            MetadataImplementor metadata =  metadata(packageName, dialect);
-            export.create(EnumSet.of(TargetType.SCRIPT), metadata); 
+            export.create(true, false);
         } catch (Exception e) {
             throw new InvocationException(e);
+        } finally {
+            StandardServiceRegistryBuilder.destroy( serviceRegistry );
         }
     }
 
-    private MetadataImplementor metadata(String packageName, String dialect) throws Exception {
-        DefaultRepositoryConfig config = new DefaultRepositoryConfig();
-        config.setShowSql(false);
-        config.setPackageToScan(packageName);
-        config.setDialect(dialect);
-        config.getProperties().put("hibernate.hbm2ddl.auto", "none");
-        LocalSessionFactoryBean sfBean = config.sessionFactory(null, null);
+    private LocalSessionFactoryBean sfBean(String packageName, String dialect) {
+        LocalSessionFactoryBean sfBean = new LocalSessionFactoryBean();
         try {
+            sfBean.setPackagesToScan(packageName);
+            sfBean.setHibernateProperties(hibernateProperties(dialect));
             sfBean.afterPropertiesSet();
         } catch (IOException e) {
             throw new InvocationException(e);
         }
-        Configuration configuration = sfBean.getConfiguration();
-        // MetadataImplementorを無理やり取得
-        MetadataSources metadataSources = (MetadataSources) FieldUtils.readField(configuration, "metadataSources",
-                true);
+        return sfBean;
+    }
+    
+    private Properties hibernateProperties(String dialect) {
+        Properties props = new Properties();
+        props.put("hibernate.dialect", dialect);
+        props.put("hibernate.show_sql", false);
+        props.put("hibernate.hbm2ddl.auto", "none");
+        return props;
+    }
+
+    private MetadataImplementor metadata(LocalSessionFactoryBean sfBean, StandardServiceRegistry registry) throws Exception {
+        MetadataSources metadataSources = sfBean.getMetadataSources();
         Metadata metadata = metadataSources
-                .getMetadataBuilder(configuration.getStandardServiceRegistryBuilder().build())
-                .applyPhysicalNamingStrategy(new OrmNamingStrategy())
-                .applyImplicitNamingStrategy(ImplicitNamingStrategyJpaCompliantImpl.INSTANCE)
+                .getMetadataBuilder(registry)
+                .applyPhysicalNamingStrategy(new SpringPhysicalNamingStrategy())
+                .applyImplicitNamingStrategy(new SpringImplicitNamingStrategy())
                 .build();
         return (MetadataImplementor) metadata;
     }

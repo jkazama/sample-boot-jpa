@@ -1,16 +1,17 @@
 package sample;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.context.MessageSource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.*;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-
-import sample.context.Timestamper;
+import sample.context.*;
+import sample.context.actor.ActorSession;
+import sample.context.audit.AuditHandler;
+import sample.context.audit.AuditHandler.AuditPersister;
+import sample.context.lock.IdLockHandler;
+import sample.context.mail.MailHandler;
+import sample.context.report.ReportHandler;
 import sample.model.BusinessDayHandler;
 
 /**
@@ -20,39 +21,58 @@ import sample.model.BusinessDayHandler;
 @Configuration
 public class ApplicationConfig {
 
-    /** SpringMvcの拡張コンフィギュレーション */
+    /** インフラ層 ( context 配下) のコンポーネント定義を表現します */
     @Configuration
-    public static class WebMvcConfig extends WebMvcConfigurerAdapter {
-        @Autowired
-        private MessageSource message;
-
-        /** HibernateのLazyLoading回避対応。  see JacksonAutoConfiguration */
+    static class PlainConfig {
         @Bean
-        public Hibernate5Module jsonHibernate5Module() {
-            return new Hibernate5Module();
+        Timestamper timestamper() {
+            return new Timestamper();
         }
-
-        /** BeanValidationメッセージのUTF-8に対応したValidator。 */
         @Bean
-        public LocalValidatorFactoryBean validator() {
-            LocalValidatorFactoryBean factory = new LocalValidatorFactoryBean();
-            factory.setValidationMessageSource(message);
-            return factory;
+        ActorSession actorSession() {
+            return new ActorSession();
         }
-
-        /** 標準Validatorの差し替えをします。 */
-        @Override
-        public org.springframework.validation.Validator getValidator() {
-            return validator();
+        @Bean
+        ResourceBundleHandler resourceBundleHandler() {
+            return new ResourceBundleHandler();
+        }
+        @Bean
+        AppSettingHandler appSettingHandler() {
+            return new AppSettingHandler();
+        }
+        @Bean
+        AuditHandler auditHandler() {
+            return new AuditHandler();
+        }
+        @Bean
+        AuditPersister auditPersister() {
+            return new AuditPersister();
+        }
+        @Bean
+        IdLockHandler idLockHandler() {
+            return new IdLockHandler();
+        }
+        @Bean
+        MailHandler mailHandler() {
+            return new MailHandler();
+        }
+        @Bean
+        ReportHandler reportHandler() {
+            return new ReportHandler();
+        }
+        @Bean
+        DomainHelper domainHelper() {
+            return new DomainHelper();
         }
     }
 
     /** 拡張ヘルスチェック定義を表現します。 */
     @Configuration
-    public static class HealthCheckConfig {
+    static class HealthCheckConfig {
         /** 営業日チェック */
         @Bean
-        public HealthIndicator dayIndicator(final Timestamper time, final BusinessDayHandler day) {
+        @ConditionalOnBean(BusinessDayHandler.class)
+        HealthIndicator dayIndicator(final Timestamper time, final BusinessDayHandler day) {
             return new AbstractHealthIndicator() {
                 @Override
                 protected void doHealthCheck(Builder builder) throws Exception {

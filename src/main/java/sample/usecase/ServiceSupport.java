@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.util.Assert;
 
 import lombok.Setter;
 import sample.context.DomainHelper;
@@ -43,12 +44,12 @@ public abstract class ServiceSupport {
 
     @Autowired
     private AuditHandler audit;
-    @Autowired
+    @Autowired(required = false)
     private BusinessDayHandler businessDay;
 
-    @Autowired
+    @Autowired(required = false)
     private ServiceMailDeliver mail;
-    @Autowired
+    @Autowired(required = false)
     private ServiceReportExporter report;
 
     /** トランザクション処理を実行します。 */
@@ -98,11 +99,13 @@ public abstract class ServiceSupport {
 
     /** サービスメールユーティリティを返します。 */
     protected ServiceMailDeliver mail() {
+        Assert.notNull(mail);
         return mail;
     }
 
     /** サービスレポートユーティリティを返します。 */
     protected ServiceReportExporter report() {
+        Assert.notNull(report);
         return report;
     }
 
@@ -118,6 +121,7 @@ public abstract class ServiceSupport {
 
     /** 営業日ユーティリティを返します。 */
     protected BusinessDayHandler businessDay() {
+        Assert.notNull(businessDay);
         return businessDay;
     }
 

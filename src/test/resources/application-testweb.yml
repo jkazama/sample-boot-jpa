@@ -1,11 +1,11 @@
 ---
 spring:
-  profiles: test
+  profiles: testweb
 
 logging.config: classpath:logback.xml
 
 extension:
   datasource:
-    default.jpa.show-sql: true
-    system.jpa.show-sql: true
+    default.jpa.hibernate.ddl-auto: none
+    system.jpa.hibernate.ddl-auto: none
   security.auth.enabled: false

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <logger name="sample" level="DEBUG"/>
+    <root level="WARN"/>
+    <logger name="sample" level="INFO"/>
+    <logger name="Audit" level="INFO"/>
 </configuration>

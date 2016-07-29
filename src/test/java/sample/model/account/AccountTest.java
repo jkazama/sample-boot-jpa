@@ -19,7 +19,9 @@ public class AccountTest extends EntityTestSupport {
 
     @Override
     protected void before() {
-        tx(() -> fixtures.acc("normal").save(rep));
+        tx(() -> {
+            fixtures.acc("normal").save(rep);
+        });
     }
 
     @Test
@@ -33,7 +35,6 @@ public class AccountTest extends EntityTestSupport {
                     hasProperty("mail", is("new@example.com"))));
             Login login = Login.load(rep, "new");
             assertTrue(encoder.matches("password", login.getPassword()));
-
             // 同一ID重複
             try {
                 Account.register(rep, encoder, new RegAccount("normal", "name", "new@example.com", "password"));

@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.*;
 
 import lombok.Setter;
@@ -21,7 +20,6 @@ import sample.context.orm.SystemRepository;
  * <p>対象となるログはLoggerだけでなく、システムスキーマの監査テーブルへ書きだされます。
  * (開始時と完了時で別TXにする事で応答無し状態を検知可能)
  */
-@Component
 @Setter
 public class AuditHandler {
     public static final Logger LoggerActor = LoggerFactory.getLogger("Audit.Actor");
@@ -173,7 +171,7 @@ public class AuditHandler {
     /**
      * 監査ログをシステムスキーマへ永続化します。
      */
-    @Component
+    @Setter
     public static class AuditPersister {
         @Autowired
         private SystemRepository rep;

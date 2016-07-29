@@ -1,48 +1,33 @@
 package sample.context.security;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.builders.*;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.*;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.security.web.authentication.logout.*;
+import org.springframework.web.filter.*;
 
 import lombok.*;
 import sample.ValidationException.ErrorKeys;
 import sample.context.actor.ActorSession;
-import sample.context.security.SecurityActorFinder.ActorDetails;
-import sample.context.security.SecurityActorFinder.SecurityActorService;
-import sample.context.security.SecurityConfig.SecurityProperties;
+import sample.context.security.SecurityActorFinder.*;
 
 /**
  * Spring Security(認証/認可)全般の設定を行います。
@@ -55,11 +40,7 @@ import sample.context.security.SecurityConfig.SecurityProperties;
  */
 @Setter
 @Getter
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
-@ConditionalOnProperty(prefix = "extension.security.auth", name = "enabled", matchIfMissing = true)
-@Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
-public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /** Spring Boot のサーバ情報 */
     @Autowired
@@ -69,9 +50,11 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
     private SecurityProperties props;
     /** 認証/認可利用者サービス */
     @Autowired
+    @Lazy
     private SecurityActorFinder actorFinder;
     /** カスタム認証プロバイダ */
     @Autowired
+    @Lazy
     private SecurityProvider securityProvider;
     /** カスタム認証マネージャ */
     @Autowired
@@ -79,9 +62,11 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
     private AuthenticationManager authenticationManager;
     /** カスタムエントリポイント(例外対応) */
     @Autowired
+    @Lazy
     private SecurityEntryPoint entryPoint;
     /** ログイン/ログアウト時の拡張ハンドラ */
     @Autowired
+    @Lazy
     private LoginHandler loginHandler;
     /** ThreadLocalスコープの利用者セッション */
     @Autowired
@@ -98,8 +83,6 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
         auth.eraseCredentials(true).authenticationProvider(securityProvider);
     }
 
-    @Bean
-    @ConditionalOnBean(SecurityAuthConfig.class)
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
@@ -107,7 +90,7 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(serverProps.getPathsArray(props.auth().ignorePath));
+        web.ignoring().antMatchers(serverProps.getPathsArray(props.auth().getIgnorePath()));
     }
 
     @Override
@@ -115,18 +98,18 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
         // Target URL
         http
             .authorizeRequests()
-            .antMatchers(props.auth().excludesPath).permitAll();
+            .antMatchers(props.auth().getExcludesPath()).permitAll();
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers(props.auth().pathAdmin).hasRole("ADMIN")
-            .antMatchers(props.auth().path).hasRole("USER");
+            .antMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
+            .antMatchers(props.auth().getPath()).hasRole("USER");
         // common
         http
             .exceptionHandling().authenticationEntryPoint(entryPoint);
         http
             .sessionManagement()
-            .maximumSessions(props.auth().maximumSessions)
+            .maximumSessions(props.auth().getMaximumSessions())
             .and()
             .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
         http
@@ -142,56 +125,20 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
 
         // login/logout
         http
-            .formLogin().loginPage(props.auth().loginPath)
-            .usernameParameter(props.auth().loginKey).passwordParameter(props.auth().passwordKey)
+            .formLogin().loginPage(props.auth().getLoginPath())
+            .usernameParameter(props.auth().getLoginKey()).passwordParameter(props.auth().getPasswordKey())
             .successHandler(loginHandler).failureHandler(loginHandler)
             .permitAll()
             .and()
-            .logout().logoutUrl(props.auth().logoutPath)
+            .logout().logoutUrl(props.auth().getLogoutPath())
             .logoutSuccessHandler(loginHandler)
             .permitAll();
-    }
-
-    /** Spring Securityに対する拡張設定情報。(ScurityConfig#SecurityPropertiesによって管理されています) */
-    @Data
-    public static class SecurityAuthProperties {
-        /** リクエスト時のログインIDを取得するキー */
-        private String loginKey = "loginId";
-        /** リクエスト時のパスワードを取得するキー */
-        private String passwordKey = "password";
-        /** 認証対象パス */
-        private String[] path = new String[] { "/api/**" };
-        /** 認証対象パス(管理者向け) */
-        private String[] pathAdmin = new String[] { "/api/admin/**" };
-        /** 認証除外パス(認証対象からの除外) */
-        private String[] excludesPath = new String[] { "/api/system/job/**" };
-        /** 認証無視パス(フィルタ未適用の認証未考慮、静的リソース等) */
-        private String[] ignorePath = new String[] { "/css/**", "/js/**", "/img/**", "/**/favicon.ico" };
-        /** ログインAPIパス */
-        private String loginPath = "/api/login";
-        /** ログアウトAPIパス */
-        private String logoutPath = "/api/logout";
-        /** 一人が同時利用可能な最大セッション数 */
-        private int maximumSessions = 2;
-        /**
-         * 社員向けモードの時はtrue。
-         * <p>ログインパスは同じですが、ログイン処理の取り扱いが切り替わります。
-         * <ul>
-         * <li>true: SecurityUserService
-         * <li>false: SecurityAdminService
-         * </ul> 
-         */
-        private boolean admin = false;
-        /** 認証が有効な時はtrue */
-        private boolean enabled = true;
     }
 
     /**
      * Spring Securityのカスタム認証プロバイダ。
      * <p>主にパスワード照合を行っています。
      */
-    @Component
-    @ConditionalOnBean(SecurityAuthConfig.class)
     public static class SecurityProvider implements AuthenticationProvider {
         @Autowired
         private SecurityActorFinder actorFinder;
@@ -227,8 +174,6 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
      * Spring Securityのカスタムエントリポイント。
      * <p>API化を念頭に例外発生時の実装差込をしています。
      */
-    @Component
-    @ConditionalOnBean(SecurityAuthConfig.class)
     public static class SecurityEntryPoint implements AuthenticationEntryPoint {
         @Autowired
         private MessageSource msg;
@@ -274,8 +219,6 @@ public class SecurityAuthConfig extends WebSecurityConfigurerAdapter {
     /**
      * Spring Securityにおけるログイン/ログアウト時の振る舞いを拡張するHandler。
      */
-    @Component
-    @ConditionalOnBean(SecurityAuthConfig.class)
     @Getter
     @Setter
     public static class LoginHandler
