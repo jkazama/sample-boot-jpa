@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import sample.context.lock.IdLockHandler.LockType;
 import sample.context.orm.DefaultRepository;
 import sample.model.asset.*;
@@ -15,6 +16,7 @@ import sample.model.asset.CashInOut.FindCashInOut;
  * 資産ドメインに対する社内ユースケース処理。
  */
 @Service
+@Slf4j
 public class AssetAdminService extends ServiceSupport {
 
     /**
@@ -46,7 +48,7 @@ public class AssetAdminService extends ServiceSupport {
                     //low: SQLの発行担保。扱う情報に相互依存が無く、セッションキャッシュはリークしがちなので都度消しておく。
                     rep().flushAndClear();
                 } catch (Exception e) {
-                    logger.error("[" + cio.getId() + "] 振込出金依頼の締め処理に失敗しました。", e);
+                    log.error("[" + cio.getId() + "] 振込出金依頼の締め処理に失敗しました。", e);
                     try {
                         cio.error(rep());
                         rep().flush();
@@ -75,7 +77,7 @@ public class AssetAdminService extends ServiceSupport {
                     cf.realize(rep());
                     rep().flushAndClear();
                 } catch (Exception e) {
-                    logger.error("[" + cf.getId() + "] キャッシュフローの実現に失敗しました。", e);
+                    log.error("[" + cf.getId() + "] キャッシュフローの実現に失敗しました。", e);
                     try {
                         cf.error(rep());
                         rep().flush();

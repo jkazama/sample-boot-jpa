@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.*;
 
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import sample.*;
 import sample.context.actor.*;
 import sample.context.audit.AuditActor.RegAuditActor;
@@ -20,11 +21,11 @@ import sample.context.orm.SystemRepository;
  * <p>対象となるログはLoggerだけでなく、システムスキーマの監査テーブルへ書きだされます。
  * (開始時と完了時で別TXにする事で応答無し状態を検知可能)
  */
+@Slf4j
 @Setter
 public class AuditHandler {
     public static final Logger LoggerActor = LoggerFactory.getLogger("Audit.Actor");
     public static final Logger LoggerEvent = LoggerFactory.getLogger("Audit.Event");
-    protected Logger loggerSystem = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private ActorSession session;
@@ -96,34 +97,34 @@ public class AuditHandler {
             try { // システムスキーマの障害は本質的なエラーに影響を与えないように
                 audit = Optional.of(persister.start(RegAuditActor.of(category, message)));
             } catch (Exception e) {
-                loggerSystem.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             T v = callable.get();
             try {
                 audit.ifPresent(persister::finish);
             } catch (Exception e) {
-                loggerSystem.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             return v;
         } catch (ValidationException e) {
             try {
                 audit.ifPresent((v) -> persister.cancel(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw e;
         } catch (RuntimeException e) {
             try {
                 audit.ifPresent((v) -> persister.error(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw e;
         } catch (Exception e) {
             try {
                 audit.ifPresent((v) -> persister.error(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw new InvocationException(e);
         }
@@ -135,34 +136,34 @@ public class AuditHandler {
             try { // システムスキーマの障害は本質的なエラーに影響を与えないように
                 audit = Optional.of(persister.start(RegAuditEvent.of(category, message)));
             } catch (Exception e) {
-                loggerSystem.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             T v = callable.get();
             try {
                 audit.ifPresent(persister::finish);
             } catch (Exception e) {
-                loggerSystem.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
             return v;
         } catch (ValidationException e) {
             try {
                 audit.ifPresent((v) -> persister.cancel(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw e;
         } catch (RuntimeException e) {
             try {
                 audit.ifPresent((v) -> persister.error(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw (RuntimeException) e;
         } catch (Exception e) {
             try {
                 audit.ifPresent((v) -> persister.error(v, e.getMessage()));
             } catch (Exception ex) {
-                loggerSystem.error(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
             throw new InvocationException(e);
         }
