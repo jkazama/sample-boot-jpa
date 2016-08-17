@@ -74,7 +74,7 @@ public abstract class WebTestSupport {
                 expects.expects.toArray(new ResultMatcher[0]));
     }
     
-    /** Post 要求 ( JSON ) を投げて結果を検証します。 */
+    /** Get 要求 ( JSON ) を投げて結果を検証します。 */
     protected ResultActions performJsonGet(String path, String content, final JsonExpects expects) {
         return performJsonGet(uriBuilder(path).build(), content, expects);
     }

@@ -2,8 +2,6 @@
 spring:
   application.name: sample-boot-hibernate
   aop.proxy-target-class: true
-  autoconfigure.exclude:
-    - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
   messages.basename: messages-validation, messages
   cache.jcache.config: ehcache.xml
   jackson:
