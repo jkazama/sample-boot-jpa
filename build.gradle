@@ -9,7 +9,7 @@ buildscript {
 
 apply plugin: "spring-boot"
 
-version = "1.2.0"
+version = "1.2.1"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -48,8 +48,9 @@ dependencies {
     compile "com.zaxxer:HikariCP:2.4.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.+"
+    compile "org.eclipse.collections:eclipse-collections:7.1.0"
+    compile "org.eclipse.collections:eclipse-collections-api:7.1.0"
     compile "commons-io:commons-io:2.5"
-    compile "org.apache.commons:commons-collections4:4.1"
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.ibm.icu:icu4j:57.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
@@ -59,7 +60,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "2.14.1"
+    gradleVersion = "3.0"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
@@ -116,6 +117,5 @@ task copyProject << {
     }
     ant.replace(token: "packageToScan = \"sample\"", value: "packageToScan = \"${yourProjectPackage}\"") {
         fileset(dir: testPath) { include(name: "**/EntityTestSupport.java") }
-    }
-    
+    }    
 }
