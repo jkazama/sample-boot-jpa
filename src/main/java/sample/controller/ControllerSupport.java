@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.*;
@@ -29,8 +27,6 @@ import sample.context.report.ReportFile;
  */
 @Setter
 public class ControllerSupport {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private MessageSource msg;

@@ -3,13 +3,13 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE"
     }
 }
 
 apply plugin: "spring-boot"
 
-version = "1.2.1"
+version = "1.2.2"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'

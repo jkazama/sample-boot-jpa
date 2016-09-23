@@ -2,8 +2,6 @@ package sample.usecase;
 
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -26,8 +24,6 @@ import sample.usecase.report.ServiceReportExporter;
  */
 @Setter
 public abstract class ServiceSupport {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private MessageSource msg;
