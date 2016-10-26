@@ -9,7 +9,7 @@ import sample.context.orm.*;
 import sample.model.constraints.*;
 
 /**
- * 社員に割り当てられた権限を表現します。
+ * The authority that was assigned to an staff.
  */
 @Entity
 @Data
@@ -19,18 +19,15 @@ import sample.model.constraints.*;
 public class StaffAuthority extends OrmActiveRecord<StaffAuthority> {
     private static final long serialVersionUID = 1l;
 
-    /** ID */
     @Id
     @GeneratedValue
     private Long id;
-    /** 社員ID */
     @IdStr
     private String staffId;
-    /** 権限名称。(「プリフィックスにROLE_」を付与してください) */
+    /** authority. (give "ROLE_" before) */
     @Name
     private String authority;
 
-    /** 口座IDに紐付く権限一覧を返します。 */
     public static List<StaffAuthority> find(final OrmRepository rep, String staffId) {
         return rep.tmpl().find("from StaffAuthority where staffId=?1", staffId);
     }

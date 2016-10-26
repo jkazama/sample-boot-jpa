@@ -30,51 +30,40 @@ import sample.context.actor.ActorSession;
 import sample.context.security.SecurityActorFinder.*;
 
 /**
- * Spring Security(認証/認可)全般の設定を行います。
- * <p>認証はベーシック認証ではなく、HttpSessionを用いた従来型のアプローチで定義しています。
- * <p>設定はパターンを決め打ちしている関係上、既存の定義ファイルをラップしています。
- * securityプリフィックスではなくextension.securityプリフィックスのものを利用してください。
- * <p>low: HttpSessionを利用しているため、横スケールする際に問題となります。その際は上位のL/Bで制御するか、
- * SpringSession(HttpSessionの実装をRedis等でサポート)を利用する事でコード変更無しに対応が可能となります。
- * <p>low: 本サンプルでは無効化していますが、CSRF対応はプロジェクト毎に適切な利用を検討してください。
+ * Spring Security (the certification / authorization) General Preferences.
+ * <p>The certification defines it by conventional approach using HttpSession not the basic certification.
+ * <p>The setting uses an original thing, Use a thing of the "extension.security" prefix not "security" prefix.
+ * <p>low: This component destroy it with this sample,
+ * but the CSRF correspondence, please examine the appropriate use every project.
  */
 @Setter
 @Getter
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    /** Spring Boot のサーバ情報 */
+    /** Server information of Spring Boot */
     @Autowired
     private ServerProperties serverProps;
-    /** 拡張セキュリティ情報 */
     @Autowired
     private SecurityProperties props;
-    /** 認証/認可利用者サービス */
     @Autowired
     @Lazy
     private SecurityActorFinder actorFinder;
-    /** カスタム認証プロバイダ */
     @Autowired
     @Lazy
     private SecurityProvider securityProvider;
-    /** カスタム認証マネージャ */
     @Autowired
     @Lazy
     private AuthenticationManager authenticationManager;
-    /** カスタムエントリポイント(例外対応) */
     @Autowired
     @Lazy
     private SecurityEntryPoint entryPoint;
-    /** ログイン/ログアウト時の拡張ハンドラ */
     @Autowired
     @Lazy
     private LoginHandler loginHandler;
-    /** ThreadLocalスコープの利用者セッション */
     @Autowired
     private ActorSession actorSession;
-    /** CORS利用時のフィルタ */
     @Autowired(required = false)
     private CorsFilter corsFilter;
-    /** 認証配下に置くServletFilter */
     @Autowired(required = false)
     private SecurityFilters filters;
 
@@ -135,10 +124,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
             .permitAll();
     }
 
-    /**
-     * Spring Securityのカスタム認証プロバイダ。
-     * <p>主にパスワード照合を行っています。
-     */
     public static class SecurityProvider implements AuthenticationProvider {
         @Autowired
         private SecurityActorFinder actorFinder;
@@ -150,13 +135,13 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         public Authentication authenticate(Authentication authentication) throws AuthenticationException {
             if (authentication.getPrincipal() == null ||
                     authentication.getCredentials() == null) {
-                throw new BadCredentialsException("ログイン認証に失敗しました");
+                throw new BadCredentialsException("You failed in the login certification");
             }
             SecurityActorService service = actorFinder.detailsService();
             UserDetails details = service.loadUserByUsername(authentication.getPrincipal().toString());
             String presentedPassword = authentication.getCredentials().toString();
             if (!encoder.matches(presentedPassword, details.getPassword())) {
-                throw new BadCredentialsException("ログイン認証に失敗しました");
+                throw new BadCredentialsException("You failed in the login certification");
             }
             UsernamePasswordAuthenticationToken ret = new UsernamePasswordAuthenticationToken(
                     authentication.getName(), "", details.getAuthorities());
@@ -171,8 +156,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * Spring Securityのカスタムエントリポイント。
-     * <p>API化を念頭に例外発生時の実装差込をしています。
+     * A custom entry point of Spring Security.
      */
     public static class SecurityEntryPoint implements AuthenticationEntryPoint {
         @Autowired
@@ -190,8 +174,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * SpringSecurityの認証情報(Authentication)とActorSessionを紐付けるServletFilter。
-     * <p>dummyLoginが有効な時は常にSecurityContextHolderへAuthenticationを紐付けます。 
+     * ServletFilter which relates ActorSession with SpringSecurity certification information.
+     * <p>When dummyLogin is effective, this filter always connect Authentication with SecurityContextHolder.
      */
     @AllArgsConstructor
     public static class ActorSessionFilter extends GenericFilterBean {
@@ -216,9 +200,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         }
     }
 
-    /**
-     * Spring Securityにおけるログイン/ログアウト時の振る舞いを拡張するHandler。
-     */
     @Getter
     @Setter
     public static class LoginHandler
@@ -226,7 +207,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         @Autowired
         private SecurityProperties props;
 
-        /** ログイン成功処理 */
         @Override
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                 Authentication authentication) throws IOException, ServletException {
@@ -237,7 +217,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
             writeReponseEmpty(response, HttpServletResponse.SC_OK);
         }
 
-        /** ログイン失敗処理 */
         @Override
         public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                 AuthenticationException exception) throws IOException, ServletException {
@@ -246,7 +225,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
             writeReponseEmpty(response, HttpServletResponse.SC_BAD_REQUEST);
         }
 
-        /** ログアウト成功処理 */
         @Override
         public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                 Authentication authentication)

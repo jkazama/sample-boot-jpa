@@ -1,4 +1,4 @@
 /**
- * 口座に関連したドメイン概念。
+ * A account-related domain.
  */
 package sample.model.account;

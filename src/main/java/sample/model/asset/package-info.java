@@ -1,4 +1,4 @@
 /**
- * 資産に関連したドメイン概念。
+ * A asset-related domain.
  */
 package sample.model.asset;

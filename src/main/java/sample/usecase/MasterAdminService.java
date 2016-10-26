@@ -11,19 +11,17 @@ import sample.model.master.*;
 import sample.model.master.Holiday.RegHoliday;
 
 /**
- * サービスマスタドメインに対する社内ユースケース処理。
+ * The use case processing for the master domain in the organization.
  */
 @Service
 public class MasterAdminService extends ServiceSupport {
 
-    /** 社員を取得します。 */
     @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("MasterAdminService.getStaff")
     public Optional<Staff> getStaff(String id) {
         return Staff.get(rep(), id);
     }
 
-    /** 社員権限を取得します。 */
     @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("MasterAdminService.findStaffAuthority")
     public List<StaffAuthority> findStaffAuthority(String staffId) {
@@ -31,7 +29,7 @@ public class MasterAdminService extends ServiceSupport {
     }
 
     public void registerHoliday(final RegHoliday p) {
-        audit().audit("休日情報を登録する", () -> tx(() -> Holiday.register(rep(), p)));
+        audit().audit("Register holiday information.", () -> tx(() -> Holiday.register(rep(), p)));
     }
 
 }

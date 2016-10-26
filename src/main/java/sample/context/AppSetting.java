@@ -14,8 +14,8 @@ import sample.context.orm.*;
 import sample.model.constraints.OutlineEmpty;
 
 /**
- * アプリケーション設定情報を表現します。
- * <p>事前に初期データが登録される事を前提とし、値の変更のみ許容します。
+ * Application setting information.
+ * <p>Premise that initial data are registered beforehand and permit only the change of the value.
  */
 @Entity
 @Data
@@ -25,21 +25,16 @@ import sample.model.constraints.OutlineEmpty;
 public class AppSetting extends OrmActiveRecord<AppSetting> {
     private static final long serialVersionUID = 1l;
 
-    /** 設定ID */
     @Id
     @Size(max = 120)
     private String id;
-    /** 区分 */
     @Size(max = 60)
     private String category;
-    /** 概要 */
     @Size(max = 1300)
     private String outline;
-    /** 値 */
     @Size(max = 1300)
     private String value;
 
-    /** 設定情報値を取得します。 */
     public String str() {
         return value;
     }
@@ -80,7 +75,6 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         return value == null ? defaultValue : new BigDecimal(value);
     }
 
-    /** 設定情報を取得します。 */
     public static Optional<AppSetting> get(OrmRepository rep, String id) {
         return rep.get(AppSetting.class, id);
     }
@@ -89,13 +83,11 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         return rep.load(AppSetting.class, id);
     }
 
-    /** 設定情報値を設定します。 */
     public AppSetting update(OrmRepository rep, String value) {
         setValue(value);
         return update(rep);
     }
 
-    /** アプリケーション設定情報を検索します。 */
     public static List<AppSetting> find(OrmRepository rep, FindAppSetting p) {
         return rep.tmpl().find(AppSetting.class, (criteria) -> {
             return criteria
@@ -104,7 +96,6 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         });
     }
 
-    /** 検索パラメタ　*/
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

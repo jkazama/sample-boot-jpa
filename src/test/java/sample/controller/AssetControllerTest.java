@@ -13,10 +13,6 @@ import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.RegCashOut;
 import sample.usecase.AssetService;
 
-/**
- * AssetController の単体検証です。
- * <p>low: 簡易な正常系検証が中心
- */
 @WebMvcTest(AssetController.class)
 public class AssetControllerTest extends WebTestSupport {
 
@@ -29,7 +25,7 @@ public class AssetControllerTest extends WebTestSupport {
     }
 
     @Test
-    public void 未処理の振込依頼情報を検索します() {
+    public void findUnprocessedCashOut() {
         given(service.findUnprocessedCashOut()).willReturn(resultCashOuts());
         performGet("/cio/unprocessedOut/",
             JsonExpects.success()
@@ -45,7 +41,7 @@ public class AssetControllerTest extends WebTestSupport {
     }
 
     @Test
-    public void 振込出金依頼をします() {
+    public void withdraw() {
         given(service.withdraw(any(RegCashOut.class))).willReturn(1L);
         performPost(
           uriBuilder("/cio/withdraw")

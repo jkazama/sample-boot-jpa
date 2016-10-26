@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import sample.EntityTestSupport;
 
-//low: 簡易な正常系検証のみ
+//low: Minimum test.
 public class CashBalanceTest extends EntityTestSupport {
 
     @Override
@@ -19,7 +19,7 @@ public class CashBalanceTest extends EntityTestSupport {
     }
 
     @Test
-    public void 現金残高を追加する() {
+    public void add() {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             CashBalance cb = fixtures.cb("test1", baseDay, "USD", "10.02").save(rep);
@@ -27,37 +27,37 @@ public class CashBalanceTest extends EntityTestSupport {
             // 10.02 + 11.51 = 21.53
             assertThat(cb.add(rep, new BigDecimal("11.51")).getAmount(), is(new BigDecimal("21.53")));
 
-            // 21.53 + 11.516 = 33.04 (端数切捨確認)
+            // 21.53 + 11.516 = 33.04 (check roundingMode)
             assertThat(cb.add(rep, new BigDecimal("11.516")).getAmount(), is(new BigDecimal("33.04")));
 
-            // 33.04 - 41.51 = -8.47 (マイナス値/マイナス残許容)
+            // 33.04 - 41.51 = -8.47 (check minus)
             assertThat(cb.add(rep, new BigDecimal("-41.51")).getAmount(), is(new BigDecimal("-8.47")));
         });
     }
 
     @Test
-    public void 現金残高を取得する() {
+    public void getOrNew() {
         LocalDate baseDay = businessDay.day();
         LocalDate baseMinus1Day = businessDay.day(-1);
         tx(() -> {
             fixtures.cb("test1", baseDay, "JPY", "1000").save(rep);
             fixtures.cb("test2", baseMinus1Day, "JPY", "3000").save(rep);
 
-            // 存在している残高の検証
+            // Check the existing balance.
             CashBalance cbNormal = CashBalance.getOrNew(rep, "test1", "JPY");
             assertThat(cbNormal, allOf(
                     hasProperty("accountId", is("test1")),
                     hasProperty("baseDay", is(baseDay)),
                     hasProperty("amount", is(new BigDecimal("1000")))));
 
-            // 基準日に存在していない残高の繰越検証
+            // Carrying forward inspection of the balance that does not exist in a basic date.
             CashBalance cbRoll = CashBalance.getOrNew(rep, "test2", "JPY");
             assertThat(cbRoll, allOf(
                     hasProperty("accountId", is("test2")),
                     hasProperty("baseDay", is(baseDay)),
                     hasProperty("amount", is(new BigDecimal("3000")))));
 
-            // 残高を保有しない口座の生成検証
+            // Create inspection of the account which does not hold the balance.
             CashBalance cbNew = CashBalance.getOrNew(rep, "test3", "JPY");
             assertThat(cbNew, allOf(
                     hasProperty("accountId", is("test3")),

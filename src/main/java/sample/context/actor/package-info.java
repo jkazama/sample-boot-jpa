@@ -1,5 +1,5 @@
 /**
- * 利用者関連のインフラ層コンポーネント。
- * <p>ユースケース実行時の利用者概念を提供します。
+ * A actor-related infrastructure layer component.
+ * <p>Offer a user concept at the time of the use case practice.
  */
 package sample.context.actor;

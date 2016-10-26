@@ -11,9 +11,7 @@ import javax.validation.constraints.*;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
- * メールアドレス(必須)を表現する制約注釈。
- * low: とりあえずHibernateのEmailValidatorを利用しますが、恐らく最終的に
- * 固有のConstraintValidatorを作らされる事になると思います。
+ * low: Please make it.
  */
 @Documented
 @Constraint(validatedBy = {})

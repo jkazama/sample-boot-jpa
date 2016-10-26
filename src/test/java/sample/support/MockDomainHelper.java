@@ -6,7 +6,6 @@ import java.util.*;
 import sample.context.*;
 import sample.context.actor.ActorSession;
 
-/** モックテスト用のドメインヘルパー */
 public class MockDomainHelper extends DomainHelper {
 
     private Map<String, String> settingMap = new HashMap<>();

@@ -18,10 +18,10 @@ import sample.context.orm.*;
 import sample.model.DataFixtures;
 
 /**
- * Springコンテナを用いたフルセットの検証用途に利用してください。
- * <p>主な利用用途としてはアプリケーション層の単体検証を想定しています。
+ * The component unit test support class using the Spring container.
+ * <p>The application layer test for a main use case.
  */
-//low: メソッド毎にコンテナ初期化を望む時はDirtiesContextでClassMode.AFTER_EACH_TEST_METHODを利用
+//low: When you expect container initialization every method, use ClassMode.AFTER_EACH_TEST_METHOD in DirtiesContext
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @ActiveProfiles("test")
@@ -44,22 +44,21 @@ public abstract class UnitTestSupport {
     @Autowired
     protected Timestamper time;
 
-    /** 利用者として擬似ログインします */
+    /** dummy-login as a user */
     protected void loginUser(String id) {
         rep.dh().actorSession().bind(new Actor(id, ActorRoleType.User));
     }
     
-    /** 社内利用者として擬似ログインします */
+    /** dummy-login as a internal user */
     protected void loginInternal(String id) {
         rep.dh().actorSession().bind(new Actor(id, ActorRoleType.Internal));
     }
     
-    /** システム利用者として擬似ログインします */
+    /** dummy-login as a system user */
     protected void loginSystem() {
         rep.dh().actorSession().bind(Actor.System);
     }
     
-    /** トランザクション処理を行います。 */
     protected <T> T tx(PlatformTransactionManager txm, Supplier<T> callable) {
         return new TransactionTemplate(txm).execute((status) -> {
             T ret = callable.get();

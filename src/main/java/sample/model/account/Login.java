@@ -13,8 +13,8 @@ import sample.context.orm.*;
 import sample.model.constraints.*;
 
 /**
- * 口座ログインを表現します。
- * low: サンプル用に必要最低限の項目だけ
+ * Account login.
+ * low: The minimum columns with this sample.
  */
 @Entity
 @Data
@@ -23,44 +23,37 @@ import sample.model.constraints.*;
 public class Login extends OrmActiveRecord<Login> {
     private static final long serialVersionUID = 1L;
 
-    /** 口座ID */
+    /** account ID */
     @Id
     @IdStr
     private String id;
-    /** ログインID */
     private String loginId;
-    /** パスワード(暗号化済) */
+    /** password (encrypted) */
     @Password
     private String password;
 
-    /** ログインIDを変更します。 */
     public Login change(final OrmRepository rep, final ChgLoginId p) {
         boolean exists = rep.tmpl().get("from Login where id<>?1 and loginId=?2", id, p.loginId).isPresent();
         validate((v) -> v.checkField(!exists, "loginId", ErrorKeys.DuplicateId));
         return p.bind(this).update(rep);
     }
 
-    /** パスワードを変更します。 */
     public Login change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassword p) {
         return p.bind(this, encoder.encode(p.plainPassword)).update(rep);
     }
 
-    /** ログイン情報を取得します。 */
     public static Optional<Login> get(final OrmRepository rep, String id) {
         return rep.get(Login.class, id);
     }
 
-    /** ログイン情報を取得します。 */
     public static Optional<Login> getByLoginId(final OrmRepository rep, String loginId) {
         return Optional.ofNullable(loginId).flatMap(lid -> rep.tmpl().get("from Login where loginId=?1", lid));
     }
 
-    /** ログイン情報を取得します。(例外付) */
     public static Login load(final OrmRepository rep, String id) {
         return rep.load(Login.class, id);
     }
 
-    /** ログインID変更パラメタ low: 基本はユースケース単位で切り出す */
     @Value
     public static class ChgLoginId implements Dto {
         private static final long serialVersionUID = 1l;
@@ -73,7 +66,6 @@ public class Login extends OrmActiveRecord<Login> {
         }
     }
 
-    /** パスワード変更パラメタ */
     @Value
     public static class ChgPassword implements Dto {
         private static final long serialVersionUID = 1l;

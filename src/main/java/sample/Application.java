@@ -12,8 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 
 /**
- * アプリケーションプロセスの起動クラス。
- * <p>本クラスを実行する事でSpringBootが提供する組込Tomcatでのアプリケーション起動が行われます。
+ * The start class of the application.
  */
 @SpringBootApplication
 @EnableCaching(proxyTargetClass = true)
@@ -24,19 +23,18 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
     
-    /** SpringMvcの拡張コンフィギュレーション */
     @Configuration
     public static class WebMvcConfig extends WebMvcConfigurerAdapter {
         @Autowired
         private MessageSource message;
 
-        /** HibernateのLazyLoading回避対応。  see JacksonAutoConfiguration */
+        /** Invalidate Hibernate lazy loading. see JacksonAutoConfiguration */
         @Bean
         public Hibernate5Module jsonHibernate5Module() {
             return new Hibernate5Module();
         }
 
-        /** BeanValidationメッセージのUTF-8に対応したValidator。 */
+        /** UTF8 to JSR303 message file. */
         @Bean
         public LocalValidatorFactoryBean validator() {
             LocalValidatorFactoryBean factory = new LocalValidatorFactoryBean();
@@ -44,7 +42,6 @@ public class Application {
             return factory;
         }
 
-        /** 標準Validatorの差し替えをします。 */
         @Override
         public org.springframework.validation.Validator getValidator() {
             return validator();

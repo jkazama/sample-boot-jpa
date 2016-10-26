@@ -1,4 +1,4 @@
 /**
- * メール送受信関連のインフラ層コンポーネント。
+ * An email transmission and reception-related infrastructure layer component.
  */
 package sample.context.mail;

@@ -5,15 +5,13 @@ import java.util.List;
 import javax.servlet.Filter;
 
 /**
- * Spring Securityに対するFilter拡張設定。
- * <p>Filterを追加したい時は本I/Fを継承してBean登録してください。
+ * Filter expansion setting for Spring Security.
+ * <p>When you want to add Filter, please register Bean in succession to this I/F.
  */
 public interface SecurityFilters {
 
     /**
-     * Spring SecurityへFilter登録するServletFilter一覧を返します。
-     * <p>登録したFilterはUsernamePasswordAuthenticationFilter/ActorSessionFilterの後に
-     * 実行されるのでActorSessionからログイン利用者の情報を取ることが可能です。
+     * Return a list of ServletFilter.
      */
     List<Filter> filters();
 

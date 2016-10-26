@@ -9,9 +9,6 @@ import javax.validation.*;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-/**
- * 名称を表現する制約注釈。
- */
 @Documented
 @Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })

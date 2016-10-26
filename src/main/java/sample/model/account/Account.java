@@ -19,8 +19,8 @@ import sample.model.constraints.*;
 import sample.util.Validator;
 
 /**
- * 口座を表現します。
- * low: サンプル用に必要最低限の項目だけ
+ * Account.
+ * low: The minimum columns with this sample.
  */
 @Entity
 @Data
@@ -28,17 +28,13 @@ import sample.util.Validator;
 public class Account extends OrmActiveRecord<Account> {
     private static final long serialVersionUID = 1L;
 
-    /** 口座ID */
     @Id
     @IdStr
     private String id;
-    /** 口座名義 */
     @Name
     private String name;
-    /** メールアドレス */
     @Email
     private String mail;
-    /** 口座状態 */
     @NotNull
     @Enumerated(EnumType.STRING)
     private AccountStatusType statusType;
@@ -47,39 +43,33 @@ public class Account extends OrmActiveRecord<Account> {
         return new Actor(id, name, ActorRoleType.User);
     }
 
-    /** 口座に紐付くログイン情報を取得します。 */
     public Login loadLogin(final OrmRepository rep) {
         return Login.load(rep, id);
     }
 
-    /** 口座を変更します。 */
     public Account change(final OrmRepository rep, final ChgAccount p) {
         return p.bind(this).update(rep);
     }
 
-    /** 口座を取得します。 */
     public static Optional<Account> get(final OrmRepository rep, String id) {
         return rep.get(Account.class, id);
     }
 
-    /** 有効な口座を取得します。 */
     public static Optional<Account> getValid(final OrmRepository rep, String id) {
         return get(rep, id).filter((acc) -> acc.getStatusType().valid());
     }
 
-    /** 口座を取得します。(例外付) */
     public static Account load(final OrmRepository rep, String id) {
         return rep.load(Account.class, id);
     }
 
-    /** 有効な口座を取得します。(例外付) */
     public static Account loadValid(final OrmRepository rep, String id) {
         return getValid(rep, id).orElseThrow(() -> new ValidationException("error.Account.loadValid"));
     }
 
     /** 
-     * 口座の登録を行います。
-     * <p>ログイン情報も同時に登録されます。
+     * Register account.
+     * <p>The login information is registered at the same time.
      */
     public static Account register(final OrmRepository rep, final PasswordEncoder encoder, final RegAccount p) {
         Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
@@ -87,7 +77,6 @@ public class Account extends OrmActiveRecord<Account> {
         return p.create().save(rep);
     }
 
-    /** 登録パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -100,7 +89,7 @@ public class Account extends OrmActiveRecord<Account> {
         private String name;
         @Email
         private String mail;
-        /** パスワード(未ハッシュ) */
+        /** password (plain) */
         @Password
         private String plainPassword;
 
@@ -122,7 +111,6 @@ public class Account extends OrmActiveRecord<Account> {
         }
     }
 
-    /** 変更パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

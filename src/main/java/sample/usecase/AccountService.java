@@ -10,19 +10,17 @@ import sample.context.orm.DefaultRepository;
 import sample.model.account.*;
 
 /**
- * 口座ドメインに対する顧客ユースケース処理。
+ * The customer use case processing for the account domain.
  */
 @Service
 public class AccountService extends ServiceSupport {
 
-    /** ログイン情報を取得します。 */
     @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("AccountService.getLoginByLoginId")
     public Optional<Login> getLoginByLoginId(String loginId) {
         return Login.getByLoginId(rep(), loginId);
     }
 
-    /** 有効な口座情報を取得します。 */
     @Transactional(DefaultRepository.BeanNameTx)
     @Cacheable("AccountService.getAccount")
     public Optional<Account> getAccount(String id) {

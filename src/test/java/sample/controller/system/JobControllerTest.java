@@ -9,10 +9,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import sample.*;
 import sample.usecase.*;
 
-/**
- * JobController の単体検証です。
- * <p>low: 簡易な正常系検証が中心
- */
 @WebMvcTest(JobController.class)
 public class JobControllerTest extends WebTestSupport {
 

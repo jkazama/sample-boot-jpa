@@ -21,10 +21,10 @@ import sample.context.*;
 import sample.context.Entity;
 
 /**
- * JPA ( Hibernate ) の Repository 基底実装。
- * <p>本コンポーネントは Repository と Entity の 1-n 関係を実現するために SpringData の基盤を
- * 利用しない形で単純な ORM 実装を提供します。
- * <p>OrmRepository を継承して作成される Repository の粒度はデータソース単位となります。
+ * Repository base implementation of JPA (Hibernate).
+ * <p>This component provides simple ORM implementation in form not to use a base of Spring Data
+ *  to realize 1-n relations of Repository and Entity.
+ * <p>Repository made in succession to OrmRepository becomes the data source unit.
  */
 @Setter
 public abstract class OrmRepository implements Repository {
@@ -35,8 +35,8 @@ public abstract class OrmRepository implements Repository {
     private OrmInterceptor interceptor;
 
     /**
-     * 管理するEntityManagerを返します。
-     * <p>継承先で管理したいデータソースのEntityManagerを返してください。
+     * Return EntityManager to manage.
+     * <p>Return EntityManager of the data source which you want to manage in succession.
      */
     public abstract EntityManager em();
 
@@ -51,8 +51,8 @@ public abstract class OrmRepository implements Repository {
     }
 
     /**
-     * ORM操作の簡易アクセサを生成します。
-     * <p>OrmTemplateは呼出しの都度生成されます。
+     * Return the simple accessor of the ORM operation.
+     * <p>OrmTemplate is created each call.
      */
     public OrmTemplate tmpl() {
         return new OrmTemplate(em());
@@ -62,12 +62,12 @@ public abstract class OrmRepository implements Repository {
         return new OrmTemplate(em(), metadata);
     }
 
-    /** 指定したEntityクラスを軸にしたCriteriaを生成します。 */
+    /** Create Criteria centering on the Entity class. */
     public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz) {
         return OrmCriteria.of(em(), clazz);
     }
 
-    /** 指定したEntityクラスにエイリアスを紐付けたCriteriaを生成します。 */
+    /** Create Criteria which related alias with the Entity class. */
     public <T extends Entity> OrmCriteria<T> criteria(Class<T> clazz, String alias) {
         return OrmCriteria.of(em(), clazz, alias);
     }
@@ -143,9 +143,11 @@ public abstract class OrmRepository implements Repository {
     }
 
     /**
-     * セッションキャッシュ中の永続化されていないエンティティを全てDBと同期(SQL発行)します。
-     * <p>SQL発行タイミングを明確にしたい箇所で呼び出すようにしてください。バッチ処理などでセッションキャッシュが
-     * メモリを逼迫するケースでは#flushAndClearを定期的に呼び出してセッションキャッシュの肥大化を防ぐようにしてください。
+     * Perform DB and synchronization of all the entities
+     *  which are not perpetuated in a session cache (SQL execution).
+     * <p>Please call it at the point that wants to make an SQL execution timing clear.
+     * You call #flushAndClear with the case that session cash is tight by batch processing in memory regularly,
+     *  and please prevent enlargement of the session cash.
      */
     public OrmRepository flush() {
         em().flush();
@@ -153,10 +155,11 @@ public abstract class OrmRepository implements Repository {
     }
 
     /**
-     * セッションキャッシュ中の永続化されていないエンティティをDBと同期化した上でセッションキャッシュを初期化します。
-     * <p>大量の更新が発生するバッチ処理などでは暗黙的に保持されるセッションキャッシュがメモリを逼迫して
-     * 大きな問題を引き起こすケースが多々見られます。定期的に本処理を呼び出してセッションキャッシュの
-     * サイズを定量に維持するようにしてください。
+     * Initialize session cash after having synchronized the entities 
+     * which is not perpetuated in a session cache with DB.
+     * <p>Session cash maintained implicitly is tight by the batch processing that mass update produces
+     *  in memory and often causes a big problem and is seen.
+     * You call this processing regularly, and please maintain size of the session cash in fixed-quantity.
      */
     public OrmRepository flushAndClear() {
         em().flush();
@@ -164,13 +167,19 @@ public abstract class OrmRepository implements Repository {
         return this;
     }
 
-    /** JPA コンポーネントを生成するための設定情報を表現します。 */
+    /** Setting information to produce JPA component. */
     @Data
     @EqualsAndHashCode(callSuper = false)
     public static class OrmRepositoryProperties extends JpaProperties {
-        /** スキーマ紐付け対象とするパッケージ。(annotatedClassesとどちらかを設定) */
+        /**
+         * A package to be targeted for a schema-related.
+         * (You can set annotatedClasses and either.)
+         */
         private String[] packageToScan;
-        /** Entityとして登録するクラス。(packageToScanとどちらかを設定) */
+        /**
+         * A class to register as Entity.
+         * (You can set packageToScan and either)
+         */
         private Class<?>[] annotatedClasses;
 
         public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(String name, final DataSource dataSource) {

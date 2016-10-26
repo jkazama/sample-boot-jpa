@@ -1,4 +1,4 @@
 /**
- * UI層で暗黙的に適用されるServletFiter。
+ * ServletFiter which is applied with the UI layer implicitly.
  */
 package sample.controller.filter;

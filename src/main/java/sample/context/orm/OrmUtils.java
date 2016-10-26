@@ -7,11 +7,11 @@ import javax.persistence.EntityManager;
 import org.springframework.data.jpa.repository.support.*;
 
 /**
- * Orm 関連のユーティリティを提供します。
+ * An Orm-related utility.
  */
 public abstract class OrmUtils {
 
-    /** 指定したクラスのエンティティ情報を返します ( ID 概念含む ) */
+    /** Return the entity information of the class (include an ID) */
     @SuppressWarnings("unchecked")
     public static <T> JpaEntityInformation<T, Serializable> entityInformation(EntityManager em, Class<T> clazz) {
         return (JpaEntityInformation<T, Serializable>)JpaEntityInformationSupport.getEntityInformation(clazz, em);

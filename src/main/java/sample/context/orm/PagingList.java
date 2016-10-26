@@ -6,9 +6,7 @@ import lombok.Value;
 import sample.context.Dto;
 
 /**
- * ページング一覧を表現します。
- * 
- * @param <T> 結果オブジェクト(一覧の要素)
+ * List of paging.
  */
 @Value
 public class PagingList<T> implements Dto {

@@ -14,7 +14,7 @@ import sample.model.constraints.Year;
 import sample.util.DateUtils;
 
 /**
- * 休日マスタを表現します。
+ * Holiday of the service company.
  */
 @Entity
 @Data
@@ -23,17 +23,13 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
     private static final long serialVersionUID = 1l;
     public static final String CategoryDefault = "default";
 
-    /** ID */
     @Id
     @GeneratedValue
     private Long id;
-    /** 休日区分 */
     @Category
     private String category;
-    /** 休日 */
     @ISODate
     private LocalDate day;
-    /** 休日名称 */
     @Name(max = 40)
     private String name;
     @ISODateTime
@@ -45,7 +41,6 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
     @IdStr
     private String updateId;
 
-    /** 休日マスタを取得します。 */
     public static Optional<Holiday> get(final OrmRepository rep, LocalDate day) {
         return get(rep, day, CategoryDefault);
     }
@@ -54,7 +49,6 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
         return rep.tmpl().get("from Holiday h where h.category=?1 and h.day=?2", category, day);
     }
 
-    /** 休日マスタを取得します。(例外付) */
     public static Holiday load(final OrmRepository rep, LocalDate day) {
         return load(rep, day, CategoryDefault);
     }
@@ -63,7 +57,6 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
         return rep.tmpl().load("from Holiday h where h.category=?1 and h.day=?2", category, day);
     }
 
-    /** 休日情報を検索します。 */
     public static List<Holiday> find(final OrmRepository rep, final int year) {
         return find(rep, year, CategoryDefault);
     }
@@ -73,14 +66,12 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
                 category, LocalDate.ofYearDay(year, 1), DateUtils.dayTo(year));
     }
 
-    /** 休日マスタを登録します。 */
     public static void register(final OrmRepository rep, final RegHoliday p) {
         rep.tmpl().execute("delete from Holiday h where h.category=?1 and h.day between ?2 and ?3",
                 p.category, LocalDate.ofYearDay(p.year, 1), DateUtils.dayTo(p.year));
         p.list.forEach(v -> v.create(p).save(rep));
     }
 
-    /** 登録パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -99,7 +90,6 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
         }
     }
 
-    /** 登録パラメタ(要素) */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

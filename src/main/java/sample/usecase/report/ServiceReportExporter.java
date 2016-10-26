@@ -14,10 +14,8 @@ import sample.model.asset.CashInOut.FindCashInOut;
 import sample.usecase.ServiceUtils;
 
 /**
- * アプリケーション層のレポート出力を行います。
- * <p>独自にトランザクションを管理するので、サービスのトランザクション内で
- * 呼び出さないように注意してください。
- * low: コード量が多くなるため今回のサンプルでは対象外とします。
+ * Report exporter of the application layer.
+ * <p>Manage the transaction originally, please be careful not to call it in the transaction of the service.
  */
 @Component
 @Setter

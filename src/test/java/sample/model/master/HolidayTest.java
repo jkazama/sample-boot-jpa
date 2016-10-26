@@ -14,7 +14,7 @@ import sample.EntityTestSupport;
 import sample.model.master.Holiday.*;
 import sample.util.DateUtils;
 
-// Eclipse Collections の利用例
+// Eclipse Collections examples.
 public class HolidayTest extends EntityTestSupport {
 
     @Override
@@ -32,7 +32,7 @@ public class HolidayTest extends EntityTestSupport {
     }
 
     @Test
-    public void 休日を取得する() {
+    public void get() {
         tx(() -> {
             Optional<Holiday> day = Holiday.get(rep, LocalDate.of(2015, 9, 22));
             assertTrue(day.isPresent());
@@ -41,7 +41,7 @@ public class HolidayTest extends EntityTestSupport {
     }
 
     @Test
-    public void 休日を検索する() {
+    public void find() {
         tx(() -> {
             assertThat(Holiday.find(rep, 2015), hasSize(3));
             assertThat(Holiday.find(rep, 2016), hasSize(1));
@@ -49,10 +49,10 @@ public class HolidayTest extends EntityTestSupport {
     }
 
     @Test
-    public void 休日を登録する() {
+    public void register() {
         MutableList<RegHolidayItem> items = Lists.mutable
                 .of("2016-09-21", "2016-09-22", "2016-09-23")
-                .collect((s) -> new RegHolidayItem(DateUtils.day(s), "休日"));
+                .collect((s) -> new RegHolidayItem(DateUtils.day(s), "Holiday"));
         tx(() -> {
             Holiday.register(rep, new RegHoliday(2016, items));
             assertThat(Holiday.find(rep, 2016), hasSize(3));

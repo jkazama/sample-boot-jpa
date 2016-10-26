@@ -1,7 +1,7 @@
 package sample.model.asset;
 
 /**
- * 資産の審査例外で用いるメッセージキー定数。
+ * asset-domain error key constants.
  */
 public interface AssetErrorKeys {
 

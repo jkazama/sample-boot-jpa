@@ -1,4 +1,4 @@
 /**
- * マスタに関連したドメイン概念。
+ * A master-related domain.
  */
 package sample.model.master;

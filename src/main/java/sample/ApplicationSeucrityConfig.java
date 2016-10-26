@@ -15,21 +15,16 @@ import org.springframework.web.filter.CorsFilter;
 import sample.context.security.*;
 import sample.context.security.SecurityConfigurer.*;
 
-/**
- * アプリケーションのセキュリティ定義を表現します。
- */
 @Configuration
 @EnableConfigurationProperties({ SecurityProperties.class })
 public class ApplicationSeucrityConfig {
     
-    /** パスワード用のハッシュ(BCrypt)エンコーダー。 */
     @Bean
     PasswordEncoder passwordEncoder() {
-        //low: きちんとやるのであれば、strengthやSecureRandom使うなど外部切り出し含めて検討してください
+        //low: I recommend the use of strength and SecureRandom.
         return new BCryptPasswordEncoder();
     }
 
-    /** CORS全体適用 */
     @Bean
     @ConditionalOnProperty(prefix = "extension.security.cors", name = "enabled", matchIfMissing = false)
     CorsFilter corsFilter(SecurityProperties props) {
@@ -44,7 +39,7 @@ public class ApplicationSeucrityConfig {
         return new CorsFilter(source);
     }
 
-    /** Spring Security を用いた API 認証/認可定義を表現します。 */
+    /** API certification / authorization definition using Spring Security. */
     @Configuration
     @EnableWebSecurity
     @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
@@ -52,38 +47,32 @@ public class ApplicationSeucrityConfig {
     @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
     static class AuthSecurityConfig {
     
-        /** Spring Security 全般の設定 ( 認証/認可 ) を定義します。 */
         @Bean
         @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
         SecurityConfigurer securityConfigurer() {
             return new SecurityConfigurer();
         }
         
-        /** Spring Security のカスタム認証プロセス管理コンポーネント。 */
         @Bean
         AuthenticationManager authenticationManager() throws Exception {
             return securityConfigurer().authenticationManagerBean();
         }
         
-        /** Spring Security のカスタム認証プロバイダ。 */
         @Bean
         SecurityProvider securityProvider() {
             return new SecurityProvider();
         }
         
-        /** Spring Security のカスタムエントリポイント。 */
         @Bean
         SecurityEntryPoint securityEntryPoint() {
             return new SecurityEntryPoint();
         }
         
-        /** Spring Security におけるログイン/ログアウト時の振る舞いを拡張するHandler。 */
         @Bean
         LoginHandler loginHandler() {
             return new LoginHandler();
         }
         
-        /** Spring Security で利用される認証/認可対象となるユーザ情報を提供します。 */
         @Bean
         SecurityActorFinder securityActorFinder() {
             return new SecurityActorFinder();

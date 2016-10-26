@@ -11,7 +11,7 @@ import org.junit.Test;
 import sample.*;
 import sample.ValidationException.ErrorKeys;
 
-//low: 簡易な正常系検証が中心。依存するCashBalanceの単体検証パスを前提。
+//low: Minimum test.
 public class CashflowTest extends EntityTestSupport {
 
     @Override
@@ -20,19 +20,19 @@ public class CashflowTest extends EntityTestSupport {
     }
 
     @Test
-    public void キャッシュフローを登録する() {
+    public void register() {
         LocalDate baseDay = businessDay.day();
         LocalDate baseMinus1Day = businessDay.day(-1);
         LocalDate basePlus1Day = businessDay.day(1);
         tx(() -> {
-            // 過去日付の受渡でキャッシュフロー発生 [例外]
+            // It is cashflow outbreak by the delivery of the past date. [ValidationException]
             try {
                 Cashflow.register(rep, fixtures.cfReg("test1", "1000", baseMinus1Day));
                 fail();
             } catch (ValidationException e) {
                 assertThat(e.getMessage(), is(AssetErrorKeys.CashflowBeforeEqualsDay));
             }
-            // 翌日受渡でキャッシュフロー発生
+            // Cashflow occurs by delivery the next day.
             assertThat(Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day)),
                     allOf(
                             hasProperty("amount", is(new BigDecimal("1000"))),
@@ -43,7 +43,7 @@ public class CashflowTest extends EntityTestSupport {
     }
 
     @Test
-    public void 未実現キャッシュフローを実現する() {
+    public void realize() {
         LocalDate baseDay = businessDay.day();
         LocalDate baseMinus1Day = businessDay.day(-1);
         LocalDate baseMinus2Day = businessDay.day(-2);
@@ -51,7 +51,7 @@ public class CashflowTest extends EntityTestSupport {
         tx(() -> {
             CashBalance.getOrNew(rep, "test1", "JPY");
 
-            // 未到来の受渡日 [例外]
+            // Value day of non-arrival. [ValidationException]
             Cashflow cfFuture = fixtures.cf("test1", "1000", baseDay, basePlus1Day).save(rep);
             try {
                 cfFuture.realize(rep);
@@ -60,13 +60,13 @@ public class CashflowTest extends EntityTestSupport {
                 assertThat(e.getMessage(), is(AssetErrorKeys.CashflowRealizeDay));
             }
 
-            // キャッシュフローの残高反映検証。  0 + 1000 = 1000
+            // Balance reflection inspection of the cashflow.  0 + 1000 = 1000
             Cashflow cfNormal = fixtures.cf("test1", "1000", baseMinus1Day, baseDay).save(rep);
             assertThat(cfNormal.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
             assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
                     hasProperty("amount", is(new BigDecimal("1000"))));
 
-            // 処理済キャッシュフローの再実現 [例外]
+            // Re-realization of the treated cashflow. [ValidationException]
             try {
                 cfNormal.realize(rep);
                 fail();
@@ -74,7 +74,7 @@ public class CashflowTest extends EntityTestSupport {
                 assertThat(e.getMessage(), is(ErrorKeys.ActionUnprocessing));
             }
 
-            // 過日キャッシュフローの残高反映検証。 1000 + 2000 = 3000
+            // Balance reflection inspection of the other day cashflow. 1000 + 2000 = 3000
             Cashflow cfPast = fixtures.cf("test1", "2000", baseMinus2Day, baseMinus1Day).save(rep);
             assertThat(cfPast.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
             assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
@@ -83,11 +83,11 @@ public class CashflowTest extends EntityTestSupport {
     }
 
     @Test
-    public void 発生即実現のキャッシュフローを登録する() {
+    public void registerAndRealize() {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             CashBalance.getOrNew(rep, "test1", "JPY");
-            // 発生即実現
+            // Cashflow is realized immediately
             Cashflow.register(rep, fixtures.cfReg("test1", "1000", baseDay));
             assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
                     hasProperty("amount", is(new BigDecimal("1000"))));

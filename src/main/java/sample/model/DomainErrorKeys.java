@@ -1,11 +1,10 @@
 package sample.model;
 
 /**
- * 汎用ドメインで用いるメッセージキー定数。
+ * general-purpose domain key constants.
  */
 public interface DomainErrorKeys {
 
-    /** マイナスを含めない数字を入力してください */
     String AbsAmountZero = "error.domain.AbsAmount.zero";
 
 }

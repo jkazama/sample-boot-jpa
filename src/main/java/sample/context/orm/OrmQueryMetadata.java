@@ -5,7 +5,7 @@ import java.util.*;
 import javax.persistence.LockModeType;
 
 /**
- * Query 向けの追加メタ情報を構築します。
+ * Build additional meta information for Query.
  */
 public class OrmQueryMetadata {
 
@@ -14,23 +14,19 @@ public class OrmQueryMetadata {
     
     private OrmQueryMetadata() {}
     
-    /** 内部に保持するヒント情報を返します。 */
     public Map<String, Object> hints() {
         return hints;
     }
     
-    /** 内部に保持するロックモードを返します。 */
     public Optional<LockModeType> lockMode() {
         return lockMode;
     }
     
-    /** ヒントを追加します。 */
     public OrmQueryMetadata hint(String hintName, Object value) {
         this.hints.put(hintName, value);
         return this;
     }
     
-    /** ロックモードを設定します。 */
     public OrmQueryMetadata lockMode(LockModeType lockMode) {
         this.lockMode = Optional.ofNullable(lockMode);
         return this;

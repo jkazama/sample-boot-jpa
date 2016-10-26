@@ -11,8 +11,8 @@ import sample.context.orm.DefaultRepository;
 import sample.usecase.ServiceUtils;
 
 /**
- * アプリケーション層のジョブ実行を行います。
- * <p>独自にトランザクションを管理するので、サービスのトランザクション内で 呼び出さないように注意してください。
+ * Job executor of the application layer.
+ * <p>Manage the transaction originally, please be careful not to call it in the transaction of the service.
  */
 @Component
 @Setter
@@ -24,12 +24,10 @@ public class ServiceJobExecutor {
     @Qualifier(DefaultRepository.BeanNameTx)
     private PlatformTransactionManager tx;
 
-    /** トランザクション処理を実行します。 */
     private <T> T tx(Supplier<T> callable) {
         return ServiceUtils.tx(tx, callable);
     }
 
-    /** トランザクション処理を実行します。 */
     private void tx(Runnable command) {
         ServiceUtils.tx(tx, command);
     }

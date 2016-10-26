@@ -3,7 +3,7 @@ package sample.context.report;
 import lombok.*;
 import sample.context.Dto;
 
-/** ファイルイメージを表現します。 */
+/** File image. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
