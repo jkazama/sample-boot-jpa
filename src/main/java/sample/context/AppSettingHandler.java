@@ -11,14 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import sample.context.orm.SystemRepository;
 
 /**
- * アプリケーション設定情報に対するアクセス手段を提供します。
+ * Access application setting information.
  */
 public class AppSettingHandler {
 
     @Autowired
     @Lazy
     private SystemRepository rep;
-    /** 設定時は固定のキー/値を返すモックモードとする */
+    /** You do a fixed key / value with a mock mode to return at the time of the setting */
     private final Optional<Map<String, String>> mockMap;
 
     public AppSettingHandler() {
@@ -29,7 +29,6 @@ public class AppSettingHandler {
         this.mockMap = Optional.of(mockMap);
     }
 
-    /** アプリケーション設定情報を取得します。 */
     @Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
     @Transactional(value = SystemRepository.BeanNameTx)
     public AppSetting setting(String id) {
@@ -41,10 +40,9 @@ public class AppSettingHandler {
     }
 
     private AppSetting mockSetting(String id) {
-        return new AppSetting(id, "category", "テスト用モック情報", mockMap.get().get(id));
+        return new AppSetting(id, "category", "Mock information for the test", mockMap.get().get(id));
     }
 
-    /** アプリケーション設定情報を変更します。 */
     @CacheEvict(cacheNames = "AppSettingHandler.appSetting", key = "#id")
     @Transactional(value = SystemRepository.BeanNameTx)
     public AppSetting update(String id, String value) {

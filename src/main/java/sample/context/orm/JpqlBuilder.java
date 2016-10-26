@@ -10,8 +10,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.hibernate.criterion.MatchMode;
 
 /**
- * 簡易にJPQLを生成するためのビルダー。
- * <p>条件句の動的条件生成に特化させています。
+ * A builder to generate JPQL easily.
+ * <p>Specialize in the dynamic condition generation of the condition phrase.
  */
 public class JpqlBuilder {
 
@@ -46,7 +46,7 @@ public class JpqlBuilder {
         return this;
     }
 
-    /** 一致条件を付与します。(値がnullの時は無視されます) */
+    /** Add an "equal" condition. (a value is ignored at the time of null) */
     public JpqlBuilder equal(String field, Object value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s = ?%d", field, index.getAndIncrement()));
@@ -75,7 +75,7 @@ public class JpqlBuilder {
         }
     }
 
-    /** 不一致条件を付与します。(値がnullの時は無視されます) */
+    /** Add an "equalNot" condition. (a value is ignored at the time of null) */
     public JpqlBuilder equalNot(String field, Object value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s != ?%d", field, index.getAndIncrement()));
@@ -83,7 +83,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** like条件を付与します。(値がnullの時は無視されます) */
+    /** Add an "like" condition. (a value is ignored at the time of null) */
     public JpqlBuilder like(String field, String value, MatchMode mode) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s like ?%d", field, index.getAndIncrement()));
@@ -91,7 +91,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** like条件を付与します。[複数フィールドに対するOR結合](値がnullの時は無視されます) */
+    /** Add an "like" condition.[OR combination for plural fields] (a value is ignored at the time of null) */
     public JpqlBuilder like(List<String> fields, String value, MatchMode mode) {
         return ifValid(value, () -> {
             StringBuilder condition = new StringBuilder("(");
@@ -107,7 +107,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** in条件を付与します。 */
+    /** Add an "in" condition. (a value is ignored at the time of null) */
     public JpqlBuilder in(String field, List<Object> values) {
         return ifValid(values, () -> {
             conditions.add(String.format("%s in ?%d", field, index.getAndIncrement()));
@@ -115,7 +115,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** between条件を付与します。 */
+    /** Add an "between" condition. (a value is ignored at the time of null) */
     public JpqlBuilder between(String field, Date from, Date to) {
         if (from != null && to != null) {
             conditions.add(String.format(
@@ -126,7 +126,7 @@ public class JpqlBuilder {
         return this;
     }
 
-    /** between条件を付与します。 */
+    /** Add an "between" condition. (a value is ignored at the time of null) */
     public JpqlBuilder between(String field, LocalDate from, LocalDate to) {
         if (from != null && to != null) {
             conditions.add(String.format(
@@ -137,7 +137,7 @@ public class JpqlBuilder {
         return this;
     }
 
-    /** between条件を付与します。 */
+    /** Add an "between" condition. (a value is ignored at the time of null) */
     public JpqlBuilder between(String field, LocalDateTime from, LocalDateTime to) {
         if (from != null && to != null) {
             conditions.add(String.format(
@@ -148,7 +148,7 @@ public class JpqlBuilder {
         return this;
     }
 
-    /** between条件を付与します。 */
+    /** Add an "between" condition. (a value is ignored at the time of null) */
     public JpqlBuilder between(String field, String from, String to) {
         if (isValid(from) && isValid(to)) {
             conditions.add(String.format(
@@ -159,7 +159,7 @@ public class JpqlBuilder {
         return this;
     }
 
-    /** [フィールド]&gt;=[値] 条件を付与します。(値がnullの時は無視されます) */
+    /** Add an "field&gt;=value" condition. (a value is ignored at the time of null) */
     public <Y extends Comparable<? super Y>> JpqlBuilder gte(String field, final Y value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s >= ?%d", field, index.getAndIncrement()));
@@ -167,7 +167,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** [フィールド]&gt;[値] 条件を付与します。(値がnullの時は無視されます) */
+    /** Add an "field&gt;value" condition. (a value is ignored at the time of null) */
     public <Y extends Comparable<? super Y>> JpqlBuilder gt(String field, final Y value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s > ?%d", field, index.getAndIncrement()));
@@ -175,7 +175,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** [フィールド]&lt;=[値] 条件を付与します。 */
+    /** Add an "field&lt;=value" condition. (a value is ignored at the time of null) */
     public <Y extends Comparable<? super Y>> JpqlBuilder lte(String field, final Y value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s <= ?%d", field, index.getAndIncrement()));
@@ -183,7 +183,7 @@ public class JpqlBuilder {
         });
     }
 
-    /** [フィールド]&lt;[値] 条件を付与します。 */
+    /** Add an "field&lt;value" condition. (a value is ignored at the time of null) */
     public <Y extends Comparable<? super Y>> JpqlBuilder lt(String field, final Y value) {
         return ifValid(value, () -> {
             conditions.add(String.format("%s < ?%d", field, index.getAndIncrement()));
@@ -191,13 +191,13 @@ public class JpqlBuilder {
         });
     }
 
-    /** order by 条件句を付与します。 */
+    /** Add an "orderBy" condition. */
     public JpqlBuilder orderBy(String orderBy) {
         this.orderBy = Optional.ofNullable(orderBy);
         return this;
     }
 
-    /** JPQLを生成します。 */
+    /** Generate JPQL。 */
     public String build() {
         StringBuilder jpql = new StringBuilder(this.jpql.toString());
         if (!conditions.isEmpty()) {
@@ -214,50 +214,50 @@ public class JpqlBuilder {
         return jpql.toString();
     }
 
-    /** JPQLに紐付く実行引数を返します。 */
+    /** Return a practice argument having a string in JPQL. */
     public Object[] args() {
         return Lists.mutable.ofAll(reservedArgs).withAll(args).toArray();
     }
 
     /**
-     * ビルダーを生成します。
-     * @param baseJpql 基点となるJPQL (where / order by は含めない)
-     * @return ビルダー情報
+     * Create Builder.
+     * @param baseJpql JPQL (You do not include where / order by) which becomes the basic
+     * @return Created Builder
      */
     public static JpqlBuilder of(String baseJpql) {
         return new JpqlBuilder(baseJpql, 1);
     }
 
     /**
-     * ビルダーを生成します。
-     * @param baseJpql 基点となるJPQL (where / order by は含めない)
-     * @param fromIndex 動的に付与する条件句の開始インデックス(1開始)。
-     * 既に「field=?1」等で置換連番を付与しているときはその次番号。
-     * @param args 既に付与済みの置換連番に紐づく引数
-     * @return ビルダー情報
+     * Create Builder.
+     * @param baseJpql JPQL (You do not include where / order by) which becomes the basic
+     * @param fromIndex The start index (1 start) of the condition phrase to give dynamically.
+     * When have already given replaced numbers in "field=?1"; a following number.
+     * @param args The argument which gains relation for the replaced numbers that Your have been already given
+     * @return Created Builder
      */
     public static JpqlBuilder of(String baseJpql, int fromIndex, Object... args) {
         return new JpqlBuilder(baseJpql, fromIndex).reservedArgs(args);
     }
 
     /**
-     * ビルダーを生成します。
-     * @param baseJpql 基点となるJPQL (where / order by は含めない)
-     * @param staticCondition 条件指定無しに確定する where 条件句 (field is null 等)
-     * @return ビルダー情報
+     * Create Builder.
+     * @param baseJpql JPQL (You do not include where / order by) which becomes the basic
+     * @param staticCondition where condition phrase (e.g. field is null) to be settled without condition designation
+     * @return Created Builder
      */
     public static JpqlBuilder of(String baseJpql, String staticCondition) {
         return new JpqlBuilder(baseJpql, staticCondition, 1);
     }
 
     /**
-     * ビルダーを生成します。
-     * @param baseJpql 基点となるJPQL (where / order by は含めない)
-     * @param staticCondition 条件指定無しに確定する where 条件句 (field is null 等)
-     * @param fromIndex 動的に付与する条件句の開始インデックス(1開始)。
-     * 既に「field=?1」等で置換連番を付与しているときはその次番号。
-     * @param args 既に付与済みの置換連番に紐づく引数
-     * @return ビルダー情報
+     * Create Builder.
+     * @param baseJpql JPQL (You do not include where / order by) which becomes the basic
+     * @param staticCondition where condition phrase (e.g. field is null) to be settled without condition designation
+     * @param fromIndex The start index (1 start) of the condition phrase to give dynamically.
+     * When have already given replaced numbers in "field=?1"; a following number.
+     * @param args The argument which gains relation for the replaced numbers that Your have been already given
+     * @return Created Builder
      */
     public static JpqlBuilder of(String baseJpql, String staticCondition, int fromIndex, Object... args) {
         return new JpqlBuilder(baseJpql, staticCondition, fromIndex).reservedArgs(args);

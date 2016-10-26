@@ -1,5 +1,5 @@
 /**
- * 認証/認可関連のインフラ層コンポーネント。
- * <p>Spring Securityをパターン決め打ちで薄くラッピングしています。
+ * A certification / authorization-related infrastructure layer component.
+ * <p>Wrap Spring Security by a simple pattern thinly.
  */
 package sample.context.security;

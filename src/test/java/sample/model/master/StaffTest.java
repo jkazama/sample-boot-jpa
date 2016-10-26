@@ -22,16 +22,14 @@ public class StaffTest extends EntityTestSupport {
     }
 
     @Test
-    public void 社員情報を登録する() {
+    public void register() {
         tx(() -> {
-            // 正常登録
             Staff staff = Staff.register(rep, encoder, new RegStaff("new", "newName", "password"));
             assertThat(staff, allOf(
                     hasProperty("id", is("new")),
                     hasProperty("name", is("newName"))));
             assertTrue(encoder.matches("password", staff.getPassword()));
 
-            // 重複ID
             try {
                 Staff.register(rep, encoder, new RegStaff("sample", "newName", "password"));
                 fail();
@@ -42,7 +40,7 @@ public class StaffTest extends EntityTestSupport {
     }
 
     @Test
-    public void 社員パスワードを変更する() {
+    public void changePassword() {
         tx(() -> {
             Staff changed = Staff.load(rep, "sample").change(rep, encoder, new ChgPassword("changed"));
             assertTrue(encoder.matches("changed", changed.getPassword()));
@@ -50,7 +48,7 @@ public class StaffTest extends EntityTestSupport {
     }
 
     @Test
-    public void 社員情報を変更する() {
+    public void change() {
         tx(() -> {
             assertThat(
                     Staff.load(rep, "sample").change(rep, new ChgStaff("changed")).getName(), is("changed"));
@@ -58,7 +56,7 @@ public class StaffTest extends EntityTestSupport {
     }
 
     @Test
-    public void 社員を検索する() {
+    public void find() {
         tx(() -> {
             assertFalse(Staff.find(rep, new FindStaff("amp")).isEmpty());
             assertTrue(Staff.find(rep, new FindStaff("amq")).isEmpty());

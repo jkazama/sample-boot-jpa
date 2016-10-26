@@ -13,9 +13,8 @@ import sample.model.asset.CashInOut;
 import sample.usecase.ServiceUtils;
 
 /**
- * アプリケーション層のサービスメール送信を行います。
- * <p>独自にトランザクションを管理するので、サービスのトランザクション内で
- * 呼び出さないように注意してください。
+ * Mail deliver of the application layer.
+ * <p>Manage the transaction originally, please be careful not to call it in the transaction of the service.
  */
 @Component
 @Setter
@@ -29,19 +28,16 @@ public class ServiceMailDeliver {
     @Autowired
     private MailHandler mail;
 
-    /** トランザクション処理を実行します。 */
     private <T> T tx(Supplier<T> callable) {
         return ServiceUtils.tx(tx, callable);
     }
 
-    /** トランザクション処理を実行します。 */
     private void tx(Runnable command) {
         ServiceUtils.tx(tx, command);
     }
 
-    /** 出金依頼受付メールを送信します。 */
     public void sendWithdrawal(final CashInOut cio) {
-        //low: サンプルなので未実装。実際は独自にトランザクションを貼って処理を行う
+        //low: It is nonimplement in being a sample.
     }
 
     public int callbackSample() {// for warning

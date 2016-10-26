@@ -12,20 +12,16 @@ import sample.context.orm.*;
 import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
 import sample.context.orm.SystemRepository.SystemDataSourceProperties;
 
-/**
- * アプリケーションのデータベース接続定義を表現します。
- */
 @Configuration
 @EnableConfigurationProperties({DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
 public class ApplicationDbConfig {
 
-    /** 永続化時にメタ情報の差込を行うインターセプタ */
     @Bean
     OrmInterceptor ormInterceptor() {
         return new OrmInterceptor();
     }
     
-    /** 標準スキーマへの接続定義を表現します。 */
+    /** Connection definition to a standard schema. */
     @Configuration
     static class DefaultDbConfig {
         @Bean
@@ -57,7 +53,7 @@ public class ApplicationDbConfig {
 
     }
 
-    /** システムスキーマへの接続定義を表現します。 */
+    /** Connection definition to a system schema. */
     @Configuration
     static class SystemDbConfig {
         

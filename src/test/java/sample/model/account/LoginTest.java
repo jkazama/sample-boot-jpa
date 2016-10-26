@@ -21,20 +21,17 @@ public class LoginTest extends EntityTestSupport {
     }
 
     @Test
-    public void ログインIDを変更する() {
+    public void change() {
         tx(() -> {
-            // 正常系
             fixtures.login("any").save(rep);
             assertThat(Login.load(rep, "any").change(rep, new ChgLoginId("testAny")), allOf(
                     hasProperty("id", is("any")),
                     hasProperty("loginId", is("testAny"))));
 
-            // 自身に対する同名変更
             assertThat(Login.load(rep, "any").change(rep, new ChgLoginId("testAny")), allOf(
                     hasProperty("id", is("any")),
                     hasProperty("loginId", is("testAny"))));
 
-            // 重複ID
             try {
                 Login.load(rep, "any").change(rep, new ChgLoginId("test"));
                 fail();
@@ -45,7 +42,7 @@ public class LoginTest extends EntityTestSupport {
     }
 
     @Test
-    public void パスワードを変更する() {
+    public void changePassword() {
         tx(() -> {
             Login login = Login.load(rep, "test").change(rep, encoder, new ChgPassword("changed"));
             assertTrue(encoder.matches("changed", login.getPassword()));
@@ -53,7 +50,7 @@ public class LoginTest extends EntityTestSupport {
     }
 
     @Test
-    public void ログイン情報を取得する() {
+    public void load() {
         tx(() -> {
             Login m = Login.load(rep, "test");
             m.setLoginId("changed");

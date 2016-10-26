@@ -15,7 +15,7 @@ import sample.context.security.SecurityActorFinder.ActorDetails;
 import sample.usecase.AccountService;
 
 /**
- * 口座に関わる顧客のUI要求を処理します。
+ * API controller of the account domain.
  */
 @RestController
 @RequestMapping("/api/account")

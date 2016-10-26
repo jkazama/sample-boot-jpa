@@ -8,22 +8,22 @@ import sample.context.orm.Sort.SortOrder;
 import sample.util.Calculator;
 
 /**
- * ページング情報を表現します。
+ * Paging information.
  */
 @Data
 @AllArgsConstructor
 public class Pagination implements Dto {
     private static final long serialVersionUID = 1l;
     public static final int DefaultSize = 100;
-    /** ページ数(1開始) */
+    /** The number of page (1 origin) */
     private int page;
-    /** ページあたりの件数 */
+    /** The number in the page */
     private int size;
-    /** トータル件数 */
+    /** The number of total */
     private Long total;
-    /** トータル件数算出を無視するか */
+    /** Ignore the number of total calculation */
     private boolean ignoreTotal;
-    /** ソート条件 */
+    /** Sort condition */
     private Sort sort;
 
     public Pagination() {
@@ -46,26 +46,23 @@ public class Pagination implements Dto {
         this(req.getPage(), req.getSize(), total, false, req.getSort());
     }
 
-    /** カウント算出を無効化します。 */
     public Pagination ignoreTotal() {
         this.ignoreTotal = true;
         return this;
     }
 
-    /** ソート指定が未指定の時は与えたソート条件で上書きします。 */
     public Pagination sortIfEmpty(SortOrder... orders) {
         if (sort != null)
             sort.ifEmpty(orders);
         return this;
     }
 
-    /** 最大ページ数を返します。total設定時のみ適切な値が返されます。 */
+    /** Return maximum pagination. An appropriate value is paid only at the time of total setting. */
     public int getMaxPage() {
         return (total == null) ? 0 : Calculator.of(total)
                 .scale(0, RoundingMode.UP).divideBy(size).intValue();
     }
 
-    /** 開始件数を返します。 */
     public int getFirstResult() {
         return (page - 1) * size;
     }

@@ -13,28 +13,25 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Data;
 
 /**
- * DataSource生成用の設定クラス。
- * <p>継承先で@ConfigurationProperties定義を行ってapplication.ymlと紐付してください。
- * <p>ベース実装にHikariCPを利用しています。必要に応じて設定可能フィールドを増やすようにしてください。
+ * A setting class for the DataSource creation.
+ * <p>You perform {@literal @}ConfigurationProperties definition in succession,
+ *   and please related it with application.yml.
+ * <p>Use HikariCP for base implementation. Please increase setable fields as needed.
  */
 @Data
 public class OrmDataSourceProperties {
 
-    /** ドライバクラス名称 ( 未設定時は url から自動登録 ) */
+    /** Driver class name (Register in the no-setting automatically from url) */
     private String driverClassName;
     private String url;
     private String username;
     private String password;
     private Properties props = new Properties();
 
-    /** 最低接続プーリング数 */
     private int minIdle = 1;
-    /** 最大接続プーリング数 */
     private int maxPoolSize = 20;
     
-    /** コネクション状態を確認する時は true */
     private boolean validation = true;
-    /** コネクション状態確認クエリ ( 未設定時かつ Database が対応している時は自動設定 ) */
     private String validationQuery;
 
     public DataSource dataSource() {

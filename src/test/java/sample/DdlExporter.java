@@ -13,15 +13,11 @@ import org.springframework.boot.orm.jpa.hibernate.*;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
- * Entity 定義を元に DDL を生成します。  
- * <p>モデルファーストで開発していきたいときなどに利用して下さい。
- * <p>通常のJava実行で出力してください。出力先は OutputRoot 定数で指定されたディレクトリ配下となります。
- * <p>現状 Hibernate 5 で Bean Validation をソース元としたカラム定義がうまく出力されなくなってしまっています。( Hibernate 4 + Configuration だとうまくいっていた)<br>
- * http://stackoverflow.com/questions/32090535/hibernate-5-and-spring-generate-ddl-using-schemaexport
- * <p>前述のやり取りを見る限りでは Bean Validation よりも JPA のアノテーションで明示すべきとのことなので、適切な DDL を自動生成したいなら以下のような JPA 列定義で
- * 桁数等の指定を明示的におこなうようにしてください。 ( DDL を自動生成しないのであれば気にしないで OK )
+ * Generate DDL by Entity definition.
+ * <p>Use it at time when you want to develop it in the model first.
+ * <p>Set the next if you want to output the column definition appropriately.
  * <pre>
- *  e.g. @Column(length = 32, nullable = true)
+ *  e.g. {@literal @}Column(length = 32, nullable = true)
  * </pre>
  */
 public class DdlExporter {

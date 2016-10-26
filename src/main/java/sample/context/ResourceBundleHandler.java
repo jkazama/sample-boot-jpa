@@ -8,11 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
- * ResourceBundleに対する簡易アクセスを提供します。
- * <p>本コンポーネントはAPI経由でのラベル一覧の提供等、i18n用途のメッセージプロパティで利用してください。
- * <p>ResourceBundleは単純な文字列変換を目的とする標準のMessageSourceとは異なる特性(リスト概念)を
- * 持つため、別インスタンスでの管理としています。
- * （spring.messageとは別に指定[extension.messages]する必要があるので注意してください）
+ * Simple access for ResourceBundle.
  */
 @ConfigurationProperties(prefix = "extension.messages")
 public class ResourceBundleHandler {
@@ -21,8 +17,8 @@ public class ResourceBundleHandler {
     private Map<String, ResourceBundle> bundleMap = new ConcurrentHashMap<>();
 
     /**
-     * 指定されたメッセージソースのResourceBundleを返します。
-     * <p>basenameに拡張子(.properties)を含める必要はありません。
+     * Return ResourceBundle of the message source.
+     * <p>It is not necessary to include extension (.properties) in basename.
      */
     public ResourceBundle get(String basename) {
         return get(basename, Locale.getDefault());
@@ -38,8 +34,8 @@ public class ResourceBundleHandler {
     }
 
     /**
-     * 指定されたメッセージソースのラベルキー、値のMapを返します。
-     * <p>basenameに拡張子(.properties)を含める必要はありません。
+     * Return label key and value from message source.
+     * <p>It is not necessary to include extension (.properties) in basename.
      */
     public Map<String, String> labels(String basename) {
         return labels(basename, Locale.getDefault());
@@ -53,16 +49,15 @@ public class ResourceBundleHandler {
     }
 
     /**
-     * SpringのMessageSource経由でResourceBundleを取得するFactory。
-     * <p>プロパティファイルのエンコーディング指定を可能にしています。
+     * Factory which acquires ResourceBundle via MessageSource of Spring.
+     * <p>Enable the encoding designation of the property file.
      */
     public static class ResourceBundleFactory extends ResourceBundleMessageSource {
-        /** ResourceBundleを取得します。 */
         public static ResourceBundle create(String basename, Locale locale, String encoding) {
             ResourceBundleFactory factory = new ResourceBundleFactory();
             factory.setDefaultEncoding(encoding);
             return Optional.ofNullable(factory.getResourceBundle(basename, locale))
-                    .orElseThrow(() -> new IllegalArgumentException("指定されたbasenameのリソースファイルは見つかりませんでした。[]"));
+                    .orElseThrow(() -> new IllegalArgumentException("The resource file of basename was not found. []"));
         }
     }
 

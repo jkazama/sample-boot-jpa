@@ -17,7 +17,7 @@ import sample.model.master.Holiday.RegHoliday;
 import sample.util.DateUtils;
 
 /**
- * ドメインに依存する営業日関連のユーティリティハンドラ。
+ * A domain utility related on a business day.
  */
 @Component
 @Setter
@@ -29,12 +29,10 @@ public class BusinessDayHandler {
     @Lazy
     private HolidayAccessor holidayAccessor;
 
-    /** 営業日を返します。 */
     public LocalDate day() {
         return time.day();
     }
 
-    /** 営業日を返します。 */
     public LocalDate day(int daysToAdd) {
         LocalDate day = day();
         if (0 < daysToAdd) {
@@ -61,7 +59,6 @@ public class BusinessDayHandler {
         return day;
     }
 
-    /** 祝日もしくは週末時はtrue。 */
     private boolean isHolidayOrWeeekDay(LocalDate day) {
         return (DateUtils.isWeekend(day) || isHoliday(day));
     }
@@ -70,7 +67,6 @@ public class BusinessDayHandler {
         return holidayAccessor == null ? false : holidayAccessor.getHoliday(day).isPresent();
     }
 
-    /** 祝日マスタを検索/登録するアクセサ。 */
     @Component
     @Setter
     public static class HolidayAccessor {

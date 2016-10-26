@@ -63,8 +63,8 @@ task wrapper(type: Wrapper) {
     gradleVersion = "3.0"
 }
 
-// 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
-// 「 gradlew copyProject 」を実行してください。
+// After when you wanted to make deep copying as one's project, having edited the following variables
+// and execute "gradlew copyProject".
 def yourProjectName = "sample"
 def yourProjectPackage = "your.sample"
 def yourProjectPath = "../${yourProjectName}"

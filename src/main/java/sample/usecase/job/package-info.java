@@ -1,5 +1,4 @@
 /**
- * アプリケーション層のジョブコンポーネント。
- * <p>各ユースケースに紐付くバッチ処理(実行ジョブ)を管理します。
+ * Job components of the application layer.
  */
 package sample.usecase.job;

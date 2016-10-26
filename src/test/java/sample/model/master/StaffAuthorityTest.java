@@ -23,7 +23,7 @@ public class StaffAuthorityTest extends EntityTestSupport {
     }
 
     @Test
-    public void 権限一覧を検索する() {
+    public void find() {
         tx(() -> {
             assertThat(StaffAuthority.find(rep, "staffA").size(), is(3));
             assertThat(StaffAuthority.find(rep, "staffB").size(), is(2));

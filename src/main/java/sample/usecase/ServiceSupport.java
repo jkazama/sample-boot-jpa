@@ -20,7 +20,7 @@ import sample.usecase.mail.ServiceMailDeliver;
 import sample.usecase.report.ServiceReportExporter;
 
 /**
- * ユースケースサービスの基底クラス。
+ * The base class of the use case service.
  */
 @Setter
 public abstract class ServiceSupport {
@@ -48,24 +48,24 @@ public abstract class ServiceSupport {
     @Autowired(required = false)
     private ServiceReportExporter report;
 
-    /** トランザクション処理を実行します。 */
+    /** Execute transaction processing. */
     protected <T> T tx(Supplier<T> callable) {
         return ServiceUtils.tx(tx, callable);
     }
 
-    /** トランザクション処理を実行します。 */
+    /** Execute transaction processing. */
     protected void tx(Runnable command) {
         ServiceUtils.tx(tx, command);
     }
 
-    /** 口座ロック付でトランザクション処理を実行します。 */
+    /** Execute transaction processing with account lock. */
     protected <T> T tx(String accountId, LockType lockType, final Supplier<T> callable) {
         return idLock.call(accountId, lockType, () -> {
             return tx(callable);
         });
     }
 
-    /** 口座ロック付でトランザクション処理を実行します。 */
+    /** Execute transaction processing with account lock. */
     protected void tx(String accountId, LockType lockType, final Runnable callable) {
         idLock.call(accountId, lockType, () -> {
             tx(callable);
@@ -73,49 +73,40 @@ public abstract class ServiceSupport {
         });
     }
 
-    /** ドメイン層向けヘルパークラスを返します。 */
     protected DomainHelper dh() {
         return dh;
     }
 
-    /** 標準スキーマのRepositoryを返します。 */
     protected DefaultRepository rep() {
         return rep;
     }
 
-    /** IDロックユーティリティを返します。 */
     protected IdLockHandler idLock() {
         return idLock;
     }
 
-    /** 監査ユーティリティを返します。 */
     protected AuditHandler audit() {
         return audit;
     }
 
-    /** サービスメールユーティリティを返します。 */
     protected ServiceMailDeliver mail() {
         Assert.notNull(mail);
         return mail;
     }
 
-    /** サービスレポートユーティリティを返します。 */
     protected ServiceReportExporter report() {
         Assert.notNull(report);
         return report;
     }
 
-    /** i18nメッセージ変換を行います。 */
     protected String msg(String message) {
         return msg.getMessage(message, null, message, actor().getLocale());
     }
 
-    /** 利用者を返します。 */
     protected Actor actor() {
         return dh.actor();
     }
 
-    /** 営業日ユーティリティを返します。 */
     protected BusinessDayHandler businessDay() {
         Assert.notNull(businessDay);
         return businessDay;

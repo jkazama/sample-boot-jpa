@@ -15,10 +15,6 @@ import sample.model.asset.CashInOut.FindCashInOut;
 import sample.usecase.AssetAdminService;
 import sample.util.DateUtils;
 
-/**
- * AssetAdminController の単体検証です。
- * <p>low: 簡易な正常系検証が中心
- */
 @WebMvcTest(AssetAdminController.class)
 public class AssetAdminControllerTest extends WebTestSupport {
 
@@ -31,7 +27,7 @@ public class AssetAdminControllerTest extends WebTestSupport {
     }
 
     @Test
-    public void 振込入出金依頼を検索します() throws Exception {
+    public void findCashInOut() throws Exception {
         String day = DateUtils.dayFormat(LocalDate.now());
         given(service.findCashInOut(any(FindCashInOut.class))).willReturn(resultCashInOuts());
         performGet(

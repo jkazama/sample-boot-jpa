@@ -14,7 +14,7 @@ import sample.context.audit.AuditEvent.FindAuditEvent;
 import sample.context.orm.*;
 
 /**
- * システムドメインに対する社内ユースケース処理。
+ * The use case processing for the system domain in the organization.
  */
 @Service
 public class SystemAdminService extends ServiceSupport {
@@ -22,30 +22,27 @@ public class SystemAdminService extends ServiceSupport {
     @Autowired
     private SystemRepository rep;
 
-    /** 利用者監査ログを検索します。 */
     @Transactional(SystemRepository.BeanNameTx)
     public PagingList<AuditActor> findAuditActor(FindAuditActor p) {
         return AuditActor.find(rep, p);
     }
 
-    /** イベント監査ログを検索します。 */
     @Transactional(SystemRepository.BeanNameTx)
     public PagingList<AuditEvent> findAuditEvent(FindAuditEvent p) {
         return AuditEvent.find(rep, p);
     }
 
-    /** アプリケーション設定一覧を検索します。 */
     @Transactional(SystemRepository.BeanNameTx)
     public List<AppSetting> findAppSetting(FindAppSetting p) {
         return AppSetting.find(rep, p);
     }
 
     public void changeAppSetting(String id, String value) {
-        audit().audit("アプリケーション設定情報を変更する", () -> dh().settingSet(id, value));
+        audit().audit("Change application setting information.", () -> dh().settingSet(id, value));
     }
 
     public void processDay() {
-        audit().audit("営業日を進める", () -> dh().time().proceedDay(businessDay().day(1)));
+        audit().audit("Porward day.", () -> dh().time().proceedDay(businessDay().day(1)));
     }
 
 }

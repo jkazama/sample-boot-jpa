@@ -1,10 +1,8 @@
 package sample.model.account.type;
 
-/** 口座状態を表現します。 */
+/** Account status types. */
 public enum AccountStatusType {
-    /** 通常 */
     Normal,
-    /** 退会 */
     Withdrawal;
 
     public boolean valid() {

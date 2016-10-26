@@ -19,15 +19,16 @@ import sample.context.Timestamper;
 import sample.model.*;
 
 /**
- * Spring コンテナを用いた Web 検証サポートクラス。
- * <p>Controller に対する URL 検証はこちらを利用して下さい。
- * <p>本クラスを継承したテストクラスを作成後、以下のアノテーションを付与してください。
+ * The web unit test support class using the Spring container.
+ * <p>the url test for Controller, use this.
+ * <p>Add following annotation after making in a test class in succession to this class.
  * <pre>
  *  {@literal @}RunWith(SpringRunner.class)
- *  {@literal @}WebMvcTest([テスト対象クラス].class)
+ *  {@literal @}WebMvcTest([TestTarget].class)
  * </pre>
- * <p>{@literal @}WebMvcTest 利用時は標準で {@literal @}Component や {@literal @}Service 等の
- * コンポーネントはインスタンス化されないため、必要に応じて {@literal @}MockBean などを利用して代替するようにしてください。
+ * <p>The components such as {@literal @}Component or {@literal @}Service are not made instance
+ *  at the time of the use of {@literal @}WebMvcTest by default.
+ *  Substitute depending on, need using {@literal @}MockBean.
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("testweb")
@@ -63,7 +64,6 @@ public abstract class WebTestSupport {
         return "/";
     }
 
-    /** Get 要求を投げて結果を検証します。 */
     protected ResultActions performGet(String path, final JsonExpects expects) {
         return performGet(uriBuilder(path).build(), expects);
     }
@@ -74,7 +74,6 @@ public abstract class WebTestSupport {
                 expects.expects.toArray(new ResultMatcher[0]));
     }
     
-    /** Get 要求 ( JSON ) を投げて結果を検証します。 */
     protected ResultActions performJsonGet(String path, String content, final JsonExpects expects) {
         return performJsonGet(uriBuilder(path).build(), content, expects);
     }
@@ -85,7 +84,6 @@ public abstract class WebTestSupport {
                 expects.expects.toArray(new ResultMatcher[0]));
     }
     
-    /** Post 要求を投げて結果を検証します。 */
     protected ResultActions performPost(String path, final JsonExpects expects) {
         return performPost(uriBuilder(path).build(), expects);
     }
@@ -96,7 +94,6 @@ public abstract class WebTestSupport {
                 expects.expects.toArray(new ResultMatcher[0]));
     }
     
-    /** Post 要求 ( JSON ) を投げて結果を検証します。 */
     protected ResultActions performJsonPost(String path, String content, final JsonExpects expects) {
         return performJsonPost(uriBuilder(path).build(), content, expects);
     }
@@ -119,7 +116,7 @@ public abstract class WebTestSupport {
         }        
     }
 
-    /** JSON 検証をビルダー形式で可能にします */
+    /** Enable JSON inspection in a builder form */
     public static class JsonExpects {
         public List<ResultMatcher> expects = new ArrayList<>();
         public JsonExpects match(String key, Object expectedValue) {

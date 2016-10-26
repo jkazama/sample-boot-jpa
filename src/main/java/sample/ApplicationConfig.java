@@ -14,14 +14,10 @@ import sample.context.mail.MailHandler;
 import sample.context.report.ReportHandler;
 import sample.model.BusinessDayHandler;
 
-/**
- * アプリケーションにおけるBean定義を表現します。
- * <p>クラス側でコンポーネント定義していない時はこちらで明示的に記載してください。
- */
 @Configuration
 public class ApplicationConfig {
 
-    /** インフラ層 ( context 配下) のコンポーネント定義を表現します */
+    /** component definition of the infrastructure layer. (package sample.context) */
     @Configuration
     static class PlainConfig {
         @Bean
@@ -66,10 +62,8 @@ public class ApplicationConfig {
         }
     }
 
-    /** 拡張ヘルスチェック定義を表現します。 */
     @Configuration
     static class HealthCheckConfig {
-        /** 営業日チェック */
         @Bean
         @ConditionalOnBean(BusinessDayHandler.class)
         HealthIndicator dayIndicator(final Timestamper time, final BusinessDayHandler day) {

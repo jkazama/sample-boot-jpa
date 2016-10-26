@@ -12,9 +12,6 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import sample.util.Regex;
 
-/**
- * 概要(必須)を表現する制約注釈。
- */
 @Documented
 @Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })

@@ -19,7 +19,7 @@ import sample.controller.ControllerSupport;
 import sample.usecase.SystemAdminService;
 
 /**
- * システムに関わる社内のUI要求を処理します。
+ * API controller of the system domain in the organization.
  */
 @RestController
 @RequestMapping("/api/admin/system")
@@ -29,25 +29,21 @@ public class SystemAdminController extends ControllerSupport {
     @Autowired
     private SystemAdminService service;
 
-    /** 利用者監査ログを検索します。 */
     @GetMapping(value = "/audit/actor/")
     public PagingList<AuditActor> findAuditActor(@Valid FindAuditActor p) {
         return service.findAuditActor(p);
     }
 
-    /** イベント監査ログを検索します。 */
     @GetMapping(value = "/audit/event/")
     public PagingList<AuditEvent> findAuditEvent(@Valid FindAuditEvent p) {
         return service.findAuditEvent(p);
     }
 
-    /** アプリケーション設定一覧を検索します。 */
     @GetMapping(value = "/setting/")
     public List<AppSetting> findAppSetting(@Valid FindAppSetting p) {
         return service.findAppSetting(p);
     }
 
-    /** アプリケーション設定情報を変更します。 */
     @PostMapping("/setting/{id}")
     public ResponseEntity<Void> changeAppSetting(@PathVariable String id, String value) {
         return resultEmpty(() -> service.changeAppSetting(id, value));

@@ -21,7 +21,7 @@ public class SelfFiAccountTest extends EntityTestSupport {
     }
 
     @Test
-    public void 自社金融機関口座を取得する() {
+    public void load() {
         tx(() -> {
             assertThat(SelfFiAccount.load(rep, "sample", "JPY"), allOf(
                     hasProperty("category", is("sample")),

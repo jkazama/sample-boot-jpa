@@ -19,7 +19,7 @@ import sample.model.constraints.*;
 import sample.util.*;
 
 /**
- * システム利用者の監査ログを表現します。
+ * The auditing log of actor.
  */
 @Entity
 @Data
@@ -30,36 +30,28 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
     @Id
     @GeneratedValue
     private Long id;
-    /** 利用者ID */
     @IdStr
     private String actorId;
-    /** 利用者役割 */
     @NotNull
     @Enumerated(EnumType.STRING)
     private ActorRoleType roleType;
-    /** 利用者ソース(IP等) */
+    /** Actor source (including the IP) */
     private String source;
-    /** カテゴリ */
     @Category
     private String category;
-    /** メッセージ */
     private String message;
-    /** 処理ステータス */
     @NotNull
     @Enumerated(EnumType.STRING)
     private ActionStatusType statusType;
-    /** エラー事由 */
     @DescriptionEmpty
     private String errorReason;
-    /** 処理時間(msec) */
+    /** The processing time (msec) */
     private Long time;
-    /** 開始日時 */
     @NotNull
     private LocalDateTime startDate;
-    /** 終了日時(未完了時はnull) */
+    /** The end date and time (at the time of non-completion null) */
     private LocalDateTime endDate;
 
-    /** 利用者監査ログを完了状態にします。 */
     public AuditActor finish(final SystemRepository rep) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Processed);
@@ -68,7 +60,6 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         return update(rep);
     }
 
-    /** 利用者監査ログを取消状態にします。 */
     public AuditActor cancel(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Cancelled);
@@ -78,7 +69,6 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         return update(rep);
     }
 
-    /** 利用者監査ログを例外状態にします。 */
     public AuditActor error(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Error);
@@ -88,12 +78,10 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         return update(rep);
     }
 
-    /** 利用者監査ログを登録します。 */
     public static AuditActor register(final SystemRepository rep, final RegAuditActor p) {
         return p.create(rep.dh().actor(), rep.dh().time().date()).save(rep);
     }
 
-    /** 利用者監査ログを検索します。 */
     public static PagingList<AuditActor> find(final SystemRepository rep, final FindAuditActor p) {
         return rep.tmpl().find(AuditActor.class, (criteria) -> {
             return criteria
@@ -106,7 +94,6 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         }, p.page.sortIfEmpty(SortOrder.desc("startDate")));
     }
 
-    /** 検索パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -129,7 +116,6 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         private Pagination page = new Pagination();
     }
 
-    /** 登録パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -1,4 +1,4 @@
 /**
- * 帳票関連のインフラ層コンポーネント。
+ * An infrastructure layer component of report.
  */
 package sample.context.report;

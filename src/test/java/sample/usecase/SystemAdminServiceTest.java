@@ -11,10 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import sample.UnitTestSupport;
 import sample.model.BusinessDayHandler;
 
-/**
- * SystemAdminService の単体検証です。
- * <p>low: 簡易な正常系検証が中心
- */
 public class SystemAdminServiceTest extends UnitTestSupport {
 
     @Autowired
@@ -28,7 +24,7 @@ public class SystemAdminServiceTest extends UnitTestSupport {
     }
     
     @Test
-    public void 営業日を進めます() {
+    public void processDay() {
         LocalDate day = businessDay.day();
         LocalDate dayPlus1 = businessDay.day(1);
         LocalDate dayPlus2 = businessDay.day(2);

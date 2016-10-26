@@ -12,44 +12,44 @@ import org.springframework.http.client.*;
 import sample.util.*;
 
 /**
- * 単純なHTTP経由の実行検証。
- * <p>SpringがサポートするWebTestSupportでの検証で良いのですが、コンテナ立ち上げた後に叩く単純確認用に作りました。
- * <p>「extention.security.auth.enabled: true」の時は実際にログインして処理を行います。
- * falseの時はDummyLoginInterceptorによる擬似ログインが行われます。
+ * Check api via the simple HTTP.
+ * <p>The inspection in WebTestSupport which Spring supported was enough,
+ *  but made a container for simplicity confirmation to swat after standing, and having given it.
+ * <p>you really login and handle it at the time of "extention.security.auth.enabled: true".
+ * dummy-login by DummyLoginInterceptor is carried out at the time of false.
  */
 public class SampleClient {
     private static final String ROOT_PATH = "http://localhost:8080/api";
 
-    // 「extention.security.auth.admin: false」の時のみ利用可能です。
+    // for 「extention.security.auth.admin: false」
     @Test
-    public void 顧客向けユースケース検証() throws Exception {
+    public void usecaseCustomer() throws Exception {
         SimpleTestAgent agent = new SimpleTestAgent();
         agent.login("sample", "sample");
-        agent.post("振込出金依頼", "/asset/cio/withdraw?accountId=sample&currency=JPY&absAmount=200");
-        agent.get("振込出金依頼未処理検索", "/asset/cio/unprocessedOut/");
+        agent.post("withdraw", "/asset/cio/withdraw?accountId=sample&currency=JPY&absAmount=200");
+        agent.get("unprocessedOut", "/asset/cio/unprocessedOut/");
     }
 
-    // 「extention.security.auth.admin: true」の時のみ利用可能です。
+    // for 「extention.security.auth.admin: true」 
     @Test
-    public void 社内向けユースケース検証() throws Exception {
+    public void usecaseInternal() throws Exception {
         String day = DateUtils.dayFormat(TimePoint.now().day());
         SimpleTestAgent agent = new SimpleTestAgent();
         agent.login("admin", "admin");
-        agent.get("振込入出金依頼検索", "/admin/asset/cio/?updFromDay=" + day + "&updToDay=" + day);
+        agent.get("findCashInOut", "/admin/asset/cio/?updFromDay=" + day + "&updToDay=" + day);
     }
 
     @Test
-    public void バッチ向けユースケース検証() throws Exception {
+    public void usecaseBatch() throws Exception {
         String fromDay = DateUtils.dayFormat(TimePoint.now().day().minusDays(1));
         String toDay = DateUtils.dayFormat(TimePoint.now().day().plusDays(3));
         SimpleTestAgent agent = new SimpleTestAgent();
-        agent.post("営業日を進める(単純日回しのみ)", "/system/job/daily/processDay");
-        agent.post("当営業日の出金依頼を締める", "/system/job/daily/closingCashOut");
-        agent.post("入出金キャッシュフローを実現する(受渡日に残高へ反映)", "/system/job/daily/realizeCashflow");
-        agent.get("イベントログを検索する", "/admin/system/audit/event/?fromDay=" + fromDay + "&toDay=" + toDay);
+        agent.post("processDay", "/system/job/daily/processDay");
+        agent.post("closingCashOut", "/system/job/daily/closingCashOut");
+        agent.post("realizeCashflow", "/system/job/daily/realizeCashflow");
+        agent.get("findAuditEvent", "/admin/system/audit/event/?fromDay=" + fromDay + "&toDay=" + toDay);
     }
 
-    /** 単純なSession概念を持つHTTPエージェント */
     private class SimpleTestAgent {
         private SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         private Optional<String> sessionId = Optional.empty();
@@ -59,7 +59,7 @@ public class SampleClient {
         }
 
         public SimpleTestAgent login(String loginId, String password) throws Exception {
-            ClientHttpResponse res = post("ログイン", "/login?loginId=" + loginId + "&password=" + password);
+            ClientHttpResponse res = post("Login", "/login?loginId=" + loginId + "&password=" + password);
             if (res.getStatusCode() == HttpStatus.OK) {
                 String cookieStr = res.getHeaders().get("Set-Cookie").get(0);
                 sessionId = Optional.of(cookieStr.substring(0, cookieStr.indexOf(';')));

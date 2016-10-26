@@ -7,7 +7,7 @@ import org.junit.Test;
 public class ResourceBundleHandlerTest {
 
     @Test
-    public void ラベル取得検証() {
+    public void labels() {
         ResourceBundleHandler handler = new ResourceBundleHandler();
         assertTrue(0 < handler.labels("messages").size());
     }

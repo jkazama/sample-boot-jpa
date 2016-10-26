@@ -11,10 +11,6 @@ import javax.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-/**
- * ISOフォーマットの日付(必須)を表現する制約注釈。
- * <p>YYYY-MM-DDを想定します。
- */
 @Documented
 @Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })

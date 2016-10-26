@@ -8,7 +8,7 @@ import org.springframework.orm.jpa.*;
 
 import lombok.*;
 
-/** システムスキーマのRepositoryを表現します。 */
+/** Repository of the system schema. */
 @org.springframework.stereotype.Repository
 @Setter
 public class SystemRepository extends OrmRepository {
@@ -25,7 +25,7 @@ public class SystemRepository extends OrmRepository {
         return em;
     }
 
-    /** システムスキーマのDataSourceを生成します。 */
+    /** Create DataSource of the system schema. */
     @ConfigurationProperties(prefix = "extension.datasource.system")
     @Data
     @EqualsAndHashCode(callSuper = false)

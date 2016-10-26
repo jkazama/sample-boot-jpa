@@ -10,9 +10,8 @@ import javax.validation.constraints.*;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-/**
- * 備考(必須)を表現する制約注釈。
- */
+import sample.util.Regex;
+
 @Documented
 @Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
@@ -32,7 +31,7 @@ public @interface Description {
     int max() default 400;
 
     @OverridesAttribute(constraint = Pattern.class, name = "regexp")
-    String regexp() default ".*";
+    String regexp() default Regex.rWord;
 
     @OverridesAttribute(constraint = Pattern.class, name = "flags")
     Pattern.Flag[] flags() default {};

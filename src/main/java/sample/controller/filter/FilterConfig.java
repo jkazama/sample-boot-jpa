@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import sample.context.security.SecurityFilters;
 
 /**
- * ServletFilterの拡張実装。
- * filtersで返すFilterはSecurityHandlerにおいてActionSessionFilterの後に定義されます。
+ * Expansion implementation of ServletFilter.
+ * <p>Filter to return in "filters" is defined after ActionSessionFilter in SecurityHandler.
  */
 @Configuration
 public class FilterConfig implements SecurityFilters {

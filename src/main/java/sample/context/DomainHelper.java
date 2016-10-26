@@ -6,7 +6,7 @@ import lombok.Setter;
 import sample.context.actor.*;
 
 /**
- * ドメイン処理を行う上で必要となるインフラ層コンポーネントへのアクセサを提供します。
+ * The access to the domain infrastructure layer component which is necessary in handling it.
  */
 @Setter
 public class DomainHelper {
@@ -18,27 +18,24 @@ public class DomainHelper {
     @Autowired
     private AppSettingHandler settingHandler;
 
-    /** ログイン中のユースケース利用者を取得します。 */
+    /** Return a login user. */
     public Actor actor() {
         return actorSession().actor();
     }
 
-    /** スレッドローカルスコープの利用者セッションを取得します。 */
+    /** Return the user session of the thread local scope. */
     public ActorSession actorSession() {
         return actorSession;
     }
 
-    /** 日時ユーティリティを取得します。 */
     public Timestamper time() {
         return time;
     }
 
-    /** アプリケーション設定情報を取得します。 */
     public AppSetting setting(String id) {
         return settingHandler.setting(id);
     }
 
-    /** アプリケーション設定情報を設定します。 */
     public AppSetting settingSet(String id, String value) {
         return settingHandler.update(id, value);
     }

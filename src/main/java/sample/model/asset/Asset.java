@@ -8,21 +8,18 @@ import sample.context.orm.OrmRepository;
 import sample.util.Calculator;
 
 /**
- * 口座の資産概念を表現します。
- * asset配下のEntityを横断的に取り扱います。
- * low: 実際の開発では多通貨や執行中/拘束中のキャッシュフローアクションに対する考慮で、サービスによってはかなり複雑になります。
+ * The asset of the account.
  */
 @Getter
 public class Asset {
-    /** 口座ID */
+    /** account ID */
     private final String id;
 
     private Asset(String id) {
         this.id = id;
     }
 
-    /** 口座IDに紐付く資産概念を返します。 */
-    public static Asset by(String accountId) {
+    public static Asset of(String accountId) {
         return new Asset(accountId);
     }
 

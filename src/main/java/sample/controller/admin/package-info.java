@@ -1,4 +1,4 @@
 /**
- * 社内管理向けのUI層コンポーネント。
+ * A UI layer component for management in the organization.
  */
 package sample.controller.admin;

@@ -17,7 +17,7 @@ import sample.model.constraints.*;
 import sample.util.DateUtils;
 
 /**
- * システムイベントの監査ログを表現します。
+ * The auditting log of the system event.
  */
 @Entity
 @Data
@@ -28,24 +28,18 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
     @Id
     @GeneratedValue
     private Long id;
-    /** カテゴリ */
     private String category;
-    /** メッセージ */
     private String message;
-    /** 処理ステータス */
     @Enumerated(EnumType.STRING)
     private ActionStatusType statusType;
-    /** エラー事由 */
     private String errorReason;
-    /** 処理時間(msec) */
+    /** The processing time (msec) */
     private Long time;
-    /** 開始日時 */
     @NotNull
     private LocalDateTime startDate;
-    /** 終了日時(未完了時はnull) */
+    /** The end date and time (at the time of non-completion null) */
     private LocalDateTime endDate;
 
-    /** イベント監査ログを完了状態にします。 */
     public AuditEvent finish(final SystemRepository rep) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Processed);
@@ -54,7 +48,6 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         return update(rep);
     }
 
-    /** イベント監査ログを取消状態にします。 */
     public AuditEvent cancel(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Cancelled);
@@ -64,7 +57,6 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         return update(rep);
     }
 
-    /** イベント監査ログを例外状態にします。 */
     public AuditEvent error(final SystemRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
         setStatusType(ActionStatusType.Error);
@@ -74,12 +66,10 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         return update(rep);
     }
 
-    /** イベント監査ログを登録します。 */
     public static AuditEvent register(final SystemRepository rep, final RegAuditEvent p) {
         return p.create(rep.dh().time().date()).save(rep);
     }
 
-    /** イベント監査ログを検索します。 */
     public static PagingList<AuditEvent> find(final SystemRepository rep, final FindAuditEvent p) {
         return rep.tmpl().find(AuditEvent.class, (criteria) -> {
             return criteria
@@ -90,7 +80,6 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         }, p.page.sortIfEmpty(SortOrder.desc("startDate")));
     }
 
-    /** 検索パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -109,7 +98,6 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         private Pagination page = new Pagination();
     }
 
-    /** 登録パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

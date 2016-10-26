@@ -8,7 +8,7 @@ import org.springframework.orm.jpa.*;
 
 import lombok.*;
 
-/** 標準スキーマのRepositoryを表現します。 */
+/** Repository of the standard schema. */
 @Setter
 public class DefaultRepository extends OrmRepository {
     public static final String BeanNameDs = "dataSource";
@@ -23,7 +23,7 @@ public class DefaultRepository extends OrmRepository {
         return em;
     }
 
-    /** 標準スキーマのDataSourceを生成します。 */
+    /** Create DataSource of the standard schema. */
     @ConfigurationProperties(prefix = "extension.datasource.default")
     @Data
     @EqualsAndHashCode(callSuper = false)

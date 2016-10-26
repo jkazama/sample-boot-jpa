@@ -19,7 +19,7 @@ import sample.model.asset.CashInOut.RegCashOut;
 import sample.usecase.AssetService;
 
 /**
- * 資産に関わる顧客のUI要求を処理します。
+ * API controller of the asset domain.
  */
 @RestController
 @RequestMapping("/api/asset")

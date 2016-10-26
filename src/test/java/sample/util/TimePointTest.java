@@ -10,7 +10,7 @@ import org.junit.Test;
 public class TimePointTest {
 
     @Test
-    public void 初期化検証() {
+    public void initialize() {
         LocalDate targetDay = LocalDate.of(2015, 8, 28);
         LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);
 
@@ -31,7 +31,7 @@ public class TimePointTest {
     }
 
     @Test
-    public void 比較検証() {
+    public void beforeAfter() {
         LocalDate targetDay = LocalDate.of(2015, 8, 28);
         LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);
 

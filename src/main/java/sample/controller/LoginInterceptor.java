@@ -11,7 +11,7 @@ import sample.context.actor.Actor.ActorRoleType;
 import sample.context.security.SecurityConfigurer;
 
 /**
- * Spring Securityの設定状況に応じてスレッドローカルへ利用者を紐付けるAOPInterceptor。
+ * AOPInterceptor relates a login user with thread local.
  */
 @Aspect
 @Configuration
@@ -31,8 +31,8 @@ public class LoginInterceptor {
     }
 
     /**
-     * セキュリティの認証設定(extension.security.auth.enabled)が無効時のみ有効される擬似ログイン処理。
-     * <p>開発時のみ利用してください。
+     * The dummy-login handling of that certification setting (extension.security.auth.enabled: false) is done.
+     * <p>Use it only at the time of development.
      */
     @Aspect
     @Component

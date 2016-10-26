@@ -16,10 +16,10 @@ import sample.context.audit.AuditEvent.RegAuditEvent;
 import sample.context.orm.SystemRepository;
 
 /**
- * 利用者監査やシステム監査(定時バッチや日次バッチ等)などを取り扱います。
- * <p>暗黙的な適用を望む場合は、AOPとの連携も検討してください。 
- * <p>対象となるログはLoggerだけでなく、システムスキーマの監査テーブルへ書きだされます。
- * (開始時と完了時で別TXにする事で応答無し状態を検知可能)
+ * It deals with user inspection or EDP audit (an appointed hour batch or kind of day batch).
+ * <p>When you expect an implicit application, please examine the cooperation with AOP. 
+ * <p>The target log is begun to write as well as Logger to the inspection table of the system schema.
+ * (You can detect a replyless state by making the other transaction at a start and completion.)
  */
 @Slf4j
 @Setter
@@ -32,12 +32,10 @@ public class AuditHandler {
     @Autowired
     private AuditPersister persister;
 
-    /** 与えた処理に対し、監査ログを記録します。 */
     public <T> T audit(String message, final Supplier<T> callable) {
         return audit("default", message, callable);
     }
 
-    /** 与えた処理に対し、監査ログを記録します。 */
     public void audit(String message, final Runnable command) {
         audit(message, () -> {
             command.run();
@@ -45,28 +43,26 @@ public class AuditHandler {
         });
     }
 
-    /** 与えた処理に対し、監査ログを記録します。 */
     public <T> T audit(String category, String message, final Supplier<T> callable) {
-        logger().trace(message(message, "[開始]", null));
+        logger().trace(message(message, "[Start]", null));
         long start = System.currentTimeMillis();
         try {
             T v = session.actor().getRoleType().isSystem() ? callEvent(category, message, callable)
                     : callAudit(category, message, callable);
-            logger().info(message(message, "[完了]", start));
+            logger().info(message(message, "[ End ]", start));
             return v;
         } catch (ValidationException e) {
-            logger().warn(message(message, "[審例]", start));
+            logger().warn(message(message, "[Warning]", start));
             throw e;
         } catch (RuntimeException e) {
-            logger().error(message(message, "[例外]", start));
+            logger().error(message(message, "[Exception]", start));
             throw (RuntimeException) e;
         } catch (Exception e) {
-            logger().error(message(message, "[例外]", start));
+            logger().error(message(message, "[Exception]", start));
             throw new InvocationException("error.Exception", e);
         }
     }
 
-    /** 与えた処理に対し、監査ログを記録します。 */
     public void audit(String category, String message, final Runnable command) {
         audit(category, message, () -> {
             command.run();
@@ -94,7 +90,7 @@ public class AuditHandler {
     public <T> T callAudit(String category, String message, final Supplier<T> callable) {
         Optional<AuditActor> audit = Optional.empty();
         try {
-            try { // システムスキーマの障害は本質的なエラーに影響を与えないように
+            try { // So that the obstacle of the system schema does not affect the essential error
                 audit = Optional.of(persister.start(RegAuditActor.of(category, message)));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -133,7 +129,7 @@ public class AuditHandler {
     public <T> T callEvent(String category, String message, final Supplier<T> callable) {
         Optional<AuditEvent> audit = Optional.empty();
         try {
-            try { // システムスキーマの障害は本質的なエラーに影響を与えないように
+            try { // So that the obstacle of the system schema does not affect the essential error
                 audit = Optional.of(persister.start(RegAuditEvent.of(category, message)));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -169,9 +165,6 @@ public class AuditHandler {
         }
     }
 
-    /**
-     * 監査ログをシステムスキーマへ永続化します。
-     */
     @Setter
     public static class AuditPersister {
         @Autowired

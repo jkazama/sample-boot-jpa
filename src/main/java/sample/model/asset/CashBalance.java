@@ -12,7 +12,7 @@ import sample.model.constraints.*;
 import sample.util.*;
 
 /**
- * 口座残高を表現します。
+ * The account balance.
  */
 @Entity
 @Data
@@ -22,29 +22,23 @@ import sample.util.*;
 public class CashBalance extends OrmActiveRecord<CashBalance> {
     private static final long serialVersionUID = 1L;
 
-    /** ID */
     @Id
     @GeneratedValue
     private Long id;
-    /** 口座ID */
     @IdStr
     private String accountId;
-    /** 基準日 */
     @ISODate
     private LocalDate baseDay;
-    /** 通貨 */
     @Currency
     private String currency;
-    /** 金額 */
     @Amount
     private BigDecimal amount;
-    /** 更新日 */
     @ISODateTime
     private LocalDateTime updateDate;
 
     /**
-     * 残高へ指定した金額を反映します。
-     * low ここではCurrencyを使っていますが、実際の通貨桁数や端数処理定義はDBや設定ファイル等で管理されます。
+     * low Use Currency here, but the real number of the currency figures and fraction processing definition
+     *  are managed with DB or the configuration file.
      */
     public CashBalance add(final OrmRepository rep, BigDecimal addAmount) {
         int scale = java.util.Currency.getInstance(currency).getDefaultFractionDigits();
@@ -54,8 +48,9 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
     }
 
     /**
-     * 指定口座の残高を取得します。(存在しない時は繰越保存後に取得します)
-     * low: 複数通貨の適切な考慮や細かい審査は本筋でないので割愛。
+     * Acquire the balance of the designated account.
+     * (when I do not exist, acquire it after carrying forward preservation)
+     * low: The appropriate consideration and examination of plural currencies are omitted.
      */
     public static CashBalance getOrNew(final OrmRepository rep, String accountId, String currency) {
         LocalDate baseDay = rep.dh().time().day();
@@ -70,7 +65,7 @@ public class CashBalance extends OrmActiveRecord<CashBalance> {
         Optional<CashBalance> m = rep.tmpl().get(
                 "from CashBalance c where c.accountId=?1 and c.currency=?2 order by c.baseDay desc", accountId,
                 currency);
-        if (m.isPresent()) { // 残高繰越
+        if (m.isPresent()) { // roll over
             CashBalance prev = m.get();
             return new CashBalance(null, accountId, now.getDay(), currency, prev.getAmount(), now.getDate()).save(rep);
         } else {

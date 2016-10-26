@@ -1,5 +1,5 @@
 /**
- * 監査証跡関連のインフラ層コンポーネント。
- * <p>ユースケース実行時の証跡管理をします。
+ * An inspection evidence-related infrastructure layer component.
+ * <p>Do evidence management at the time of the use case practice.
  */
 package sample.context.audit;

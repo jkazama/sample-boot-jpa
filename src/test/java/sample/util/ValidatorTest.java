@@ -13,13 +13,13 @@ import sample.ValidationException.Warn;
 public class ValidatorTest {
 
     @Test
-    public void ラムダ式ベースの検証() {
+    public void check() {
         Validator.validate((v) -> {
             boolean anyCheck = true;
             v.checkField(anyCheck, "name", "error.name");
         });
 
-        // フィールドレベルのチェック
+        // check field
         try {
             Validator.validate((v) -> {
                 boolean anyCheck = false;
@@ -37,7 +37,7 @@ public class ValidatorTest {
             assertThat(warns.get(1).getMessage(), is("error.day"));
         }
 
-        // グローバルチェック
+        // check global
         try {
             Validator.validate((v) -> {
                 boolean anyCheck = false;

@@ -16,7 +16,7 @@ import sample.model.asset.CashInOut.*;
 import sample.model.asset.type.CashflowType;
 import sample.model.master.SelfFiAccount;
 
-//low: 簡易な正常系検証が中心。依存するCashflow/CashBalanceの単体検証パスを前提。
+//low: Minimum test.
 public class CashInOutTest extends EntityTestSupport {
 
     private static final String ccy = "JPY";
@@ -30,7 +30,6 @@ public class CashInOutTest extends EntityTestSupport {
 
     @Override
     public void before() {
-        // 残高1000円の口座(test)を用意
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             fixtures.selfFiAcc(Remarks.CashOut, ccy).save(rep);
@@ -41,13 +40,12 @@ public class CashInOutTest extends EntityTestSupport {
     }
 
     @Test
-    public void 振込入出金を検索する() {
+    public void find() {
         LocalDate baseDay = businessDay.day();
         LocalDate basePlus1Day = businessDay.day(1);
         LocalDate basePlus2Day = businessDay.day(2);
         tx(() -> {
             fixtures.cio(accId, "300", true).save(rep);
-            //low: ちゃんとやると大変なので最低限の検証
             assertThat(
                     CashInOut.find(rep, findParam(baseDay, basePlus1Day)),
                     hasSize(1));
@@ -69,11 +67,10 @@ public class CashInOutTest extends EntityTestSupport {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void 振込出金依頼をする() {
+    public void withdraw() {
         LocalDate baseDay = businessDay.day();
         LocalDate basePlus3Day = businessDay.day(3);
         tx(() -> {
-            // 超過の出金依頼 [例外]
             try {
                 CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, new BigDecimal("1001")));
                 fail();
@@ -81,7 +78,6 @@ public class CashInOutTest extends EntityTestSupport {
                 assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutWithdrawAmount));
             }
 
-            // 0円出金の出金依頼 [例外]
             try {
                 CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, BigDecimal.ZERO));
                 fail();
@@ -89,7 +85,6 @@ public class CashInOutTest extends EntityTestSupport {
                 assertThat(e.getMessage(), is(DomainErrorKeys.AbsAmountZero));
             }
 
-            // 通常の出金依頼
             CashInOut normal = CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, new BigDecimal("300")));
             assertThat(normal, allOf(
                     hasProperty("accountId", is(accId)), hasProperty("currency", is(ccy)),
@@ -104,7 +99,6 @@ public class CashInOutTest extends EntityTestSupport {
                     hasProperty("statusType", is(ActionStatusType.Unprocessed)),
                     hasProperty("cashflowId", is(nullValue()))));
 
-            // 拘束額を考慮した出金依頼 [例外]
             try {
                 CashInOut.withdraw(rep, businessDay, new RegCashOut(accId, ccy, new BigDecimal("701")));
                 fail();
@@ -115,14 +109,14 @@ public class CashInOutTest extends EntityTestSupport {
     }
 
     @Test
-    public void 振込出金依頼を取消する() {
+    public void cancel() {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
-            // CF未発生の依頼を取消
+            // Cancel a request of the CF having not yet processed
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
             assertThat(normal.cancel(rep), hasProperty("statusType", is(ActionStatusType.Cancelled)));
 
-            // 発生日を迎えた場合は取消できない [例外]
+            // When Reach an event day, I cannot cancel it. [ValidationException]
             CashInOut today = fixtures.cio(accId, "300", true);
             today.setEventDay(baseDay);
             today.save(rep);
@@ -136,13 +130,13 @@ public class CashInOutTest extends EntityTestSupport {
     }
 
     @Test
-    public void 振込出金依頼を例外状態とする() {
+    public void error() {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
             assertThat(normal.error(rep), hasProperty("statusType", is(ActionStatusType.Error)));
 
-            // 処理済の時はエラーにできない [例外]
+            // When it is processed, an error cannot do it. [ValidationException]
             CashInOut today = fixtures.cio(accId, "300", true);
             today.setEventDay(baseDay);
             today.setStatusType(ActionStatusType.Processed);
@@ -158,11 +152,11 @@ public class CashInOutTest extends EntityTestSupport {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void 発生日を迎えた振込入出金をキャッシュフロー登録する() {
+    public void process() {
         LocalDate baseDay = businessDay.day();
         LocalDate basePlus3Day = businessDay.day(3);
         tx(() -> {
-            // 発生日未到来の処理 [例外]
+            // It is handled non-arrival on an event day [ValidationException]
             CashInOut future = fixtures.cio(accId, "300", true).save(rep);
             try {
                 future.process(rep);
@@ -171,14 +165,14 @@ public class CashInOutTest extends EntityTestSupport {
                 assertThat(e.getMessage(), is(AssetErrorKeys.CashInOutAfterEqualsDay));
             }
 
-            // 発生日到来処理
+            // Event day arrival processing.
             CashInOut normal = fixtures.cio(accId, "300", true);
             normal.setEventDay(baseDay);
             normal.save(rep);
             assertThat(normal.process(rep), allOf(
                     hasProperty("statusType", is(ActionStatusType.Processed)),
                     hasProperty("cashflowId", not(nullValue()))));
-            // 発生させたキャッシュフローの検証
+            // Check the Cashflow that CashInOut produced.
             assertThat(Cashflow.load(rep, normal.getCashflowId()), allOf(
                     hasProperty("accountId", is(accId)),
                     hasProperty("currency", is(ccy)),

@@ -19,7 +19,7 @@ import sample.model.master.Holiday.RegHoliday;
 import sample.usecase.MasterAdminService;
 
 /**
- * マスタに関わる社内のUI要求を処理します。
+ * API controller of the master domain in the organization.
  */
 @RestController
 @RequestMapping("/api/admin/master")
@@ -31,13 +31,11 @@ public class MasterAdminController extends ControllerSupport {
     @Autowired
     private SecurityProperties securityProps;
 
-    /** 社員ログイン状態を確認します。 */
     @GetMapping("/loginStatus")
     public boolean loginStatus() {
         return true;
     }
 
-    /** 社員ログイン情報を取得します。 */
     @GetMapping("/loginStaff")
     public LoginStaff loadLoginStaff() {
         if (securityProps.auth().isEnabled()) {
@@ -50,7 +48,6 @@ public class MasterAdminController extends ControllerSupport {
         }
     }
 
-    /** クライアント利用用途に絞ったパラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -60,7 +57,6 @@ public class MasterAdminController extends ControllerSupport {
         private Collection<String> authorities;
     }
 
-    /** 休日を登録します。 */
     @PostMapping("/holiday/")
     public ResponseEntity<Void> registerHoliday(@Valid RegHoliday p) {
         return resultEmpty(() -> service.registerHoliday(p));
