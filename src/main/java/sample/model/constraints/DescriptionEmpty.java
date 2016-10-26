@@ -8,6 +8,8 @@ import java.lang.annotation.*;
 import javax.validation.*;
 import javax.validation.constraints.*;
 
+import sample.util.Regex;
+
 /**
  * 備考を表現する制約注釈。
  */
@@ -29,7 +31,7 @@ public @interface DescriptionEmpty {
     int max() default 400;
 
     @OverridesAttribute(constraint = Pattern.class, name = "regexp")
-    String regexp() default ".*";
+    String regexp() default Regex.rWord;
 
     @OverridesAttribute(constraint = Pattern.class, name = "flags")
     Pattern.Flag[] flags() default {};
