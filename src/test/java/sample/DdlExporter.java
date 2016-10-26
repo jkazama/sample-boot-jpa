@@ -2,18 +2,20 @@ package sample;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Properties;
+import java.util.*;
 
 import org.hibernate.boot.*;
 import org.hibernate.boot.registry.*;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.hibernate.tool.schema.TargetType;
 import org.springframework.boot.orm.jpa.hibernate.*;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
  * Entity 定義を元に DDL を生成します。  
  * <p>モデルファーストで開発していきたいときなどに利用して下さい。
+ * <p>通常のJava実行で出力してください。出力先は OutputRoot 定数で指定されたディレクトリ配下となります。
  * <p>現状 Hibernate 5 で Bean Validation をソース元としたカラム定義がうまく出力されなくなってしまっています。( Hibernate 4 + Configuration だとうまくいっていた)<br>
  * http://stackoverflow.com/questions/32090535/hibernate-5-and-spring-generate-ddl-using-schemaexport
  * <p>前述のやり取りを見る限りでは Bean Validation よりも JPA のアノテーションで明示すべきとのことなので、適切な DDL を自動生成したいなら以下のような JPA 列定義で
@@ -45,11 +47,11 @@ public class DdlExporter {
             Files.deleteIfExists(Paths.get(outputFile));
             MetadataImplementor metadata = metadata(sfBean, serviceRegistry);
             
-            SchemaExport export = new SchemaExport(serviceRegistry, metadata, false);
+            SchemaExport export = new SchemaExport();
             export.setDelimiter(";");
             export.setFormat(FormatSql);
             export.setOutputFile(outputFile);
-            export.create(true, false);
+            export.create(EnumSet.of(TargetType.SCRIPT), metadata);
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
