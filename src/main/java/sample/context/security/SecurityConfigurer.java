@@ -12,7 +12,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.*;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -52,14 +51,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Autowired
     @Lazy
     private SecurityActorFinder actorFinder;
-    /** カスタム認証プロバイダ */
-    @Autowired
-    @Lazy
-    private SecurityProvider securityProvider;
-    /** カスタム認証マネージャ */
-    @Autowired
-    @Lazy
-    private AuthenticationManager authenticationManager;
     /** カスタムエントリポイント(例外対応) */
     @Autowired
     @Lazy
@@ -79,18 +70,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     private SecurityFilters filters;
 
     @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.eraseCredentials(true).authenticationProvider(securityProvider);
-    }
-
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
-
-    @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(serverProps.getPathsArray(props.auth().getIgnorePath()));
+        web.ignoring().mvcMatchers(serverProps.getPathsArray(props.auth().getIgnorePath()));
     }
 
     @Override
@@ -98,13 +79,14 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         // Target URL
         http
             .authorizeRequests()
-            .antMatchers(props.auth().getExcludesPath()).permitAll();
+            .mvcMatchers(props.auth().getExcludesPath()).permitAll();
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
-            .antMatchers(props.auth().getPath()).hasRole("USER");
-        // common
+            .mvcMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
+            .mvcMatchers(props.auth().getPath()).hasRole("USER");
+        
+        // Common
         http
             .exceptionHandling().authenticationEntryPoint(entryPoint);
         http
@@ -181,11 +163,23 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response,
                 AuthenticationException authException) throws IOException, ServletException {
-            String message = msg.getMessage(ErrorKeys.Authentication, new Object[0], Locale.getDefault());
-            if (authException instanceof InsufficientAuthenticationException) {
-                message = msg.getMessage(ErrorKeys.AccessDenied, new Object[0], Locale.getDefault());
+            if (response.isCommitted()) {
+                return;
             }
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
+            if (authException instanceof InsufficientAuthenticationException) {
+                String message = msg.getMessage(ErrorKeys.AccessDenied, new Object[0], Locale.getDefault());
+                writeReponseEmpty(response, HttpServletResponse.SC_FORBIDDEN, message);
+            } else {
+                String message = msg.getMessage(ErrorKeys.Authentication, new Object[0], Locale.getDefault());
+                writeReponseEmpty(response, HttpServletResponse.SC_UNAUTHORIZED, message);
+            }
+        }
+        
+        private void writeReponseEmpty(HttpServletResponse response, int status, String message) throws IOException {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setStatus(status);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"message\": \"" + message + "\"}");
         }
     }
 
@@ -232,8 +226,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 Authentication authentication) throws IOException, ServletException {
             Optional.ofNullable((ActorDetails) authentication.getDetails()).ifPresent(
                     (detail) -> detail.bindRequestInfo(request));
-            if (response.isCommitted())
+            if (response.isCommitted()) {
                 return;
+            }
             writeReponseEmpty(response, HttpServletResponse.SC_OK);
         }
 
@@ -241,8 +236,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         @Override
         public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                 AuthenticationException exception) throws IOException, ServletException {
-            if (response.isCommitted())
+            if (response.isCommitted()) {
                 return;
+            }
             writeReponseEmpty(response, HttpServletResponse.SC_BAD_REQUEST);
         }
 
@@ -251,8 +247,9 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                 Authentication authentication)
                         throws IOException, ServletException {
-            if (response.isCommitted())
+            if (response.isCommitted()) {
                 return;
+            }
             writeReponseEmpty(response, HttpServletResponse.SC_OK);
         }
 
