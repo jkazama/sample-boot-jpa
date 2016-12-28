@@ -1,16 +1,16 @@
 buildscript {
-    ext["hibernate.version"] = "5.2.4.Final" 
+    ext["hibernate.version"] = "5.2.5.Final" 
     repositories {
         jcenter()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.2.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.3.RELEASE"
     }
 }
 
 apply plugin: "org.springframework.boot"
 
-version = "1.2.4"
+version = "1.2.5"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.16.10"
+    compileOnly "org.projectlombok:lombok:1.16.12"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.boot:spring-boot-starter-aop"
@@ -55,12 +55,12 @@ dependencies {
     compile "com.ibm.icu:icu4j:58.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2:1.4.+"
-    testCompileOnly "org.projectlombok:lombok:1.16.10"
+    testCompileOnly "org.projectlombok:lombok:1.16.12"
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.1"
+    gradleVersion = "3.2.1"
 }
 
 // After when you wanted to make deep copying as one's project, having edited the following variables
@@ -68,7 +68,7 @@ task wrapper(type: Wrapper) {
 def yourProjectName = "sample"
 def yourProjectPackage = "your.sample"
 def yourProjectPath = "../${yourProjectName}"
-task copyProject << {
+task copyProject {
     def projectPath = yourProjectPath
     def packagePath = yourProjectPackage.replaceAll(/\./, "/")
     def javaPath = "${projectPath}/src/main/java/${packagePath}"
