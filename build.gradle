@@ -52,7 +52,7 @@ dependencies {
     compile "org.eclipse.collections:eclipse-collections-api:8.0.0"
     compile "commons-io:commons-io:2.5"
     compile "org.apache.commons:commons-lang3:3.5"
-    compile "com.ibm.icu:icu4j:58.1"
+    compile "com.ibm.icu:icu4j:58.2"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2:1.4.+"
     testCompileOnly "org.projectlombok:lombok:1.16.12"
