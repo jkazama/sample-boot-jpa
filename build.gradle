@@ -1,16 +1,16 @@
 buildscript {
-    ext["hibernate.version"] = "5.2.5.Final" 
+    ext["hibernate.version"] = "5.2.6.Final" 
     repositories {
         jcenter()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.3.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.4.4.RELEASE"
     }
 }
 
 apply plugin: "org.springframework.boot"
 
-version = "1.2.5"
+version = "1.2.6"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -60,7 +60,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.2.1"
+    gradleVersion = "3.3"
 }
 
 // After when you wanted to make deep copying as one's project, having edited the following variables
