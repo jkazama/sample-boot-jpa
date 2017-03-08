@@ -96,7 +96,7 @@ public abstract class DateUtils {
     }
 
     public static boolean isWeekend(LocalDate day) {
-        Assert.notNull(day);
+        Assert.notNull(day, "day is required.");
         return day.query(WeekendQuery);
     }
 

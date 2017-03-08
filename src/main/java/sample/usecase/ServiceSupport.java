@@ -90,12 +90,12 @@ public abstract class ServiceSupport {
     }
 
     protected ServiceMailDeliver mail() {
-        Assert.notNull(mail);
+        Assert.notNull(mail, "mail is not setup.");
         return mail;
     }
 
     protected ServiceReportExporter report() {
-        Assert.notNull(report);
+        Assert.notNull(report, "report is not setup.");
         return report;
     }
 
@@ -108,7 +108,7 @@ public abstract class ServiceSupport {
     }
 
     protected BusinessDayHandler businessDay() {
-        Assert.notNull(businessDay);
+        Assert.notNull(businessDay, "businessDay is not setup.");
         return businessDay;
     }
 

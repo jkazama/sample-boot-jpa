@@ -42,7 +42,7 @@ public class SystemAdminService extends ServiceSupport {
     }
 
     public void processDay() {
-        audit().audit("Porward day.", () -> dh().time().proceedDay(businessDay().day(1)));
+        audit().audit("Forward day.", () -> dh().time().proceedDay(businessDay().day(1)));
     }
 
 }
