@@ -64,7 +64,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.4"
+    gradleVersion = "3.4.1"
 }
 
 // After when you wanted to make deep copying as one's project, having edited the following variables
