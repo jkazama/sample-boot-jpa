@@ -107,7 +107,7 @@ public abstract class DateUtils {
 
     /** 指定営業日が週末(土日)か判定します。(引数は必須) */
     public static boolean isWeekend(LocalDate day) {
-        Assert.notNull(day);
+        Assert.notNull(day, "day is required.");
         return day.query(WeekendQuery);
     }
 

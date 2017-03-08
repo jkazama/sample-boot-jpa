@@ -71,7 +71,7 @@ public class OrmTemplate {
      * <p>Pagination に設定された検索条件は無視されます。 CriteriaQuery 構築時に設定するようにしてください。
      */   
     public <T> PagingList<T> find(final CriteriaQuery<T> criteria, Optional<CriteriaQuery<Long>> criteriaCount, final Pagination page) {
-        Assert.notNull(page);
+        Assert.notNull(page, "page is required");
         long total = criteriaCount.map(cnt -> query(cnt).getResultList().get(0)).orElse(-1L);
         if (total == 0) return new PagingList<>(new ArrayList<>(), new Pagination(page, 0));
         

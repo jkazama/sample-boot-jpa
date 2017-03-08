@@ -95,13 +95,13 @@ public abstract class ServiceSupport {
 
     /** サービスメールユーティリティを返します。 */
     protected ServiceMailDeliver mail() {
-        Assert.notNull(mail);
+        Assert.notNull(mail, "mail is not setup.");
         return mail;
     }
 
     /** サービスレポートユーティリティを返します。 */
     protected ServiceReportExporter report() {
-        Assert.notNull(report);
+        Assert.notNull(report, "report is not setup.");
         return report;
     }
 
@@ -117,7 +117,7 @@ public abstract class ServiceSupport {
 
     /** 営業日ユーティリティを返します。 */
     protected BusinessDayHandler businessDay() {
-        Assert.notNull(businessDay);
+        Assert.notNull(businessDay, "businessDay is not setup.");
         return businessDay;
     }
 
