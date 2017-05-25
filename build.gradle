@@ -1,16 +1,16 @@
 buildscript {
-    ext["hibernate.version"] = "5.2.8.Final" 
+    ext["hibernate.version"] = "5.2.10.Final" 
     repositories {
         jcenter()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.3.RELEASE"
     }
 }
 
 apply plugin: "org.springframework.boot"
 
-version = "1.3.2"
+version = "1.3.3"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.16.12"
+    compileOnly "org.projectlombok:lombok:1.16.16"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-starter-security"
@@ -47,24 +47,24 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-cache"
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.springframework.boot:spring-boot-starter-web"
-    compile "org.ehcache:ehcache:3.1.+"
+    compile "org.ehcache:ehcache:3.2.+"
     compile "javax.cache:cache-api:1.0.0"
-    compile "com.zaxxer:HikariCP:2.5.+"
+    compile "com.zaxxer:HikariCP:2.6.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.+"
-    compile "org.eclipse.collections:eclipse-collections:8.0.0"
-    compile "org.eclipse.collections:eclipse-collections-api:8.0.0"
+    compile "org.eclipse.collections:eclipse-collections:8.1.0"
+    compile "org.eclipse.collections:eclipse-collections-api:8.1.0"
     compile "commons-io:commons-io:2.5"
     compile "org.apache.commons:commons-lang3:3.5"
-    compile "com.ibm.icu:icu4j:58.2"
+    compile "com.ibm.icu:icu4j:59.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2:1.4.+"
-    testCompileOnly "org.projectlombok:lombok:1.16.12"
+    testCompileOnly "org.projectlombok:lombok:1.16.16"
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.4.1"
+    gradleVersion = "3.5"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

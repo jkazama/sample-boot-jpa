@@ -1,9 +1,14 @@
 package sample;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 
 import sample.context.*;
 import sample.context.actor.ActorSession;
@@ -84,6 +89,26 @@ public class ApplicationConfig {
                             .withDetail("dayPlus3", day.day(3));
                 }
             };
+        }
+    }
+    
+    @Configuration
+    static class WebMVCConfig {
+        @Autowired
+        private MessageSource message;
+
+        /** HibernateのLazyLoading回避対応。  see JacksonAutoConfiguration */
+        @Bean
+        public Hibernate5Module jsonHibernate5Module() {
+            return new Hibernate5Module();
+        }
+
+        /** BeanValidationメッセージのUTF-8に対応したValidator。 */
+        @Bean
+        public LocalValidatorFactoryBean mvcValidator() {
+            LocalValidatorFactoryBean factory = new LocalValidatorFactoryBean();
+            factory.setValidationMessageSource(message);
+            return factory;
         }
     }
 
