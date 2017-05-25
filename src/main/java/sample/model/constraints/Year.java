@@ -18,19 +18,12 @@ import javax.validation.constraints.*;
 @ReportAsSingleViolation
 @NotNull
 @Digits(integer = 4, fraction = 0)
-@Size
 public @interface Year {
     String message() default "{error.domain.year}";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
-    @OverridesAttribute(constraint = Size.class, name = "max")
-    int max() default 4;
-
-    @OverridesAttribute(constraint = Size.class, name = "min")
-    int min() default 4;
 
     @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
     @Retention(RUNTIME)

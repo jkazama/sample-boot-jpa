@@ -89,9 +89,9 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
         @CategoryEmpty
         private String category = CategoryDefault;
         @Year
-        private int year;
+        private Integer year;
         @Valid
-        private List<RegHolidayItem> list;
+        private List<RegHolidayItem> list = new ArrayList<>();
 
         public RegHoliday(int year, final List<RegHolidayItem> list) {
             this.year = year;
