@@ -1,6 +1,5 @@
 package sample;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -88,8 +87,6 @@ public class ApplicationConfig {
     
     @Configuration
     static class WebMVCConfig {
-        @Autowired
-        private MessageSource message;
 
         /** Invalidate Hibernate lazy loading. see JacksonAutoConfiguration */
         @Bean
@@ -99,7 +96,7 @@ public class ApplicationConfig {
 
         /** UTF8 to JSR303 message file. */
         @Bean
-        public LocalValidatorFactoryBean validator() {
+        public LocalValidatorFactoryBean defaultValidator(MessageSource message) {
             LocalValidatorFactoryBean factory = new LocalValidatorFactoryBean();
             factory.setValidationMessageSource(message);
             return factory;
