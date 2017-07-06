@@ -51,13 +51,15 @@ public class CsvReader {
         PushbackReader reader = new PushbackReader(new InputStreamReader(in, layout.getCharset()), 2);
         try {
             int lineNum = 0;
+            boolean title = false;
             while (hasNext(in, reader)) {
                 lineNum++;
                 List<String> row = readStreamLine(reader); // ヘッダ定義でも行を読み込み、シークを先に進める
                 if (lineNum == 1 && StringUtils.isNotBlank(layout.getHeader())) {
+                    title = true;
                     continue; // ヘッダ定義存在時は最初の行をスキップ
                 }
-                logic.execute(lineNum, row);
+                logic.execute(title ? lineNum - 1 : lineNum, row);
             }
         } finally {
             IOUtils.closeQuietly(reader);
