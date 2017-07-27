@@ -203,22 +203,34 @@ public class OrmCriteria<T> {
     public OrmCriteria<T> between(String field, final Date from, final Date to) {
         if (from != null && to != null) {
             predicates.add(builder.between(root.get(field), from, to));
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
-    
+
     /** between条件を付与します。 */
     public OrmCriteria<T> between(String field, final LocalDate from, final LocalDate to) {
         if (from != null && to != null) {
             predicates.add(builder.between(root.get(field), from, to));
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
-    
+
     /** between条件を付与します。 */
     public OrmCriteria<T> between(String field, final LocalDateTime from, final LocalDateTime to) {
         if (from != null && to != null) {
             predicates.add(builder.between(root.get(field), from, to));
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
@@ -227,6 +239,10 @@ public class OrmCriteria<T> {
     public OrmCriteria<T> between(String field, final String from, final String to) {
         if (isValid(from) && isValid(to)) {
             predicates.add(builder.between(root.get(field), from, to));
+        } else if (isValid(from)) {
+            gte(field, from);
+        } else if (isValid(to)) {
+            lte(field, to);
         }
         return this;
     }

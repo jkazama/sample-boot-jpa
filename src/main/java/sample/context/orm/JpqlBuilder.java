@@ -122,6 +122,10 @@ public class JpqlBuilder {
                     "%s between ?%d and ?%d", field, index.getAndIncrement(), index.getAndIncrement()));
             args.add(from);
             args.add(to);
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
@@ -133,6 +137,10 @@ public class JpqlBuilder {
                     "%s between ?%d and ?%d", field, index.getAndIncrement(), index.getAndIncrement()));
             args.add(from);
             args.add(to);
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
@@ -144,6 +152,10 @@ public class JpqlBuilder {
                     "%s between ?%d and ?%d", field, index.getAndIncrement(), index.getAndIncrement()));
             args.add(from);
             args.add(to);
+        } else if (from != null) {
+            gte(field, from);
+        } else if (to != null) {
+            lte(field, to);
         }
         return this;
     }
@@ -155,6 +167,10 @@ public class JpqlBuilder {
                     "%s between ?%d and ?%d", field, index.getAndIncrement(), index.getAndIncrement()));
             args.add(from);
             args.add(to);
+        } else if (isValid(from)) {
+            gte(field, from);
+        } else if (isValid(to)) {
+            lte(field, to);
         }
         return this;
     }
