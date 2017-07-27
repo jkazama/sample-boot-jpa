@@ -15,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
  * <p>YYYY-MM-DDを想定します。
  */
 @Documented
-@Constraint(validatedBy = {})
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
