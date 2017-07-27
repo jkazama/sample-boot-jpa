@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.4.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.5.RELEASE"
     }
 }
 
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:1.16.16"
+    compileOnly "org.projectlombok:lombok:1.16.18"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-starter-security"
@@ -52,19 +52,19 @@ dependencies {
     compile "com.zaxxer:HikariCP:2.6.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.+"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.+"
-    compile "org.eclipse.collections:eclipse-collections:8.1.0"
-    compile "org.eclipse.collections:eclipse-collections-api:8.1.0"
+    compile "org.eclipse.collections:eclipse-collections:8.2.0"
+    compile "org.eclipse.collections:eclipse-collections-api:8.2.0"
     compile "commons-io:commons-io:2.5"
-    compile "org.apache.commons:commons-lang3:3.5"
+    compile "org.apache.commons:commons-lang3:3.6"
     compile "com.ibm.icu:icu4j:59.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2:1.4.+"
-    testCompileOnly "org.projectlombok:lombok:1.16.16"
+    testCompileOnly "org.projectlombok:lombok:1.16.18"
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.5"
+    gradleVersion = "4.0.2"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
