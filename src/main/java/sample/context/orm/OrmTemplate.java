@@ -197,7 +197,7 @@ public class OrmTemplate {
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> find(final String qlString, final Pagination page, final Object... args) {
         long total = page.isIgnoreTotal() ? -1L : load(QueryUtils.createCountQueryFor(qlString), args);
-        List<T> list = bindArgs(em.createQuery(qlString), args, page).getResultList();
+        List<T> list = bindArgs(em.createQuery(qlString), page, args).getResultList();
         return new PagingList<>(list, new Pagination(page, total));
     }
 
