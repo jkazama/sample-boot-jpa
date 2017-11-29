@@ -3,7 +3,6 @@ package sample.context.report.csv;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.*;
@@ -42,8 +41,17 @@ public class CsvReader {
             throw new InvocationException("リソース処理中に例外が発生しました", e);
         } finally {
             if (fromBinary()) {
-                IOUtils.closeQuietly(ins);
+                closeQuietly(ins);
             }
+        }
+    }
+    
+    private void closeQuietly(final Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (final IOException ioe) {
         }
     }
 
@@ -62,7 +70,7 @@ public class CsvReader {
                 logic.execute(title ? lineNum - 1 : lineNum, row);
             }
         } finally {
-            IOUtils.closeQuietly(reader);
+            closeQuietly(reader);
         }
     }
 
