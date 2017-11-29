@@ -3,7 +3,7 @@ package sample.context.report.csv;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.io.*;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.*;
@@ -54,8 +54,17 @@ public class CsvWriter {
             throw new InvocationException(e);
         } finally {
             if (fromFile()) {
-                IOUtils.closeQuietly(out);
+                closeQuietly(out);
             }
+        }
+    }
+    
+    private void closeQuietly(final Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (final IOException ioe) {
         }
     }
 
@@ -76,7 +85,7 @@ public class CsvWriter {
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            IOUtils.closeQuietly(out);
+            closeQuietly(out);
         }
     }
 

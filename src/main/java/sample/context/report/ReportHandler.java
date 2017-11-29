@@ -2,8 +2,7 @@ package sample.context.report;
 
 import java.io.*;
 
-import org.apache.commons.io.IOUtils;
-
+import sample.InvocationException;
 import sample.context.report.csv.*;
 import sample.context.report.csv.CsvReader.CsvReadLine;
 import sample.context.report.csv.CsvWriter.CsvWrite;
@@ -23,12 +22,11 @@ public class ReportHandler {
      */
     public byte[] convert(ReportToByte logic) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(out);
-        try {
+        try (DataOutputStream dos = new DataOutputStream(out)) {
             logic.execute(out);
             return out.toByteArray();
-        } finally {
-            IOUtils.closeQuietly(dos);
+        } catch (IOException e) {
+            throw new InvocationException(e);
         }
     }
 

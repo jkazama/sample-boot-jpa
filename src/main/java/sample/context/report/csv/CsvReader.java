@@ -3,11 +3,10 @@ package sample.context.report.csv;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import sample.InvocationException;
 import lombok.*;
+import sample.InvocationException;
 
 /**
  * This utility supports CSV loading processing.
@@ -53,15 +52,23 @@ public class CsvReader {
             throw new InvocationException("An exception occurred during resource processing", e);
         } finally {
             if (fromBinary()) {
-                IOUtils.closeQuietly(ins);
+                closeQuietly(ins);
             }
+        }
+    }
+    
+    private static void closeQuietly(final Closeable closeable) {
+        try {
+            if (closeable != null) {
+                closeable.close();
+            }
+        } catch (final IOException ioe) {
         }
     }
 
     /** Perform CSV loading processing.*/
     public void readStream(final InputStream in, final CsvReadLine logic) throws Exception {
-        PushbackReader reader = new PushbackReader(new InputStreamReader(in, layout.getCharset()), 2);
-        try {
+        try (PushbackReader reader = new PushbackReader(new InputStreamReader(in, layout.getCharset()), 2)) {
             int lineNum = 0;
             while (hasNext(in, reader)) {
                 lineNum++;
@@ -72,8 +79,6 @@ public class CsvReader {
                 }
                 logic.execute(lineNum, row);
             }
-        } finally {
-            IOUtils.closeQuietly(reader);
         }
     }
 
