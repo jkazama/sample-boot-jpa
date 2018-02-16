@@ -7,7 +7,6 @@ import java.util.function.*;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaQuery;
 
-import org.springframework.data.jpa.repository.query.QueryUtils;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.util.Assert;
 
@@ -19,7 +18,7 @@ import sample.ValidationException.ErrorKeys;
  * <p>EntityManager のメソッドで利用したい処理があれば必要に応じてラップメソッドを追加してください。
  */
 public class OrmTemplate {
-
+   
     private final EntityManager em;
     private final Optional<OrmQueryMetadata> metadata;
 
@@ -196,11 +195,11 @@ public class OrmTemplate {
      */
     @SuppressWarnings("unchecked")
     public <T> PagingList<T> find(final String qlString, final Pagination page, final Object... args) {
-        long total = page.isIgnoreTotal() ? -1L : load(QueryUtils.createCountQueryFor(qlString), args);
+        long total = page.isIgnoreTotal() ? -1L : load(OrmUtils.createCountQueryFor(qlString), args);
         List<T> list = bindArgs(em.createQuery(qlString), page, args).getResultList();
         return new PagingList<>(list, new Pagination(page, total));
     }
-
+    
     /**
      * 定義済み JPQL で一件取得します。
      * <p>事前に name に合致する @NamedQuery 定義が必要です。

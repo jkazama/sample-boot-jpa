@@ -181,11 +181,9 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 1.5.+    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
+| `spring-boot-starter-*` | 2.0.+    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
 | `hibernate-*`           | 5.2.+    | DB 永続化サポート (core/java8) |
 | `ehcache`               | 3.3.+    | JCache 実装 |
-| `HikariCP`              | 2.7.+    | コネクションプーリング実装の組み立て用途 |
-| `jackson-datatype-*`    | 2.9.+    | JSON 変換時の Java8 / Hibernate 対応 |
 | `eclipse-collections`   | 9.1.+    | コレクションライブラリ |
 | `commons-*`             | -        | 汎用ユーティリティライブラリ |
 | `icu4j-*`               | 60.+     | 文字変換ライブラリ |

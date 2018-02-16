@@ -8,8 +8,6 @@ import java.lang.annotation.*;
 import javax.validation.*;
 import javax.validation.constraints.*;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 /**
  * 文字列ID(必須)を表現する制約注釈。
  */
