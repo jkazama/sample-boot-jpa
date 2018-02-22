@@ -16,7 +16,7 @@ import sample.context.orm.SystemRepository.SystemDataSourceProperties;
  * アプリケーションのデータベース接続定義を表現します。
  */
 @Configuration
-@EnableConfigurationProperties({DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
+@EnableConfigurationProperties({ DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
 public class ApplicationDbConfig {
 
     /** 永続化時にメタ情報の差込を行うインターセプタ */
@@ -24,21 +24,22 @@ public class ApplicationDbConfig {
     OrmInterceptor ormInterceptor() {
         return new OrmInterceptor();
     }
-    
+
     /** 標準スキーマへの接続定義を表現します。 */
     @Configuration
     static class DefaultDbConfig {
+
         @Bean
         DefaultRepository defaultRepository() {
             return new DefaultRepository();
         }
-        
+
         @Bean(name = DefaultRepository.BeanNameDs, destroyMethod = "close")
         @Primary
         DataSource dataSource(DefaultDataSourceProperties props) {
             return props.dataSource();
         }
-        
+
         @Bean(name = DefaultRepository.BeanNameEmf)
         @Primary
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
@@ -60,17 +61,17 @@ public class ApplicationDbConfig {
     /** システムスキーマへの接続定義を表現します。 */
     @Configuration
     static class SystemDbConfig {
-        
+
         @Bean
         SystemRepository systemRepository() {
             return new SystemRepository();
         }
-        
+
         @Bean(name = SystemRepository.BeanNameDs, destroyMethod = "close")
         DataSource systemDataSource(SystemDataSourceProperties props) {
             return props.dataSource();
         }
-        
+
         @Bean(name = SystemRepository.BeanNameEmf)
         LocalContainerEntityManagerFactoryBean systemEntityManagerFactoryBean(
                 SystemDataSourceProperties props,
@@ -86,5 +87,5 @@ public class ApplicationDbConfig {
         }
 
     }
-    
+
 }

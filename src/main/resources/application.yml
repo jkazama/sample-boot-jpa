@@ -25,7 +25,7 @@ server:
 management:
   endpoints.web:
     base-path: /management
-    expose: "*"
+    exposure.include: "*"
 
 extension:
   datasource:
@@ -45,7 +45,7 @@ extension:
         hibernate.ddl-auto: create-drop
   security:
     auth:
-      enabled: true
+      enabled: false
       admin: false
     cors.enabled: true
   mail.enabled: false
