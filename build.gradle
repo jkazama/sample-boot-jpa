@@ -1,12 +1,10 @@
 buildscript {
     ext {
-        springBootVersion = "2.0.0.RC2"
+        springBootVersion = "2.0.0.RELEASE"
     }
-    ext["hibernate.version"] = "5.2.12.Final" 
+    ext["hibernate.version"] = "5.2.13.Final" 
     repositories {
         jcenter()
-        maven { url "https://repo.spring.io/snapshot" }
-        maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
@@ -42,8 +40,6 @@ springBoot {
 
 repositories {
     jcenter()
-    maven { url "https://repo.spring.io/snapshot" }
-    maven { url "https://repo.spring.io/milestone" }
 }
 
 dependencies {
@@ -70,7 +66,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "4.5"
+    gradleVersion = "4.6"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

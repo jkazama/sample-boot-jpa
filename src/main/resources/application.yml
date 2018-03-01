@@ -3,7 +3,7 @@ spring:
   application.name: sample-boot-hibernate
   messages.basename: messages-validation, messages
   banner.location: banner.txt
-  cache.jcache.config: ehcache.xml
+  cache.jcache.config: classpath:ehcache.xml
   jackson.serialization:
       indent-output: true
   servlet.multipart:
