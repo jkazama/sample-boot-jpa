@@ -230,7 +230,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 #### テスト
 
-パターンとしては通常の Spring コンテナを用いる 2 パターン ( WebMock テスト / コンテナテスト ) と、 Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) の合計 3 パターンで考えます。 （ それぞれ基底クラスは `WebTestSupport` / `UnitTestSupport` / `EntityTestSupport` ）  
+パターンとしては通常の Spring コンテナを用いるコンテナテストと、 Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) の合計 2 パターンで考えます。 （ それぞれ基底クラスは `UnitTestSupport` / `EntityTestSupport` ）  
 
 ### License
 
