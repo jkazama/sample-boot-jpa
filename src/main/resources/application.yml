@@ -1,18 +1,18 @@
 ---
 spring:
   application.name: sample-boot-hibernate
-  aop.proxy-target-class: true
   messages.basename: messages-validation, messages
-  cache.jcache.config: ehcache.xml
-  jackson:
-    serialization:
+  banner.location: banner.txt
+  cache.jcache.config: classpath:ehcache.xml
+  jackson.serialization:
       indent-output: true
-      write-dates-as-timestamps: false
-  http.multipart:
+  servlet.multipart:
     max-file-size: 20MB
     max-request-size: 20MB
-
-banner.location: banner.txt
+  jpa.open-in-view: false
+  security.user.password: unused
+  autoconfigure.exclude:
+    - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 logging.config: classpath:logback-spring.xml
 
@@ -22,16 +22,10 @@ server:
     whitelabel.enabled: false
     path: /api/error
 
-security:
-  basic.enabled: false
-  user.password: unused 
-
 management:
-  context-path: /api/management
-  security.enabled: false
-  health:
-    diskspace.enabled: true
-    db.enabled: true
+  endpoints.web:
+    base-path: /management
+    exposure.include: "*"
 
 extension:
   datasource:
@@ -60,8 +54,6 @@ extension:
 ---
 spring:
   profiles: production
-
-management.security.enabled: true
 
 extension:
   datasource:

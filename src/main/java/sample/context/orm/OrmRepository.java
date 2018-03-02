@@ -8,11 +8,11 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.*;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder.Builder;
 import org.springframework.orm.jpa.*;
-import org.springframework.orm.jpa.vendor.*;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import lombok.*;
 import sample.ValidationException;
@@ -188,7 +188,7 @@ public abstract class OrmRepository implements Repository {
             Builder builder = emfBuilder
                     .dataSource(dataSource)
                     .persistenceUnit(name)
-                    .properties(getHibernateProperties(dataSource))
+                    .properties(getHibernateProperties(new HibernateSettings()))
                     .jta(false);
             if (ArrayUtils.isNotEmpty(annotatedClasses)) {
                 builder.packages(annotatedClasses);
@@ -199,9 +199,11 @@ public abstract class OrmRepository implements Repository {
         }
         
         private JpaVendorAdapter vendorAdapter() {
-            AbstractJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+            HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
             adapter.setShowSql(isShowSql());
-            adapter.setDatabase(getDatabase());
+            if (getDatabase() != null) {
+                adapter.setDatabase(getDatabase());
+            }
             adapter.setDatabasePlatform(getDatabasePlatform());
             adapter.setGenerateDdl(isGenerateDdl());
             return adapter;

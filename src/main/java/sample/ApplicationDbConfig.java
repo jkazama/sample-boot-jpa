@@ -13,14 +13,14 @@ import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
 import sample.context.orm.SystemRepository.SystemDataSourceProperties;
 
 @Configuration
-@EnableConfigurationProperties({DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
+@EnableConfigurationProperties({ DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
 public class ApplicationDbConfig {
 
     @Bean
     OrmInterceptor ormInterceptor() {
         return new OrmInterceptor();
     }
-    
+
     /** Connection definition to a standard schema. */
     @Configuration
     static class DefaultDbConfig {
@@ -28,13 +28,13 @@ public class ApplicationDbConfig {
         DefaultRepository defaultRepository() {
             return new DefaultRepository();
         }
-        
+
         @Bean(name = DefaultRepository.BeanNameDs, destroyMethod = "close")
         @Primary
         DataSource dataSource(DefaultDataSourceProperties props) {
             return props.dataSource();
         }
-        
+
         @Bean(name = DefaultRepository.BeanNameEmf)
         @Primary
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
@@ -56,17 +56,17 @@ public class ApplicationDbConfig {
     /** Connection definition to a system schema. */
     @Configuration
     static class SystemDbConfig {
-        
+
         @Bean
         SystemRepository systemRepository() {
             return new SystemRepository();
         }
-        
+
         @Bean(name = SystemRepository.BeanNameDs, destroyMethod = "close")
         DataSource systemDataSource(SystemDataSourceProperties props) {
             return props.dataSource();
         }
-        
+
         @Bean(name = SystemRepository.BeanNameEmf)
         LocalContainerEntityManagerFactoryBean systemEntityManagerFactoryBean(
                 SystemDataSourceProperties props,
@@ -82,5 +82,5 @@ public class ApplicationDbConfig {
         }
 
     }
-    
+
 }

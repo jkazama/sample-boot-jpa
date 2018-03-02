@@ -8,8 +8,6 @@ import java.lang.annotation.*;
 import javax.validation.*;
 import javax.validation.constraints.*;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 /**
  * low: Please make it.
  */

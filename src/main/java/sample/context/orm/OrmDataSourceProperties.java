@@ -4,10 +4,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.jdbc.DatabaseDriver;
+import org.springframework.boot.jdbc.*;
 import org.springframework.util.StringUtils;
 
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.Data;
@@ -30,23 +29,28 @@ public class OrmDataSourceProperties {
 
     private int minIdle = 1;
     private int maxPoolSize = 20;
-    
+
     private boolean validation = true;
     private String validationQuery;
 
+    public String name() {
+        return this.getClass().getSimpleName().replaceAll("Properties", "");
+    }
+
     public DataSource dataSource() {
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName(driverClassName());
-        config.setJdbcUrl(url);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setMinimumIdle(minIdle);
-        config.setMaximumPoolSize(maxPoolSize);
+        HikariDataSource dataSource = (HikariDataSource) DataSourceBuilder.create()
+                .type(HikariDataSource.class)
+                .driverClassName(this.driverClassName()).url(this.url)
+                .username(this.username).password(this.password)
+                .build();
+        dataSource.setMinimumIdle(minIdle);
+        dataSource.setMaximumPoolSize(maxPoolSize);
         if (validation) {
-            config.setConnectionTestQuery(validationQuery());
+            dataSource.setConnectionTestQuery(validationQuery());
         }
-        config.setDataSourceProperties(props);
-        return new HikariDataSource(config);
+        dataSource.setPoolName(name());
+        dataSource.setDataSourceProperties(props);
+        return dataSource;
     }
 
     private String driverClassName() {
@@ -55,7 +59,7 @@ public class OrmDataSourceProperties {
         }
         return DatabaseDriver.fromJdbcUrl(url).getDriverClassName();
     }
-    
+
     private String validationQuery() {
         if (StringUtils.hasText(validationQuery)) {
             return validationQuery;

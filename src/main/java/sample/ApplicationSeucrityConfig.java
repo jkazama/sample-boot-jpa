@@ -44,11 +44,11 @@ public class ApplicationSeucrityConfig {
     @EnableWebSecurity
     @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
     @ConditionalOnProperty(prefix = "extension.security.auth", name = "enabled", matchIfMissing = true)
-    @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
+    @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.BASIC_AUTH_ORDER)
     static class AuthSecurityConfig {
     
         @Bean
-        @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER)
+        @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.BASIC_AUTH_ORDER)
         SecurityConfigurer securityConfigurer() {
             return new SecurityConfigurer();
         }

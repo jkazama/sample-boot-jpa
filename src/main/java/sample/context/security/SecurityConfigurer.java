@@ -62,7 +62,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().mvcMatchers(serverProps.getPathsArray(props.auth().getIgnorePath()));
+        web.ignoring().mvcMatchers(
+                serverProps.getServlet().getPathsArray(props.auth().getIgnorePath()));
     }
 
     @Override
