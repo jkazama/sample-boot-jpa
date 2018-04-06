@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        springBootVersion = "2.0.0.RELEASE"
+        springBootVersion = "2.0.1.RELEASE"
     }
-    ext["hibernate.version"] = "5.2.14.Final" 
+    ext["hibernate.version"] = "5.2.16.Final" 
     repositories {
         jcenter()
     }
@@ -15,7 +15,7 @@ apply plugin: "java"
 apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 
-version = "2.0.0"
+version = "2.0.1"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -58,7 +58,7 @@ dependencies {
     compile "org.eclipse.collections:eclipse-collections-api:9.1.0"
     compile "commons-io:commons-io:2.6"
     compile "org.apache.commons:commons-lang3"
-    compile "com.ibm.icu:icu4j:60.2"
+    compile "com.ibm.icu:icu4j:61.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2"
     testCompileOnly "org.projectlombok:lombok"
