@@ -1,6 +1,7 @@
 buildscript {
     ext {
-        springBootVersion = "2.0.2.RELEASE"
+        springBootVersion = "2.0.3.RELEASE"
+        lombokVersion = "1.16.20"
     }
     repositories {
         jcenter()
@@ -14,7 +15,7 @@ apply plugin: "java"
 apply plugin: "org.springframework.boot"
 apply plugin: "io.spring.dependency-management"
 
-version = "2.0.2"
+version = "2.0.3"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -42,7 +43,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-starter-security"
@@ -53,19 +55,20 @@ dependencies {
     compile "org.ehcache:ehcache"
     compile "javax.cache:cache-api"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    compile "org.eclipse.collections:eclipse-collections:9.1.0"
-    compile "org.eclipse.collections:eclipse-collections-api:9.1.0"
+    compile "org.eclipse.collections:eclipse-collections:9.2.0"
+    compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
     compile "commons-io:commons-io:2.6"
     compile "org.apache.commons:commons-lang3"
-    compile "com.ibm.icu:icu4j:61.1"
+    compile "com.ibm.icu:icu4j:62.1"
     compile fileTree(dir: 'libs', includes: ['*.jar'])
     runtime "com.h2database:h2"
-    testCompileOnly "org.projectlombok:lombok"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = "4.7"
+wrapper {
+    gradleVersion = "4.8.1"
 }
 
 // After when you wanted to make deep copying as one's project, having edited the following variables
