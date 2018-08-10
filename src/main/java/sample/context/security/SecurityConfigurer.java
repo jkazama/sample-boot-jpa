@@ -6,8 +6,9 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.eclipse.collections.impl.list.fixed.ArrayAdapter;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.autoconfigure.web.servlet.*;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
@@ -41,9 +42,6 @@ import sample.context.security.SecurityActorFinder.*;
 @Getter
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    /** Spring Boot のサーバ情報 */
-    @Autowired
-    private ServerProperties serverProps;
     /** 拡張セキュリティ情報 */
     @Autowired
     private SecurityProperties props;
@@ -68,11 +66,18 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     /** 認証配下に置くServletFilter */
     @Autowired(required = false)
     private SecurityFilters filters;
+    
+    /** 適用対象となる DistpatcherServlet 登録情報 */
+    @Autowired
+    @Qualifier(DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)
+    private DispatcherServletRegistrationBean dispatcherServletRegistration;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().mvcMatchers(
-                serverProps.getServlet().getPathsArray(props.auth().getIgnorePath()));
+                ArrayAdapter.adapt(props.auth().getIgnorePath())
+                    .collect(dispatcherServletRegistration::getRelativePath)
+                    .toArray(new String[0]));
     }
 
     @Override
