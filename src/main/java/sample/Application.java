@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
  */
 @SpringBootApplication
 @EnableCaching(proxyTargetClass = true)
-@Import({ApplicationConfig.class, ApplicationDbConfig.class, ApplicationSeucrityConfig.class})
+@Import({ApplicationConfig.class, ApplicationDbConfig.class, ApplicationSecurityConfig.class})
 public class Application {
     
     public static void main(String[] args) {

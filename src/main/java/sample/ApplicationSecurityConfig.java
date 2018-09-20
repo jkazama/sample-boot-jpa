@@ -20,7 +20,7 @@ import sample.context.security.SecurityConfigurer.*;
  */
 @Configuration
 @EnableConfigurationProperties({ SecurityProperties.class })
-public class ApplicationSeucrityConfig {
+public class ApplicationSecurityConfig {
     
     /** パスワード用のハッシュ(BCrypt)エンコーダー。 */
     @Bean
