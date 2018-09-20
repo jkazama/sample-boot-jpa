@@ -112,7 +112,7 @@ main
 
 1. *Application.java* に対し 「 右クリック -> Run As -> Java Application 」
 1. *Console* タブに 「 Started Application 」 という文字列が出力されればポート 8080 で起動が完了
-1. ブラウザを立ち上げて 「 http://localhost:8080/api/management/health 」 で状態を確認
+1. ブラウザを立ち上げて 「 http://localhost:8080/management/health 」 で状態を確認
 
 > STS (Spring Tool Suite) のプラグインを利用すると上記 main クラスを GUI の Boot Dashboard 経由で簡単に実行できます。
 
@@ -125,7 +125,7 @@ Windows / Mac のコンソールから実行するには Gradle のコンソー�
 1. ダウンロードした *sample-boot-hibernate* ディレクトリ直下へコンソールで移動
 1. 「 gradlew bootRun 」 を実行
 1. コンソールに 「 Started Application 」 という文字列が出力されればポート 8080 で起動が完了
-1. ブラウザを立ち上げて 「 http://localhost:8080/api/management/health 」 で状態を確認
+1. ブラウザを立ち上げて 「 http://localhost:8080/management/health 」 で状態を確認
 
 #### クライアント検証
 
