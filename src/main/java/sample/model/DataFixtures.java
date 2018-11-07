@@ -8,9 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -30,8 +28,6 @@ import sample.util.*;
  * データ生成用のサポートコンポーネント。
  * <p>テストや開発時の簡易マスタデータ生成を目的としているため本番での利用は想定していません。
  */
-@Component
-@ConditionalOnProperty(prefix = "extension.datafixture", name = "enabled", matchIfMissing = false)
 @Setter
 public class DataFixtures {
 

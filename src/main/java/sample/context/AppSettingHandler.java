@@ -3,9 +3,7 @@ package sample.context;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.cache.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import sample.context.orm.SystemRepository;
@@ -16,7 +14,6 @@ import sample.context.orm.SystemRepository;
 public class AppSettingHandler {
 
     @Autowired
-    @Lazy
     private SystemRepository rep;
     /** 設定時は固定のキー/値を返すモックモードとする */
     private final Optional<Map<String, String>> mockMap;

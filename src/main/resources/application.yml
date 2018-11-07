@@ -10,9 +10,6 @@ spring:
     max-file-size: 20MB
     max-request-size: 20MB
   jpa.open-in-view: false
-  security.user.password: unused
-  autoconfigure.exclude:
-    - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 logging.config: classpath:logback-spring.xml
 
@@ -28,6 +25,11 @@ management:
     exposure.include: "*"
 
 extension:
+  security:
+    cors.enabled: true
+    auth:
+      enabled: false
+      admin: false
   datasource:
     default:
       url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
@@ -43,11 +45,6 @@ extension:
       jpa:
         package-to-scan: sample.context
         hibernate.ddl-auto: create-drop
-  security:
-    auth:
-      enabled: false
-      admin: false
-    cors.enabled: true
   mail.enabled: false
   datafixture.enabled: true
 

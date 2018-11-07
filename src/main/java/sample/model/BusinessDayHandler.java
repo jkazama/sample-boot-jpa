@@ -5,8 +5,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.Setter;
@@ -19,14 +17,12 @@ import sample.util.DateUtils;
 /**
  * ドメインに依存する営業日関連のユーティリティハンドラ。
  */
-@Component
 @Setter
 public class BusinessDayHandler {
 
     @Autowired
     private Timestamper time;
-    @Autowired(required = false)
-    @Lazy
+    @Autowired
     private HolidayAccessor holidayAccessor;
 
     /** 営業日を返します。 */
@@ -71,7 +67,6 @@ public class BusinessDayHandler {
     }
 
     /** 祝日マスタを検索/登録するアクセサ。 */
-    @Component
     @Setter
     public static class HolidayAccessor {
         @Autowired

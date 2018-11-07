@@ -10,7 +10,6 @@ import org.eclipse.collections.impl.list.fixed.ArrayAdapter;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.autoconfigure.web.servlet.*;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.web.builders.*;
@@ -47,15 +46,12 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     private SecurityProperties props;
     /** 認証/認可利用者サービス */
     @Autowired
-    @Lazy
     private SecurityActorFinder actorFinder;
     /** カスタムエントリポイント(例外対応) */
     @Autowired
-    @Lazy
     private SecurityEntryPoint entryPoint;
     /** ログイン/ログアウト時の拡張ハンドラ */
     @Autowired
-    @Lazy
     private LoginHandler loginHandler;
     /** ThreadLocalスコープの利用者セッション */
     @Autowired
@@ -63,9 +59,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     /** CORS利用時のフィルタ */
     @Autowired(required = false)
     private CorsFilter corsFilter;
-    /** 認証配下に置くServletFilter */
-    @Autowired(required = false)
-    private SecurityFilters filters;
     
     /** 適用対象となる DistpatcherServlet 登録情報 */
     @Autowired
@@ -86,11 +79,18 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         http
             .authorizeRequests()
             .mvcMatchers(props.auth().getExcludesPath()).permitAll();
-        http
-            .csrf().disable()
-            .authorizeRequests()
-            .mvcMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
-            .mvcMatchers(props.auth().getPath()).hasRole("USER");
+        if (this.props.auth().isEnabled()) {
+            http
+                .csrf().disable()            
+                .authorizeRequests()
+                .mvcMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
+                .mvcMatchers(props.auth().getPath()).hasRole("USER");            
+        } else {
+            http
+                .csrf().disable()            
+                .authorizeRequests()
+                .mvcMatchers("/**").permitAll();
+        }
         
         // Common
         http
@@ -104,11 +104,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
             .addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
         if (corsFilter != null) {
             http.addFilterBefore(corsFilter, LogoutFilter.class);
-        }
-        if (filters != null) {
-            for (Filter filter : filters.filters()) {
-                http.addFilterAfter(filter, ActorSessionFilter.class);
-            }
         }
 
         // login/logout
@@ -131,7 +126,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         @Autowired
         private SecurityActorFinder actorFinder;
         @Autowired
-        @Lazy
         private PasswordEncoder encoder;
 
         @Override

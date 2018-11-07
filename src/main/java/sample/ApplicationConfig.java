@@ -2,7 +2,7 @@ package sample;
 
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -16,7 +16,8 @@ import sample.context.audit.AuditHandler.AuditPersister;
 import sample.context.lock.IdLockHandler;
 import sample.context.mail.MailHandler;
 import sample.context.report.ReportHandler;
-import sample.model.BusinessDayHandler;
+import sample.model.*;
+import sample.model.BusinessDayHandler.HolidayAccessor;
 
 /**
  * アプリケーションにおけるBean定義を表現します。
@@ -69,14 +70,31 @@ public class ApplicationConfig {
             return new DomainHelper();
         }
     }
+    
+    /** ドメイン層 ( domain 配下) のコンポーネント定義を表現します */
+    static class DomainConfig {
+        @Bean
+        BusinessDayHandler businessDayHandler() {
+            return new BusinessDayHandler();
+        }
+        @Bean
+        HolidayAccessor holidayAccessor() {
+            return new HolidayAccessor();
+        }
+        
+        @Bean
+        @ConditionalOnProperty(prefix = "extension.datafixture", name = "enabled", matchIfMissing = false)
+        DataFixtures dataFixtures() {
+            return new DataFixtures();
+        }
+    }
 
     /** 拡張ヘルスチェック定義を表現します。 */
     @Configuration
     static class HealthCheckConfig {
         /** 営業日チェック */
         @Bean
-        @ConditionalOnBean(BusinessDayHandler.class)
-        HealthIndicator dayIndicator(final Timestamper time, final BusinessDayHandler day) {
+        HealthIndicator dayIndicator(Timestamper time, BusinessDayHandler day) {
             return new AbstractHealthIndicator() {
                 @Override
                 protected void doHealthCheck(Builder builder) throws Exception {

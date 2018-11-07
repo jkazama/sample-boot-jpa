@@ -2,13 +2,12 @@ package sample.controller;
 
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import sample.context.actor.*;
 import sample.context.actor.Actor.ActorRoleType;
-import sample.context.security.SecurityConfigurer;
 
 /**
  * Spring Securityの設定状況に応じてスレッドローカルへ利用者を紐付けるAOPInterceptor。
@@ -36,7 +35,7 @@ public class LoginInterceptor {
      */
     @Aspect
     @Component
-    @ConditionalOnMissingBean(SecurityConfigurer.class)
+    @ConditionalOnProperty(name = "extension.security.auth.enabled", havingValue = "false", matchIfMissing = false)
     public static class DummyLoginInterceptor {
         @Autowired
         private ActorSession session;

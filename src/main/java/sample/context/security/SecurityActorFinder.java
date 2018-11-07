@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.*;
@@ -23,19 +23,17 @@ public class SecurityActorFinder {
     @Autowired
     private SecurityProperties props;
     @Autowired
-    @Lazy
-    private SecurityUserService userService;
-    @Autowired(required = false)
-    @Lazy
-    private SecurityAdminService adminService;
+    private ObjectProvider<SecurityUserService> userService;
+    @Autowired
+    private ObjectProvider<SecurityAdminService> adminService;
 
     /** 現在のプロセス状態に応じたUserDetailServiceを返します。 */
     public SecurityActorService detailsService() {
-        return props.auth().isAdmin() ? adminService() : userService;
+        return props.auth().isAdmin() ? adminService() : userService.getObject();
     }
 
     private SecurityAdminService adminService() {
-        return Optional.ofNullable(adminService)
+        return Optional.ofNullable(adminService.getIfAvailable())
                 .orElseThrow(() -> new IllegalStateException("SecurityAdminServiceをコンテナへBean登録してください。"));
     }
 

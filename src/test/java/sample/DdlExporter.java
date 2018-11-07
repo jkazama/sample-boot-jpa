@@ -45,7 +45,7 @@ public class DdlExporter {
         try {
             String outputFile = OutputRoot + fileName;
             Files.deleteIfExists(Paths.get(outputFile));
-            MetadataImplementor metadata = metadata(sfBean, serviceRegistry);
+            MetadataImplementor metadata = metadata(serviceRegistry);
             
             SchemaExport export = new SchemaExport();
             export.setDelimiter(";");
@@ -79,10 +79,10 @@ public class DdlExporter {
         return props;
     }
 
-    private MetadataImplementor metadata(LocalSessionFactoryBean sfBean, StandardServiceRegistry registry) throws Exception {
-        MetadataSources metadataSources = sfBean.getMetadataSources();
+    private MetadataImplementor metadata(StandardServiceRegistry registry) throws Exception {
+        MetadataSources metadataSources = new MetadataSources(registry);
         Metadata metadata = metadataSources
-                .getMetadataBuilder(registry)
+                .getMetadataBuilder()
                 .applyPhysicalNamingStrategy(new SpringPhysicalNamingStrategy())
                 .applyImplicitNamingStrategy(new SpringImplicitNamingStrategy())
                 .build();
