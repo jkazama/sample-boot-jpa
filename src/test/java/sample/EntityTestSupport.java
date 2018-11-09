@@ -49,8 +49,7 @@ public class EntityTestSupport {
         dh = new MockDomainHelper(clock);
         time = dh.time();
         session = dh.actorSession();
-        businessDay = new BusinessDayHandler();
-        businessDay.setTime(time);
+        businessDay = BusinessDayHandler.of(time);
         encoder = new BCryptPasswordEncoder();
         setupRepository();
         setupDataFixtures();
@@ -107,8 +106,8 @@ public class EntityTestSupport {
     protected void setupRepository() {
         setupEntityManagerFactory();
         rep = new DefaultRepository();
-        rep.setDh(dh);
-        rep.setInterceptor(entityInterceptor());
+        rep.setDh(SimpleObjectProvider.of(dh));
+        rep.setInterceptor(SimpleObjectProvider.of(entityInterceptor()));
         rep.setEm(SharedEntityManagerCreator.createSharedEntityManager(emf));
     }
 

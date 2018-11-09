@@ -3,15 +3,12 @@ package sample.model;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.Setter;
 import sample.context.Timestamper;
-import sample.context.orm.DefaultRepository;
+import sample.context.orm.*;
 import sample.model.master.Holiday;
 import sample.model.master.Holiday.RegHoliday;
 import sample.util.DateUtils;
@@ -19,15 +16,15 @@ import sample.util.DateUtils;
 /**
  * ドメインに依存する営業日関連のユーティリティハンドラ。
  */
-@Component
-@Setter
 public class BusinessDayHandler {
 
-    @Autowired
-    private Timestamper time;
-    @Autowired(required = false)
-    @Lazy
-    private HolidayAccessor holidayAccessor;
+    private final Timestamper time;
+    private final Optional<HolidayAccessor> holidayAccessor;
+
+    public BusinessDayHandler(Timestamper time, HolidayAccessor holidayAccessor) {
+        this.time = time;
+        this.holidayAccessor = Optional.ofNullable(holidayAccessor);
+    }
 
     /** 営業日を返します。 */
     public LocalDate day() {
@@ -67,26 +64,36 @@ public class BusinessDayHandler {
     }
 
     private boolean isHoliday(LocalDate day) {
-        return holidayAccessor == null ? false : holidayAccessor.getHoliday(day).isPresent();
+        return holidayAccessor.map(v -> v.getHoliday(day).isPresent()).orElse(false);
+    }
+
+    public static BusinessDayHandler of(Timestamper time) {
+        return new BusinessDayHandler(time, null);
+    }
+    
+    public static BusinessDayHandler of(Timestamper time, HolidayAccessor holidayAccessor) {
+        return new BusinessDayHandler(time, holidayAccessor);
     }
 
     /** 祝日マスタを検索/登録するアクセサ。 */
-    @Component
     @Setter
     public static class HolidayAccessor {
-        @Autowired
-        private DefaultRepository rep;
+        private PlatformTransactionManager txm;
+        private OrmRepository rep;
 
-        @Transactional(DefaultRepository.BeanNameTx)
-        @Cacheable(cacheNames = "HolidayAccessor.getHoliday")
-        public Optional<Holiday> getHoliday(LocalDate day) {
-            return Holiday.get(rep, day);
+        public HolidayAccessor(PlatformTransactionManager txm, OrmRepository rep) {
+            this.txm = txm;
+            this.rep = rep;
         }
 
-        @Transactional(DefaultRepository.BeanNameTx)
+        @Cacheable(cacheNames = "HolidayAccessor.getHoliday")
+        public Optional<Holiday> getHoliday(LocalDate day) {
+            return TxTemplate.of(txm).readOnly().tx(() -> Holiday.get(rep, day));
+        }
+
         @CacheEvict(cacheNames = "HolidayAccessor.getHoliday", allEntries = true)
         public void register(final DefaultRepository rep, final RegHoliday p) {
-            Holiday.register(rep, p);
+            TxTemplate.of(txm).tx(() -> Holiday.register(rep, p));
         }
 
     }

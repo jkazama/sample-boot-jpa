@@ -1,10 +1,12 @@
 package sample;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.*;
 import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
@@ -15,8 +17,10 @@ import sample.context.audit.AuditHandler;
 import sample.context.audit.AuditHandler.AuditPersister;
 import sample.context.lock.IdLockHandler;
 import sample.context.mail.MailHandler;
+import sample.context.orm.DefaultRepository;
 import sample.context.report.ReportHandler;
-import sample.model.BusinessDayHandler;
+import sample.model.*;
+import sample.model.BusinessDayHandler.HolidayAccessor;
 
 /**
  * アプリケーションにおけるBean定義を表現します。
@@ -69,14 +73,34 @@ public class ApplicationConfig {
             return new DomainHelper();
         }
     }
+    
+    /** ドメイン層 ( domain 配下) のコンポーネント定義を表現します */
+    static class DomainConfig {
+        @Bean
+        BusinessDayHandler businessDayHandler(Timestamper time, HolidayAccessor holiday) {
+            return BusinessDayHandler.of(time, holiday);
+        }
+        @Bean
+        HolidayAccessor holidayAccessor(
+                DefaultRepository rep,
+                @Qualifier(DefaultRepository.BeanNameTx)
+                PlatformTransactionManager txm) {
+            return new HolidayAccessor(txm, rep); //low: 定義側にスキーマ指定を委ねるときは外部から設定するアプローチで
+        }
+        
+        @Bean
+        @ConditionalOnProperty(prefix = "extension.datafixture", name = "enabled", matchIfMissing = false)
+        DataFixtures dataFixtures() {
+            return new DataFixtures();
+        }
+    }
 
     /** 拡張ヘルスチェック定義を表現します。 */
     @Configuration
     static class HealthCheckConfig {
         /** 営業日チェック */
         @Bean
-        @ConditionalOnBean(BusinessDayHandler.class)
-        HealthIndicator dayIndicator(final Timestamper time, final BusinessDayHandler day) {
+        HealthIndicator dayIndicator(Timestamper time, BusinessDayHandler day) {
             return new AbstractHealthIndicator() {
                 @Override
                 protected void doHealthCheck(Builder builder) throws Exception {

@@ -4,11 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import lombok.Setter;
-import sample.controller.ControllerSupport;
 import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.FindCashInOut;
 import sample.usecase.AssetAdminService;
@@ -18,11 +15,13 @@ import sample.usecase.AssetAdminService;
  */
 @RestController
 @RequestMapping("/api/admin/asset")
-@Setter
-public class AssetAdminController extends ControllerSupport {
+public class AssetAdminController {
 
-    @Autowired
-    private AssetAdminService service;
+    private final AssetAdminService service;
+
+    public AssetAdminController(AssetAdminService service) {
+        this.service = service;
+    }
 
     /** 未処理の振込依頼情報を検索します。 */
     @GetMapping("/cio/")

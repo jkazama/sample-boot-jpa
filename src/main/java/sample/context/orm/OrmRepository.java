@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.orm.jpa.*;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -25,14 +26,15 @@ import sample.context.Entity;
  * <p>本コンポーネントは Repository と Entity の 1-n 関係を実現するために SpringData の基盤を
  * 利用しない形で単純な ORM 実装を提供します。
  * <p>OrmRepository を継承して作成される Repository の粒度はデータソース単位となります。
+ * <p>DomainHelper はその特性上循環参照を誘発しやすいため、ObjectProvider を用いて依存制約を緩めています。
  */
 @Setter
 public abstract class OrmRepository implements Repository {
 
     @Autowired
-    private DomainHelper dh;
-    @Autowired(required = false)
-    private OrmInterceptor interceptor;
+    private ObjectProvider<DomainHelper> dh;
+    @Autowired
+    private ObjectProvider<OrmInterceptor> interceptor;
 
     /**
      * 管理するEntityManagerを返します。
@@ -43,11 +45,11 @@ public abstract class OrmRepository implements Repository {
     /** {@inheritDoc} */
     @Override
     public DomainHelper dh() {
-        return dh;
+        return dh.getObject();
     }
     
     protected Optional<OrmInterceptor> interceptor() {
-        return Optional.ofNullable(interceptor);
+        return Optional.ofNullable(interceptor.getIfAvailable());
     }
 
     /**
@@ -172,6 +174,7 @@ public abstract class OrmRepository implements Repository {
         private String[] packageToScan;
         /** Entityとして登録するクラス。(packageToScanとどちらかを設定) */
         private Class<?>[] annotatedClasses;
+        private HibernateProperties hibernate = new HibernateProperties();
 
         public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(String name, final DataSource dataSource) {
             EntityManagerFactoryBuilder emfBuilder = new EntityManagerFactoryBuilder(
@@ -179,7 +182,7 @@ public abstract class OrmRepository implements Repository {
             Builder builder = emfBuilder
                     .dataSource(dataSource)
                     .persistenceUnit(name)
-                    .properties(getHibernateProperties(new HibernateSettings()))
+                    .properties(hibernate.determineHibernateProperties(getProperties(), new HibernateSettings()))
                     .jta(false);
             if (ArrayUtils.isNotEmpty(annotatedClasses)) {
                 builder.packages(annotatedClasses);

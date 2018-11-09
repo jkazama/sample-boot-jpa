@@ -1,60 +1,42 @@
 package sample.usecase.mail;
 
-import java.util.function.Supplier;
-
-import org.springframework.beans.factory.annotation.*;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
 
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import sample.context.mail.MailHandler;
-import sample.context.orm.DefaultRepository;
 import sample.model.asset.CashInOut;
-import sample.usecase.ServiceUtils;
+import sample.usecase.event.AppMailEvent;
 
 /**
  * アプリケーション層のサービスメール送信を行います。
- * <p>独自にトランザクションを管理するので、サービスのトランザクション内で
- * 呼び出さないように注意してください。
+ * <p>AppMailEvent に応じたメール配信をおこないます。
  */
 @Component
-@Setter
+@Slf4j
 public class ServiceMailDeliver {
+    @SuppressWarnings("unused")
+    private final MailHandler mail;
 
-    @Autowired
-    private DefaultRepository rep;
-    @Autowired
-    @Qualifier(DefaultRepository.BeanNameTx)
-    private PlatformTransactionManager tx;
-    @Autowired
-    private MailHandler mail;
-
-    /** トランザクション処理を実行します。 */
-    private <T> T tx(Supplier<T> callable) {
-        return ServiceUtils.tx(tx, callable);
+    public ServiceMailDeliver(MailHandler mail) {
+        this.mail = mail;
     }
 
-    /** トランザクション処理を実行します。 */
-    private void tx(Runnable command) {
-        ServiceUtils.tx(tx, command);
+    /** メール配信要求を受け付けます。 */
+    @EventListener(AppMailEvent.class)
+    public void handleEvent(AppMailEvent<?> event) {
+        switch (event.getMailType()) {
+        case FinishRequestWithdraw:
+            sendFinishRequestWithdraw((CashInOut)event.getValue());
+            break;
+        default:
+            throw new IllegalStateException("サポートされないメール種別です。 [" + event + "]");
+        }
     }
 
-    /** 出金依頼受付メールを送信します。 */
-    public void sendWithdrawal(final CashInOut cio) {
-        //low: サンプルなので未実装。実際は独自にトランザクションを貼って処理を行う
-    }
-
-    public int callbackSample() {// for warning
-        return tx(() -> {
-            mail.hashCode();
-            return rep.hashCode();
-        });
-    }
-
-    public void commandSample() {// for warning
-        tx(() -> {
-            rep.hashCode();
-        });
+    private void sendFinishRequestWithdraw(CashInOut cio) {
+        //low: この例ではログのみ出力
+        log.info("メール送信が行われました。 [" + cio + "]");
     }
 
 }

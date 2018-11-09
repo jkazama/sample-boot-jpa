@@ -1,12 +1,9 @@
 package sample.controller.system;
 
-import lombok.Setter;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import sample.controller.ControllerSupport;
+import sample.controller.ControllerUtils;
 import sample.usecase.*;
 
 /**
@@ -19,30 +16,34 @@ import sample.usecase.*;
  */
 @RestController
 @RequestMapping("/api/system/job")
-@Setter
-public class JobController extends ControllerSupport {
+public class JobController {
 
-    @Autowired
-    private AssetAdminService asset;
-    @Autowired
-    private SystemAdminService system;
+    private final AssetAdminService asset;
+    private final SystemAdminService system;
+    
+    public JobController(
+            AssetAdminService asset,
+            SystemAdminService system) {
+        this.asset = asset;
+        this.system = system;
+    }
 
     /** 営業日を進めます。 */
     @PostMapping("/daily/processDay")
     public ResponseEntity<Void> processDay() {
-        return resultEmpty(() -> system.processDay());
+        return ControllerUtils.resultEmpty(() -> system.processDay());
     }
 
     /** 振込出金依頼を締めます。 */
     @PostMapping("/daily/closingCashOut")
     public ResponseEntity<Void> closingCashOut() {
-        return resultEmpty(() -> asset.closingCashOut());
+        return ControllerUtils.resultEmpty(() -> asset.closingCashOut());
     }
 
     /** キャッシュフローを実現します。 */
     @PostMapping("/daily/realizeCashflow")
     public ResponseEntity<Void> realizeCashflow() {
-        return resultEmpty(() -> asset.realizeCashflow());
+        return ControllerUtils.resultEmpty(() -> asset.realizeCashflow());
     }
 
 }
