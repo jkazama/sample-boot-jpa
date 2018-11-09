@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import lombok.Value;
 import sample.InvocationException;
 
 /**
@@ -41,7 +42,7 @@ public class IdLockHandler {
         }
     }
 
-    private void writeLock(final Serializable id) {
+    public void writeLock(final Serializable id) {
         Optional.of(id).ifPresent((v) -> {
             synchronized (lockMap) {
                 idLock(v).writeLock().lock();
@@ -94,4 +95,12 @@ public class IdLockHandler {
             return this == Write;
         }
     }
+
+    /** IdLock の対象と種別のペアを表現します。 */
+    @Value
+    public static class IdLockPair {
+        private Serializable id;
+        private LockType lockType;
+    }
+    
 }

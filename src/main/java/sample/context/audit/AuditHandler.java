@@ -4,7 +4,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.slf4j.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.*;
 
 import lombok.Setter;
@@ -13,7 +14,7 @@ import sample.*;
 import sample.context.actor.*;
 import sample.context.audit.AuditActor.RegAuditActor;
 import sample.context.audit.AuditEvent.RegAuditEvent;
-import sample.context.orm.SystemRepository;
+import sample.context.orm.*;
 
 /**
  * 利用者監査やシステム監査(定時バッチや日次バッチ等)などを取り扱います。
@@ -176,45 +177,56 @@ public class AuditHandler {
     public static class AuditPersister {
         @Autowired
         private SystemRepository rep;
+        @Autowired
+        @Qualifier(SystemRepository.BeanNameTx)
+        private PlatformTransactionManager txm;
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor start(RegAuditActor p) {
-            return AuditActor.register(rep, p);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return AuditActor.register(rep, p);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor finish(AuditActor audit) {
-            return audit.finish(rep);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return audit.finish(rep);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor cancel(AuditActor audit, String errorReason) {
-            return audit.cancel(rep, errorReason);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return audit.cancel(rep, errorReason);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditActor error(AuditActor audit, String errorReason) {
-            return audit.error(rep, errorReason);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return audit.error(rep, errorReason);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent start(RegAuditEvent p) {
-            return AuditEvent.register(rep, p);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return AuditEvent.register(rep, p);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent finish(AuditEvent event) {
-            return event.finish(rep);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return event.finish(rep);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent cancel(AuditEvent event, String errorReason) {
-            return event.cancel(rep, errorReason);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return event.cancel(rep, errorReason);
+            });
         }
 
-        @Transactional(value = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
         public AuditEvent error(AuditEvent event, String errorReason) {
-            return event.error(rep, errorReason);
+            return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
+                return event.error(rep, errorReason);
+            });
         }
     }
 

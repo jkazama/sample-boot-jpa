@@ -2,7 +2,6 @@ package sample.controller;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -17,8 +16,10 @@ import org.springframework.web.context.request.ServletWebRequest;
 public class RestErrorController implements ErrorController {
     public static final String PathError = "/api/error";
 
-    @Autowired
-    private ErrorAttributes errorAttributes;
+    private final ErrorAttributes errorAttributes;
+    public RestErrorController(ErrorAttributes errorAttributes) {
+        this.errorAttributes = errorAttributes;
+    }
 
     @Override
     public String getErrorPath() {

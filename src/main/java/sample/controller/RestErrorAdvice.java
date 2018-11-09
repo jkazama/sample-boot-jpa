@@ -7,21 +7,18 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.MessageSourceResolvable;
+import org.springframework.context.*;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.*;
-import org.springframework.web.*;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.bind.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import lombok.extern.slf4j.Slf4j;
 import sample.ValidationException;
 import sample.ValidationException.*;
 import sample.context.actor.ActorSession;
@@ -31,15 +28,16 @@ import sample.context.actor.ActorSession;
  * <p>AOPアドバイスで全てのRestControllerに対して例外処理を当て込みます。
  */
 @ControllerAdvice(annotations = RestController.class)
+@Slf4j
 public class RestErrorAdvice {
 
-    protected Log log = LogFactory.getLog(getClass());
-
-    @Autowired
-    private MessageSource msg;
-    @Autowired
-    private ActorSession session;
-
+    private final MessageSource msg;
+    private final ActorSession session;
+    public RestErrorAdvice(MessageSource msg, ActorSession session) {
+        this.msg = msg;
+        this.session = session;
+    }
+    
     /** Servlet例外 */
     @ExceptionHandler(ServletRequestBindingException.class)
     public ResponseEntity<Map<String, String[]>> handleServletRequestBinding(ServletRequestBindingException e) {

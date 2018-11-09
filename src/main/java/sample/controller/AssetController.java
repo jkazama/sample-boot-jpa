@@ -2,16 +2,15 @@ package sample.controller;
 
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import lombok.*;
+import lombok.Value;
 import sample.ActionStatusType;
 import sample.context.Dto;
 import sample.model.asset.CashInOut;
@@ -23,11 +22,12 @@ import sample.usecase.AssetService;
  */
 @RestController
 @RequestMapping("/api/asset")
-@Setter
-public class AssetController extends ControllerSupport {
+public class AssetController {
 
-    @Autowired
-    private AssetService service;
+    private final AssetService service;
+    public AssetController(AssetService service) {
+        this.service = service;
+    }
 
     /** 未処理の振込依頼情報を検索します。 */
     @GetMapping("/cio/unprocessedOut/")
@@ -42,7 +42,7 @@ public class AssetController extends ControllerSupport {
      */
     @PostMapping("/cio/withdraw")
     public ResponseEntity<Long> withdraw(@Valid RegCashOut p) {
-        return result(() -> service.withdraw(p));
+        return ControllerUtils.result(() -> service.withdraw(p));
     }
 
     /** 振込出金依頼情報の表示用Dto */

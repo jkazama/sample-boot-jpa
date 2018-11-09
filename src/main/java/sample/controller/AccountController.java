@@ -2,7 +2,6 @@ package sample.controller;
 
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,13 +18,15 @@ import sample.usecase.AccountService;
  */
 @RestController
 @RequestMapping("/api/account")
-@Setter
-public class AccountController extends ControllerSupport {
+public class AccountController {
 
-    @Autowired
-    private AccountService service;
-    @Autowired
-    private SecurityProperties securityProps;
+    private final AccountService service;
+    private final SecurityProperties securityProps;
+    
+    public AccountController(AccountService service, SecurityProperties securityProps) {
+        this.service = service;
+        this.securityProps = securityProps;
+    }
 
     /** ログイン状態を確認します。 */
     @GetMapping("/loginStatus")
@@ -58,7 +59,7 @@ public class AccountController extends ControllerSupport {
 
     // for warning
     public ResponseEntity<Void> anyUsecase() {
-        return resultEmpty(() -> service.hashCode());
+        return ControllerUtils.resultEmpty(() -> service.hashCode());
     }
 
 }

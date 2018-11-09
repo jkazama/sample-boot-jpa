@@ -5,8 +5,8 @@ import java.nio.file.*;
 import java.util.*;
 
 import org.hibernate.boot.*;
+import org.hibernate.boot.internal.MetadataBuilderImpl;
 import org.hibernate.boot.registry.*;
-import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.springframework.boot.orm.jpa.hibernate.*;
@@ -45,17 +45,17 @@ public class DdlExporter {
         try {
             String outputFile = OutputRoot + fileName;
             Files.deleteIfExists(Paths.get(outputFile));
-            MetadataImplementor metadata = metadata(serviceRegistry);
+            Metadata metadata = metadata(serviceRegistry, sfBean.getMetadataSources());
             
             SchemaExport export = new SchemaExport();
             export.setDelimiter(";");
             export.setFormat(FormatSql);
             export.setOutputFile(outputFile);
-            export.create(EnumSet.of(TargetType.SCRIPT), metadata);
+            export.create(EnumSet.of(TargetType.SCRIPT, TargetType.STDOUT), metadata);
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            StandardServiceRegistryBuilder.destroy( serviceRegistry );
+            StandardServiceRegistryBuilder.destroy(serviceRegistry);
         }
     }
 
@@ -70,7 +70,7 @@ public class DdlExporter {
         }
         return sfBean;
     }
-    
+
     private Properties hibernateProperties(String dialect) {
         Properties props = new Properties();
         props.put("hibernate.dialect", dialect);
@@ -79,14 +79,14 @@ public class DdlExporter {
         return props;
     }
 
-    private MetadataImplementor metadata(StandardServiceRegistry registry) throws Exception {
-        MetadataSources metadataSources = new MetadataSources(registry);
-        Metadata metadata = metadataSources
-                .getMetadataBuilder()
+    private Metadata metadata(StandardServiceRegistry serviceRegistry, MetadataSources metadataSources)
+            throws Exception {
+        MetadataBuilder builder = new MetadataBuilderImpl(metadataSources, serviceRegistry);
+        Metadata metadata = builder
                 .applyPhysicalNamingStrategy(new SpringPhysicalNamingStrategy())
                 .applyImplicitNamingStrategy(new SpringImplicitNamingStrategy())
                 .build();
-        return (MetadataImplementor) metadata;
+        return metadata;
     }
 
 }

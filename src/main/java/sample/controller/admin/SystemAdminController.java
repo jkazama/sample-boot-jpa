@@ -4,18 +4,16 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import lombok.Setter;
 import sample.context.AppSetting;
 import sample.context.AppSetting.FindAppSetting;
 import sample.context.audit.*;
 import sample.context.audit.AuditActor.FindAuditActor;
 import sample.context.audit.AuditEvent.FindAuditEvent;
 import sample.context.orm.PagingList;
-import sample.controller.ControllerSupport;
+import sample.controller.ControllerUtils;
 import sample.usecase.SystemAdminService;
 
 /**
@@ -23,11 +21,13 @@ import sample.usecase.SystemAdminService;
  */
 @RestController
 @RequestMapping("/api/admin/system")
-@Setter
-public class SystemAdminController extends ControllerSupport {
+public class SystemAdminController {
 
-    @Autowired
-    private SystemAdminService service;
+    private final SystemAdminService service;
+
+    public SystemAdminController(SystemAdminService service) {
+        this.service = service;
+    }
 
     /** 利用者監査ログを検索します。 */
     @GetMapping(value = "/audit/actor/")
@@ -50,7 +50,7 @@ public class SystemAdminController extends ControllerSupport {
     /** アプリケーション設定情報を変更します。 */
     @PostMapping("/setting/{id}")
     public ResponseEntity<Void> changeAppSetting(@PathVariable String id, String value) {
-        return resultEmpty(() -> service.changeAppSetting(id, value));
+        return ControllerUtils.resultEmpty(() -> service.changeAppSetting(id, value));
     }
 
 }

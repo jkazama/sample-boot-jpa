@@ -4,7 +4,6 @@ import java.util.*;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +13,7 @@ import sample.ValidationException.ErrorKeys;
 import sample.context.actor.Actor;
 import sample.context.security.*;
 import sample.context.security.SecurityActorFinder.ActorDetails;
-import sample.controller.ControllerSupport;
+import sample.controller.ControllerUtils;
 import sample.model.master.Holiday.RegHoliday;
 import sample.usecase.MasterAdminService;
 
@@ -23,13 +22,15 @@ import sample.usecase.MasterAdminService;
  */
 @RestController
 @RequestMapping("/api/admin/master")
-@Setter
-public class MasterAdminController extends ControllerSupport {
+public class MasterAdminController {
 
-    @Autowired
-    private MasterAdminService service;
-    @Autowired
-    private SecurityProperties securityProps;
+    private final MasterAdminService service;
+    private final SecurityProperties securityProps;
+
+    public MasterAdminController(MasterAdminService service, SecurityProperties securityProps) {
+        this.service = service;
+        this.securityProps = securityProps;
+    }
 
     /** 社員ログイン状態を確認します。 */
     @GetMapping("/loginStatus")
@@ -63,7 +64,7 @@ public class MasterAdminController extends ControllerSupport {
     /** 休日を登録します。 */
     @PostMapping("/holiday/")
     public ResponseEntity<Void> registerHoliday(@Valid RegHoliday p) {
-        return resultEmpty(() -> service.registerHoliday(p));
+        return ControllerUtils.resultEmpty(() -> service.registerHoliday(p));
     }
 
 }

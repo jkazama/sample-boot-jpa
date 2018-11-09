@@ -49,8 +49,7 @@ public class EntityTestSupport {
         dh = new MockDomainHelper(clock);
         time = dh.time();
         session = dh.actorSession();
-        businessDay = new BusinessDayHandler();
-        businessDay.setTime(time);
+        businessDay = BusinessDayHandler.of(time);
         encoder = new BCryptPasswordEncoder();
         setupRepository();
         setupDataFixtures();

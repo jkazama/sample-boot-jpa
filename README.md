@@ -37,12 +37,20 @@ UI 層の公開処理は通常 JSP や Thymeleaf を用いて行いますが、�
 Spring Boot は様々な利用方法が可能ですが、本サンプルでは以下のポリシーで利用します。
 
 - 設定ファイルは yml を用いる。 Bean 定義に xml 等の拡張ファイルは用いない。
-- インフラ層のコンポーネントは @Bean で、 それ以外のコンポーネントは @Component 等でベタに登録していく。
+- コンポーネントスキャンは UI 層とアプリケーション層のパッケージ配下に限定する
+    - スキャン対象軽減による起動時間の短縮と意図せぬ自動登録がおこなわれるリスクを避けるため
+    - 自動スキャン対象はなるべくコンストラクタインジェクションを前提に実装
+- インフラ層やドメイン層のコンポーネントは @Bean 等でベタに登録していく。
     - `ApplicationConfig` / `ApplicationDbConfig` / `ApplicationSecurityConfig`
 - 例外処理は終端 ( RestErrorAdvice / RestErrorCotroller ) で定義。 whitelabel 機能は無効化。
 - JPA 実装として Hibernate に特化。
+    - JpaRepository ではなく Entity との 1-n を可能にするスキーマ単位の Repository を利用
+- RESTfulAPI の受付は昔からよくある `application/x-www-form-urlencoded` で。
+    - 純粋なAPIアプリケーションであれば `application/json` の方が望ましい
 - Spring Security の認証方式はベーシック認証でなく、昔からよくある HttpSession で。
-- 基礎的なユーティリティで Spring がサポートしていないのは簡易な実装を用意。
+    - `SecurityConfigurer` の定義を参照
+- 基礎的なユーティリティで Spring がサポートしていないものは簡易な実装を用意。
+    - `util` や `context` パッケージ配下を参照
 
 #### Java コーディング方針
 
@@ -181,11 +189,8 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 | ライブラリ               | バージョン | 用途/追加理由 |
 | ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 2.0.+    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
-| `hibernate-*`           | 5.2.+    | DB 永続化サポート (core/java8) |
-| `eclipse-collections`   | 9.2.+    | コレクションライブラリ |
-| `commons-*`             | -        | 汎用ユーティリティライブラリ |
-| `icu4j-*`               | 62.+     | 文字変換ライブラリ |
+| `spring-boot-starter-*` | 2.1.+    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
+| `hibernate-*`           | 5.3.+    | DB 永続化サポート (core/java8) |
 
 > 実際の詳細な定義は `build.gradle` を参照してください
 
@@ -198,7 +203,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 #### DB / トランザクション
 
 `sample.context.orm` 直下。ドメイン実装をより Entity に寄せるための ORM サポート実装です。 Repository ( スキーマ単位で定義 ) にドメイン処理を記載しないアプローチのため、 Spring Boot が提供する JpaRepository は利用していません。  
-トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。単純な readOnly な処理のみ `@Transactional([Bean名称])` を利用してメソッド単位の対応を取ります。
+トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。トランザクションは AOP を利用せず、全て `TxTemplate` を用いたプログラマティックなアプローチで実装しています。
 
 スキーマは標準のビジネスロジック用途 ( `DefaultRepository` ) とシステム用途 ( `SystemRepository` ) の2種類を想定しています。 Entity 実装ではスキーマに依存させず、引数に渡す側 ( 主にアプリケーション層 ) で判断させます。
 
