@@ -1,21 +1,12 @@
-buildscript {
-    ext {
-        springBootVersion = "2.1.0.RELEASE"
-        lombokVersion = "1.18.4"
-    }
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-    }
+plugins {
+    id "java"
+    id "org.springframework.boot" version "2.1.1.RELEASE"
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
 }
 
-apply plugin: "java"
-apply plugin: "org.springframework.boot"
-apply plugin: "io.spring.dependency-management"
+ext['lombok.version'] = "1.18.4"
 
-version = "2.1.0"
+version = "2.1.1"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -42,34 +33,40 @@ repositories {
     jcenter()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    compile "org.springframework.boot:spring-boot-starter-actuator"
-    compile "org.springframework.boot:spring-boot-starter-security"
-    compile "org.springframework.boot:spring-boot-starter-aop"
-    compile "org.springframework.boot:spring-boot-starter-cache"
-    compile "org.springframework.boot:spring-boot-starter-data-jpa"
-    compile "org.springframework.boot:spring-boot-starter-web"
-    compile "org.ehcache:ehcache"
-    compile "javax.cache:cache-api"
-    compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    compile "org.eclipse.collections:eclipse-collections:9.2.0"
-    compile "org.eclipse.collections:eclipse-collections-api:9.2.0"
-    compile "commons-io:commons-io:2.6"
-    compile "org.apache.commons:commons-lang3"
-    compile "com.ibm.icu:icu4j:63.1"
-    compile fileTree(dir: 'libs', includes: ['*.jar'])
-    runtime "com.h2database:h2"
-    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
-    testCompile "org.springframework.boot:spring-boot-starter-test"
+    compileOnly "org.projectlombok:lombok"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-aop"
+    implementation "org.springframework.boot:spring-boot-starter-cache"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.ehcache:ehcache"
+    implementation "javax.cache:cache-api"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
+    implementation "org.eclipse.collections:eclipse-collections:9.2.0"
+    implementation "org.eclipse.collections:eclipse-collections-api:9.2.0"
+    implementation "commons-io:commons-io:2.6"
+    implementation "org.apache.commons:commons-lang3"
+    implementation "com.ibm.icu:icu4j:63.1"
+    implementation fileTree(dir: 'libs', includes: ['*.jar'])
+    runtimeOnly "com.h2database:h2"
+    testAnnotationProcessor "org.projectlombok:lombok"
+    testCompileOnly "org.projectlombok:lombok"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 wrapper {
-    gradleVersion = "4.10.2"
+    gradleVersion = "5.0"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
