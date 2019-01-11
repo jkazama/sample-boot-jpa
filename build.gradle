@@ -33,12 +33,6 @@ repositories {
     jcenter()
 }
 
-dependencyManagement {
-    imports {
-        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-    }
-}
-
 dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     annotationProcessor "org.projectlombok:lombok"
@@ -66,7 +60,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "5.0"
+    gradleVersion = "5.1.1"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
