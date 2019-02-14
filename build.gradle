@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "org.springframework.boot" version "2.1.2.RELEASE"
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id 'com.google.cloud.tools.jib' version '1.0.0'
 }
 
 ext['lombok.version'] = "1.18.4"
@@ -60,7 +61,19 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "5.1.1"
+    gradleVersion = "5.2"
+}
+
+jib {
+   from {
+       image = 'openjdk:8-jdk-alpine'
+   }
+   container {
+       jvmFlags = ['-Djava.security.egd=file:/dev/./urandom', '-Xdebug']
+       mainClass = 'sample.Application'
+       ports = ['8080']
+       useCurrentTimestamp = true
+   }
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
