@@ -1,13 +1,13 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.1.7.RELEASE"
+    id "org.springframework.boot" version "2.2.0.RELEASE"
     id "io.spring.dependency-management" version "1.0.8.RELEASE"
-    id 'com.google.cloud.tools.jib' version '1.0.0'
+    id 'com.google.cloud.tools.jib' version '1.6.1'
 }
 
-ext['lombok.version'] = "1.18.8"
+ext['lombok.version'] = "1.18.10"
 
-version = "2.1.7"
+version = "2.2.0"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -52,16 +52,17 @@ dependencies {
     implementation "org.eclipse.collections:eclipse-collections-api:10.0.0"
     implementation "commons-io:commons-io:2.6"
     implementation "org.apache.commons:commons-lang3"
-    implementation "com.ibm.icu:icu4j:64.2"
+    implementation "com.ibm.icu:icu4j:65.1"
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     runtimeOnly "com.h2database:h2"
+    runtimeOnly "mysql:mysql-connector-java"
     testAnnotationProcessor "org.projectlombok:lombok"
     testCompileOnly "org.projectlombok:lombok"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 wrapper {
-    gradleVersion = "5.5.1"
+    gradleVersion = "5.6.3"
 }
 
 jib {
@@ -69,10 +70,10 @@ jib {
        image = 'openjdk:8-jdk-alpine'
    }
    container {
-       jvmFlags = ['-Djava.security.egd=file:/dev/./urandom', '-Xdebug']
+       jvmFlags = ['-Djava.security.egd=file:/dev/./urandom', '-Xdebug', '-Xmx128m']
        mainClass = 'sample.Application'
        ports = ['8080']
-       useCurrentTimestamp = true
+       creationTime = 'USE_CURRENT_TIMESTAMP'
    }
 }
 

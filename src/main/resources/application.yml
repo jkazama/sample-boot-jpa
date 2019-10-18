@@ -32,16 +32,16 @@ extension:
       admin: false
   datasource:
     default:
-      url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      username:
-      password:
+      url: ${DB_DEFAULT_JDBC_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+      username: ${DB_DEFAULT_JDBC_USERNAME:}
+      password: ${DB_DEFAULT_JDBC_PASSWORD:}
       jpa:
         package-to-scan: sample.model
         hibernate.ddl-auto: create-drop
     system:
-      url: jdbc:h2:mem:system;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      username:
-      password:
+      url: ${DB_SYSTEM_JDBC_URL:jdbc:h2:mem:system;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+      username: ${DB_SYSTEM_JDBC_USERNAME:}
+      password: ${DB_SYSTEM_JDBC_PASSWORD:}
       jpa:
         package-to-scan: sample.context
         hibernate.ddl-auto: create-drop
@@ -55,16 +55,10 @@ spring:
 extension:
   datasource:
     default:
-      url: jdbc:oracle:thin:@xxx.xxx.xxx.xxx:1521:xx
-      username: XXXXXX
-      password: XXXXXX
       jpa:
         show-sql: false
         hibernate.ddl-auto: none
     system:
-      url: jdbc:oracle:thin:@xxx.xxx.xxx.xxx:1521:xx
-      username: XXXXXX
-      password: XXXXXX
       jpa:
         show-sql: false
         hibernate.ddl-auto: none

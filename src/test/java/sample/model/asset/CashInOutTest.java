@@ -68,7 +68,6 @@ public class CashInOutTest extends EntityTestSupport {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void 振込出金依頼をする() {
         LocalDate baseDay = businessDay.day();
         LocalDate basePlus3Day = businessDay.day(3);
@@ -157,7 +156,6 @@ public class CashInOutTest extends EntityTestSupport {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void 発生日を迎えた振込入出金をキャッシュフロー登録する() {
         LocalDate baseDay = businessDay.day();
         LocalDate basePlus3Day = businessDay.day(3);

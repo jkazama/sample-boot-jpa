@@ -66,7 +66,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     private DispatcherServletRegistrationBean dispatcherServletRegistration;
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().mvcMatchers(
                 ArrayAdapter.adapt(props.auth().getIgnorePath())
                     .collect(dispatcherServletRegistration::getRelativePath)
