@@ -1,13 +1,13 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.2.0.RELEASE"
-    id "io.spring.dependency-management" version "1.0.8.RELEASE"
-    id 'com.google.cloud.tools.jib' version '1.6.1'
+    id "org.springframework.boot" version "2.2.5.RELEASE"
+    id "io.spring.dependency-management" version "1.0.9.RELEASE"
+    id 'com.google.cloud.tools.jib' version '2.1.0'
 }
 
-ext['lombok.version'] = "1.18.10"
+ext['lombok.version'] = "1.18.12"
 
-version = "2.2.0"
+version = "2.2.5"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -48,8 +48,6 @@ dependencies {
     implementation "org.ehcache:ehcache"
     implementation "javax.cache:cache-api"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    implementation "org.eclipse.collections:eclipse-collections:10.0.0"
-    implementation "org.eclipse.collections:eclipse-collections-api:10.0.0"
     implementation "commons-io:commons-io:2.6"
     implementation "org.apache.commons:commons-lang3"
     implementation "com.ibm.icu:icu4j:65.1"
@@ -62,7 +60,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "5.6.3"
+    gradleVersion = "6.2.1"
 }
 
 jib {

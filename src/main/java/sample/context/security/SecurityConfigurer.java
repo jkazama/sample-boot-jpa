@@ -6,7 +6,6 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import org.eclipse.collections.impl.list.fixed.ArrayAdapter;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.autoconfigure.web.servlet.*;
 import org.springframework.context.MessageSource;
@@ -59,7 +58,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     /** CORS利用時のフィルタ */
     @Autowired(required = false)
     private CorsFilter corsFilter;
-    
+
     /** 適用対象となる DistpatcherServlet 登録情報 */
     @Autowired
     @Qualifier(DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)
@@ -68,54 +67,55 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().mvcMatchers(
-                ArrayAdapter.adapt(props.auth().getIgnorePath())
-                    .collect(dispatcherServletRegistration::getRelativePath)
-                    .toArray(new String[0]));
+                Arrays.asList(props.auth().getIgnorePath())
+                        .stream()
+                        .map(dispatcherServletRegistration::getRelativePath)
+                        .toArray(String[]::new));
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // Target URL
         http
-            .authorizeRequests()
-            .mvcMatchers(props.auth().getExcludesPath()).permitAll();
+                .authorizeRequests()
+                .mvcMatchers(props.auth().getExcludesPath()).permitAll();
         if (this.props.auth().isEnabled()) {
             http
-                .csrf().disable()            
-                .authorizeRequests()
-                .mvcMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
-                .mvcMatchers(props.auth().getPath()).hasRole("USER");            
+                    .csrf().disable()
+                    .authorizeRequests()
+                    .mvcMatchers(props.auth().getPathAdmin()).hasRole("ADMIN")
+                    .mvcMatchers(props.auth().getPath()).hasRole("USER");
         } else {
             http
-                .csrf().disable()            
-                .authorizeRequests()
-                .mvcMatchers("/**").permitAll();
+                    .csrf().disable()
+                    .authorizeRequests()
+                    .mvcMatchers("/**").permitAll();
         }
-        
+
         // Common
         http
-            .exceptionHandling().authenticationEntryPoint(entryPoint);
+                .exceptionHandling().authenticationEntryPoint(entryPoint);
         http
-            .sessionManagement()
-            .maximumSessions(props.auth().getMaximumSessions())
-            .and()
-            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+                .sessionManagement()
+                .maximumSessions(props.auth().getMaximumSessions())
+                .and()
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
         http
-            .addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(new ActorSessionFilter(actorSession), UsernamePasswordAuthenticationFilter.class);
         if (corsFilter != null) {
             http.addFilterBefore(corsFilter, LogoutFilter.class);
         }
 
         // login/logout
         http
-            .formLogin().loginPage(props.auth().getLoginPath())
-            .usernameParameter(props.auth().getLoginKey()).passwordParameter(props.auth().getPasswordKey())
-            .successHandler(loginHandler).failureHandler(loginHandler)
-            .permitAll()
-            .and()
-            .logout().logoutUrl(props.auth().getLogoutPath())
-            .logoutSuccessHandler(loginHandler)
-            .permitAll();
+                .formLogin().loginPage(props.auth().getLoginPath())
+                .usernameParameter(props.auth().getLoginKey()).passwordParameter(props.auth().getPasswordKey())
+                .successHandler(loginHandler).failureHandler(loginHandler)
+                .permitAll()
+                .and()
+                .logout().logoutUrl(props.auth().getLogoutPath())
+                .logoutSuccessHandler(loginHandler)
+                .permitAll();
     }
 
     /**
@@ -174,7 +174,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
                 writeReponseEmpty(response, HttpServletResponse.SC_UNAUTHORIZED, message);
             }
         }
-        
+
         private void writeReponseEmpty(HttpServletResponse response, int status, String message) throws IOException {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setStatus(status);
@@ -185,7 +185,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /**
      * SpringSecurityの認証情報(Authentication)とActorSessionを紐付けるServletFilter。
-     * <p>dummyLoginが有効な時は常にSecurityContextHolderへAuthenticationを紐付けます。 
+     * <p>dummyLoginが有効な時は常にSecurityContextHolderへAuthenticationを紐付けます。
      */
     @AllArgsConstructor
     public static class ActorSessionFilter extends GenericFilterBean {
@@ -246,7 +246,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         @Override
         public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
                 Authentication authentication)
-                        throws IOException, ServletException {
+                throws IOException, ServletException {
             if (response.isCommitted()) {
                 return;
             }

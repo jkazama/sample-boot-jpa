@@ -5,8 +5,6 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.hibernate.criterion.MatchMode;
 
 /**
@@ -17,9 +15,9 @@ public class JpqlBuilder {
 
     private final StringBuilder jpql;
     private final AtomicInteger index;
-    private final MutableList<String> conditions = Lists.mutable.empty();
-    private final MutableList<Object> reservedArgs = Lists.mutable.empty();
-    private final MutableList<Object> args = Lists.mutable.empty();
+    private final List<String> conditions = new ArrayList<>();
+    private final List<Object> reservedArgs = new ArrayList<>();
+    private final List<Object> args = new ArrayList<>();
     private Optional<String> orderBy = Optional.empty();
 
     public JpqlBuilder(String baseJpql, int fromIndex) {
@@ -219,7 +217,7 @@ public class JpqlBuilder {
         if (!conditions.isEmpty()) {
             jpql.append(" where ");
             AtomicBoolean first = new AtomicBoolean(true);
-            conditions.each(condition -> {
+            conditions.forEach(condition -> {
                 if (!first.getAndSet(false)) {
                     jpql.append(" and ");
                 }
@@ -232,7 +230,10 @@ public class JpqlBuilder {
 
     /** JPQLに紐付く実行引数を返します。 */
     public Object[] args() {
-        return Lists.mutable.ofAll(reservedArgs).withAll(args).toArray();
+        List<Object> result = new ArrayList<>();
+        result.addAll(this.reservedArgs);
+        result.addAll(this.args);
+        return result.toArray();
     }
 
     /**

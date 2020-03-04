@@ -5,7 +5,7 @@ spring:
   banner.location: banner.txt
   cache.jcache.config: classpath:ehcache.xml
   jackson.serialization:
-      indent-output: true
+    indent-output: true
   servlet.multipart:
     max-file-size: 20MB
     max-request-size: 20MB
@@ -56,11 +56,9 @@ extension:
   datasource:
     default:
       jpa:
-        show-sql: false
         hibernate.ddl-auto: none
     system:
       jpa:
-        show-sql: false
         hibernate.ddl-auto: none
   security:
     auth.enabled: true

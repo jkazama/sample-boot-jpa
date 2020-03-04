@@ -5,16 +5,14 @@ import static org.junit.Assert.*;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.junit.Test;
 
 import sample.EntityTestSupport;
 import sample.model.master.Holiday.*;
 import sample.util.DateUtils;
 
-// Eclipse Collections の利用例
 public class HolidayTest extends EntityTestSupport {
 
     @Override
@@ -25,9 +23,10 @@ public class HolidayTest extends EntityTestSupport {
     @Override
     protected void before() {
         tx(() -> {
-            Lists.immutable.of("2015-09-21", "2015-09-22", "2015-09-23", "2016-09-21")
-                .collect(fixtures::holiday)
-                .each((m) -> m.save(rep));
+            Arrays.asList("2015-09-21", "2015-09-22", "2015-09-23", "2016-09-21")
+                    .stream()
+                    .map(fixtures::holiday)
+                    .forEach((m) -> m.save(rep));
         });
     }
 
@@ -50,9 +49,10 @@ public class HolidayTest extends EntityTestSupport {
 
     @Test
     public void 休日を登録する() {
-        MutableList<RegHolidayItem> items = Lists.mutable
-                .of("2016-09-21", "2016-09-22", "2016-09-23")
-                .collect((s) -> new RegHolidayItem(DateUtils.day(s), "休日"));
+        List<RegHolidayItem> items = Arrays.asList("2016-09-21", "2016-09-22", "2016-09-23")
+                .stream()
+                .map((s) -> new RegHolidayItem(DateUtils.day(s), "休日"))
+                .collect(Collectors.toList());
         tx(() -> {
             Holiday.register(rep, new RegHoliday(2016, items));
             assertThat(Holiday.find(rep, 2016), hasSize(3));
