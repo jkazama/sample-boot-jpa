@@ -1,6 +1,5 @@
 package sample.model.master;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -23,16 +22,16 @@ public class SelfFiAccountTest extends EntityTestSupport {
     @Test
     public void 自社金融機関口座を取得する() {
         tx(() -> {
-            assertThat(SelfFiAccount.load(rep, "sample", "JPY"), allOf(
-                    hasProperty("category", is("sample")),
-                    hasProperty("currency", is("JPY")),
-                    hasProperty("fiCode", is("sample-JPY")),
-                    hasProperty("fiAccountId", is("xxxxxx"))));
+            SelfFiAccount selfFi = SelfFiAccount.load(rep, "sample", "JPY");
+            assertEquals("sample", selfFi.getCategory());
+            assertEquals("JPY", selfFi.getCurrency());
+            assertEquals("sample-JPY", selfFi.getFiCode());
+            assertEquals("xxxxxx", selfFi.getFiAccountId());
             try {
                 SelfFiAccount.load(rep, "sample", "USD");
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(ErrorKeys.EntityNotFound));
+                assertEquals(ErrorKeys.EntityNotFound, e.getMessage());
             }
         });
     }

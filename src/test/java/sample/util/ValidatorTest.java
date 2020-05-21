@@ -1,6 +1,5 @@
 package sample.util;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -30,11 +29,11 @@ public class ValidatorTest {
             fail();
         } catch (ValidationException e) {
             List<Warn> warns = e.list();
-            assertThat(warns.size(), is(2));
-            assertThat(warns.get(0).getField(), is("name"));
-            assertThat(warns.get(0).getMessage(), is("error.name"));
-            assertThat(warns.get(1).getField(), is("day"));
-            assertThat(warns.get(1).getMessage(), is("error.day"));
+            assertEquals(2, warns.size());
+            assertEquals("name", warns.get(0).getField());
+            assertEquals("error.name", warns.get(0).getMessage());
+            assertEquals("day", warns.get(1).getField());
+            assertEquals("error.day", warns.get(1).getMessage());
         }
 
         // グローバルチェック
@@ -46,9 +45,9 @@ public class ValidatorTest {
             fail();
         } catch (ValidationException e) {
             List<Warn> warns = e.list();
-            assertThat(warns.size(), is(1));
+            assertEquals(1, warns.size());
             assertNull(warns.get(0).getField());
-            assertThat(warns.get(0).getMessage(), is("error.global"));
+            assertEquals("error.global", warns.get(0).getMessage());
         }
     }
 
@@ -61,7 +60,7 @@ public class ValidatorTest {
             v.verify();
             fail();
         } catch (ValidationException e) {
-            assertThat(e.getMessage(), is("error.name"));
+            assertEquals("error.name", e.getMessage());
         }
     }
 

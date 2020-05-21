@@ -1,6 +1,5 @@
 package sample.model.master;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.time.LocalDate;
@@ -35,15 +34,15 @@ public class HolidayTest extends EntityTestSupport {
         tx(() -> {
             Optional<Holiday> day = Holiday.get(rep, LocalDate.of(2015, 9, 22));
             assertTrue(day.isPresent());
-            assertThat(day.get().getDay(), is(LocalDate.of(2015, 9, 22)));
+            assertEquals(LocalDate.of(2015, 9, 22), day.get().getDay());
         });
     }
 
     @Test
     public void 休日を検索する() {
         tx(() -> {
-            assertThat(Holiday.find(rep, 2015), hasSize(3));
-            assertThat(Holiday.find(rep, 2016), hasSize(1));
+            assertEquals(3, Holiday.find(rep, 2015).size());
+            assertEquals(1, Holiday.find(rep, 2016).size());
         });
     }
 
@@ -55,7 +54,7 @@ public class HolidayTest extends EntityTestSupport {
                 .collect(Collectors.toList());
         tx(() -> {
             Holiday.register(rep, new RegHoliday(2016, items));
-            assertThat(Holiday.find(rep, 2016), hasSize(3));
+            assertEquals(3, Holiday.find(rep, 2016).size());
         });
     }
 }

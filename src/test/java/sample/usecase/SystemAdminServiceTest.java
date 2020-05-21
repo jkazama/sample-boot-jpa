@@ -1,7 +1,6 @@
 package sample.usecase;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
 
@@ -21,22 +20,22 @@ public class SystemAdminServiceTest extends UnitTestSupport {
     private BusinessDayHandler businessDay;
     @Autowired
     private SystemAdminService service;
-    
+
     @Before
     public void setup() {
         loginSystem();
     }
-    
+
     @Test
     public void 営業日を進めます() {
         LocalDate day = businessDay.day();
         LocalDate dayPlus1 = businessDay.day(1);
         LocalDate dayPlus2 = businessDay.day(2);
-        assertThat(time.day(), is(day));
+        assertEquals(day, time.day());
         service.processDay();
-        assertThat(time.day(), is(dayPlus1));
+        assertEquals(dayPlus1, time.day());
         service.processDay();
-        assertThat(time.day(), is(dayPlus2));
+        assertEquals(dayPlus2, time.day());
     }
-    
+
 }

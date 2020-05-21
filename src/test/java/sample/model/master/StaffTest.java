@@ -1,6 +1,5 @@
 package sample.model.master;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -26,9 +25,8 @@ public class StaffTest extends EntityTestSupport {
         tx(() -> {
             // 正常登録
             Staff staff = Staff.register(rep, encoder, new RegStaff("new", "newName", "password"));
-            assertThat(staff, allOf(
-                    hasProperty("id", is("new")),
-                    hasProperty("name", is("newName"))));
+            assertEquals("new", staff.getId());
+            assertEquals("newName", staff.getName());
             assertTrue(encoder.matches("password", staff.getPassword()));
 
             // 重複ID
@@ -36,7 +34,7 @@ public class StaffTest extends EntityTestSupport {
                 Staff.register(rep, encoder, new RegStaff("sample", "newName", "password"));
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(ErrorKeys.DuplicateId));
+                assertEquals(ErrorKeys.DuplicateId, e.getMessage());
             }
         });
     }
@@ -52,8 +50,8 @@ public class StaffTest extends EntityTestSupport {
     @Test
     public void 社員情報を変更する() {
         tx(() -> {
-            assertThat(
-                    Staff.load(rep, "sample").change(rep, new ChgStaff("changed")).getName(), is("changed"));
+            assertEquals(
+                    "changed", Staff.load(rep, "sample").change(rep, new ChgStaff("changed")).getName());
         });
     }
 

@@ -1,6 +1,5 @@
 package sample.util;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.time.*;
@@ -15,19 +14,16 @@ public class TimePointTest {
         LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);
 
         TimePoint tp = TimePoint.of(targetDay, targetDate);
-        assertThat(tp, allOf(
-                hasProperty("day", is(targetDay)),
-                hasProperty("date", is(targetDate))));
+        assertEquals(targetDay, tp.day());
+        assertEquals(targetDate, tp.date());
 
         TimePoint tpDay = TimePoint.of(targetDay);
-        assertThat(tpDay, allOf(
-                hasProperty("day", is(targetDay)),
-                hasProperty("date", is(targetDay.atStartOfDay()))));
+        assertEquals(targetDay, tpDay.day());
+        assertEquals(targetDay.atStartOfDay(), tpDay.date());
 
         TimePoint now = TimePoint.now();
-        assertThat(now, allOf(
-                hasProperty("day", not(nullValue())),
-                hasProperty("date", not(nullValue()))));
+        assertNotNull(now.day());
+        assertNotNull(now.date());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package sample.model.account;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -30,9 +29,9 @@ public class AccountTest extends EntityTestSupport {
             // 通常登録
             assertFalse(Account.get(rep, "new").isPresent());
             Account.register(rep, encoder, new RegAccount("new", "name", "new@example.com", "password"));
-            assertThat(Account.load(rep, "new"), allOf(
-                    hasProperty("name", is("name")),
-                    hasProperty("mail", is("new@example.com"))));
+            Account created = Account.load(rep, "new");
+            assertEquals("name", created.getName());
+            assertEquals("new@example.com", created.getMail());
             Login login = Login.load(rep, "new");
             assertTrue(encoder.matches("password", login.getPassword()));
             // 同一ID重複
@@ -40,7 +39,7 @@ public class AccountTest extends EntityTestSupport {
                 Account.register(rep, encoder, new RegAccount("normal", "name", "new@example.com", "password"));
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(ErrorKeys.DuplicateId));
+                assertEquals(ErrorKeys.DuplicateId, e.getMessage());
             }
         });
     }
@@ -48,10 +47,10 @@ public class AccountTest extends EntityTestSupport {
     @Test
     public void 口座情報を変更する() {
         tx(() -> {
-            Account.load(rep, "normal").change(rep, new ChgAccount("changed", "changed@example.com"));
-            assertThat(Account.load(rep, "normal"), allOf(
-                    hasProperty("name", is("changed")),
-                    hasProperty("mail", is("changed@example.com"))));
+            Account changed = Account.load(rep, "normal")
+                    .change(rep, new ChgAccount("changed", "changed@example.com"));
+            assertEquals("changed", changed.getName());
+            assertEquals("changed@example.com", changed.getMail());
         });
     }
 
@@ -59,9 +58,9 @@ public class AccountTest extends EntityTestSupport {
     public void 有効口座を取得する() {
         tx(() -> {
             // 通常時取得
-            assertThat(Account.loadValid(rep, "normal"), allOf(
-                    hasProperty("id", is("normal")),
-                    hasProperty("statusType", is(AccountStatusType.Normal))));
+            Account valid = Account.loadValid(rep, "normal");
+            assertEquals("normal", valid.getId());
+            assertEquals(AccountStatusType.Normal, valid.getStatusType());
 
             // 退会時取得
             Account withdrawal = fixtures.acc("withdrawal");
@@ -71,7 +70,7 @@ public class AccountTest extends EntityTestSupport {
                 Account.loadValid(rep, "withdrawal");
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is("error.Account.loadValid"));
+                assertEquals("error.Account.loadValid", e.getMessage());
             }
         });
     }

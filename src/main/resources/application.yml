@@ -15,9 +15,6 @@ logging.config: classpath:logback-spring.xml
 
 server:
   port: 8080
-  error:
-    whitelabel.enabled: false
-    path: /api/error
 
 management:
   endpoints.web:

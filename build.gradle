@@ -1,13 +1,12 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.2.5.RELEASE"
+    id "org.springframework.boot" version "2.3.0.RELEASE"
     id "io.spring.dependency-management" version "1.0.9.RELEASE"
-    id 'com.google.cloud.tools.jib' version '2.1.0'
 }
 
 ext['lombok.version'] = "1.18.12"
 
-version = "2.2.5"
+version = "2.3.0"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -43,6 +42,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-aop"
     implementation "org.springframework.boot:spring-boot-starter-cache"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.ehcache:ehcache"
@@ -60,19 +60,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "6.2.1"
-}
-
-jib {
-   from {
-       image = 'openjdk:8-jdk-alpine'
-   }
-   container {
-       jvmFlags = ['-Djava.security.egd=file:/dev/./urandom', '-Xdebug', '-Xmx128m']
-       mainClass = 'sample.Application'
-       ports = ['8080']
-       creationTime = 'USE_CURRENT_TIMESTAMP'
-   }
+    gradleVersion = "6.4.1"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

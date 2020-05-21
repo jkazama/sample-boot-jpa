@@ -1,6 +1,5 @@
 package sample.model.asset;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
@@ -11,7 +10,7 @@ import org.junit.Test;
 import sample.*;
 import sample.ValidationException.ErrorKeys;
 
-//low: 簡易な正常系検証が中心。依存するCashBalanceの単体検証パスを前提。
+// low: 簡易な正常系検証が中心。依存するCashBalanceの単体検証パスを前提。
 public class CashflowTest extends EntityTestSupport {
 
     @Override
@@ -30,15 +29,14 @@ public class CashflowTest extends EntityTestSupport {
                 Cashflow.register(rep, fixtures.cfReg("test1", "1000", baseMinus1Day));
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(AssetErrorKeys.CashflowBeforeEqualsDay));
+                assertEquals(AssetErrorKeys.CashflowBeforeEqualsDay, e.getMessage());
             }
             // 翌日受渡でキャッシュフロー発生
-            assertThat(Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day)),
-                    allOf(
-                            hasProperty("amount", is(new BigDecimal("1000"))),
-                            hasProperty("statusType", is(ActionStatusType.Unprocessed)),
-                            hasProperty("eventDay", is(baseDay)),
-                            hasProperty("valueDay", is(basePlus1Day))));
+            Cashflow cf = Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day));
+            assertEquals(new BigDecimal("1000"), cf.getAmount());
+            assertEquals(ActionStatusType.Unprocessed, cf.getStatusType());
+            assertEquals(baseDay, cf.getEventDay());
+            assertEquals(basePlus1Day, cf.getValueDay());
         });
     }
 
@@ -57,28 +55,26 @@ public class CashflowTest extends EntityTestSupport {
                 cfFuture.realize(rep);
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(AssetErrorKeys.CashflowRealizeDay));
+                assertEquals(AssetErrorKeys.CashflowRealizeDay, e.getMessage());
             }
 
-            // キャッシュフローの残高反映検証。  0 + 1000 = 1000
+            // キャッシュフローの残高反映検証。 0 + 1000 = 1000
             Cashflow cfNormal = fixtures.cf("test1", "1000", baseMinus1Day, baseDay).save(rep);
-            assertThat(cfNormal.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
-            assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
-                    hasProperty("amount", is(new BigDecimal("1000"))));
+            assertEquals(ActionStatusType.Processed, cfNormal.realize(rep).getStatusType());
+            assertEquals(new BigDecimal("1000"), CashBalance.getOrNew(rep, "test1", "JPY").getAmount());
 
             // 処理済キャッシュフローの再実現 [例外]
             try {
                 cfNormal.realize(rep);
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(ErrorKeys.ActionUnprocessing));
+                assertEquals(ErrorKeys.ActionUnprocessing, e.getMessage());
             }
 
             // 過日キャッシュフローの残高反映検証。 1000 + 2000 = 3000
             Cashflow cfPast = fixtures.cf("test1", "2000", baseMinus2Day, baseMinus1Day).save(rep);
-            assertThat(cfPast.realize(rep), hasProperty("statusType", is(ActionStatusType.Processed)));
-            assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
-                    hasProperty("amount", is(new BigDecimal("3000"))));
+            assertEquals(ActionStatusType.Processed, cfPast.realize(rep).getStatusType());
+            assertEquals(new BigDecimal("3000"), CashBalance.getOrNew(rep, "test1", "JPY").getAmount());
         });
     }
 
@@ -89,8 +85,7 @@ public class CashflowTest extends EntityTestSupport {
             CashBalance.getOrNew(rep, "test1", "JPY");
             // 発生即実現
             Cashflow.register(rep, fixtures.cfReg("test1", "1000", baseDay));
-            assertThat(CashBalance.getOrNew(rep, "test1", "JPY"),
-                    hasProperty("amount", is(new BigDecimal("1000"))));
+            assertEquals(new BigDecimal("1000"), CashBalance.getOrNew(rep, "test1", "JPY").getAmount());
         });
     }
 

@@ -1,7 +1,6 @@
 package sample.model.master;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -25,8 +24,8 @@ public class StaffAuthorityTest extends EntityTestSupport {
     @Test
     public void 権限一覧を検索する() {
         tx(() -> {
-            assertThat(StaffAuthority.find(rep, "staffA").size(), is(3));
-            assertThat(StaffAuthority.find(rep, "staffB").size(), is(2));
+            assertEquals(3, StaffAuthority.find(rep, "staffA").size());
+            assertEquals(2, StaffAuthority.find(rep, "staffB").size());
         });
     }
 

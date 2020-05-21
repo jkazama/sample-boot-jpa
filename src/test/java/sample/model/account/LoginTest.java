@@ -1,6 +1,5 @@
 package sample.model.account;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -25,21 +24,21 @@ public class LoginTest extends EntityTestSupport {
         tx(() -> {
             // 正常系
             fixtures.login("any").save(rep);
-            assertThat(Login.load(rep, "any").change(rep, new ChgLoginId("testAny")), allOf(
-                    hasProperty("id", is("any")),
-                    hasProperty("loginId", is("testAny"))));
+            Login changed = Login.load(rep, "any").change(rep, new ChgLoginId("testAny"));
+            assertEquals("any", changed.getId());
+            assertEquals("testAny", changed.getLoginId());
 
             // 自身に対する同名変更
-            assertThat(Login.load(rep, "any").change(rep, new ChgLoginId("testAny")), allOf(
-                    hasProperty("id", is("any")),
-                    hasProperty("loginId", is("testAny"))));
+            changed = Login.load(rep, "any").change(rep, new ChgLoginId("testAny"));
+            assertEquals("any", changed.getId());
+            assertEquals("testAny", changed.getLoginId());
 
             // 重複ID
             try {
                 Login.load(rep, "any").change(rep, new ChgLoginId("test"));
                 fail();
             } catch (ValidationException e) {
-                assertThat(e.getMessage(), is(ErrorKeys.DuplicateId));
+                assertEquals(ErrorKeys.DuplicateId, e.getMessage());
             }
         });
     }
