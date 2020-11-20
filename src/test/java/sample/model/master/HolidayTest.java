@@ -1,12 +1,12 @@
 package sample.model.master;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import sample.EntityTestSupport;
 import sample.model.master.Holiday.*;

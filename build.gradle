@@ -1,12 +1,12 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.3.0.RELEASE"
-    id "io.spring.dependency-management" version "1.0.9.RELEASE"
+    id "org.springframework.boot" version "2.4.0"
+    id "io.spring.dependency-management" version "1.0.10.RELEASE"
 }
 
-ext['lombok.version'] = "1.18.12"
+ext['lombok.version'] = "1.18.16"
 
-version = "2.3.0"
+version = "2.4.0"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -48,9 +48,9 @@ dependencies {
     implementation "org.ehcache:ehcache"
     implementation "javax.cache:cache-api"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    implementation "commons-io:commons-io:2.6"
+    implementation "commons-io:commons-io:2.8.0"
     implementation "org.apache.commons:commons-lang3"
-    implementation "com.ibm.icu:icu4j:65.1"
+    implementation "com.ibm.icu:icu4j:68.1"
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     runtimeOnly "com.h2database:h2"
     runtimeOnly "mysql:mysql-connector-java"
@@ -60,7 +60,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "6.4.1"
+    gradleVersion = "6.7"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

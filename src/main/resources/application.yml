@@ -46,8 +46,7 @@ extension:
   datafixture.enabled: true
 
 ---
-spring:
-  profiles: production
+spring.config.activate.on-profile: production
 
 extension:
   datasource:
@@ -63,8 +62,7 @@ extension:
   datafixture.enabled: false
 
 ---
-spring:
-  profiles: admin
+spring.config.activate.on-profile: admin
 
 server.port: 8081
 

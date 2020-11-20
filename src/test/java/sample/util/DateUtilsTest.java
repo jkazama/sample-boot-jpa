@@ -1,12 +1,12 @@
 package sample.util;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DateUtilsTest {
     private final LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);

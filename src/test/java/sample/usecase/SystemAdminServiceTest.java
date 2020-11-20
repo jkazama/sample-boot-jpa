@@ -1,10 +1,10 @@
 package sample.usecase;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDate;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import sample.UnitTestSupport;
@@ -21,7 +21,7 @@ public class SystemAdminServiceTest extends UnitTestSupport {
     @Autowired
     private SystemAdminService service;
 
-    @Before
+    @BeforeEach
     public void setup() {
         loginSystem();
     }

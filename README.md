@@ -234,7 +234,7 @@ Spring Boot では Executable Jar ( ライブラリや静的リソースなど�
 
 #### テスト
 
-パターンとしては通常の Spring コンテナを用いるコンテナテストと、 Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) の合計 2 パターンで考えます。 （ それぞれ基底クラスは `UnitTestSupport` / `EntityTestSupport` ）  
+パターンとしては Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) のみを考えます。 （基底クラスは `EntityTestSupport` ）  
 
 ### License
 

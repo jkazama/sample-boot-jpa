@@ -4,10 +4,10 @@ import java.time.Clock;
 import java.util.*;
 import java.util.function.Supplier;
 
-import javax.persistence.*;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.junit.*;
+import org.junit.jupiter.api.*;
 import org.springframework.orm.jpa.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,12 +15,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import sample.context.*;
-import sample.context.Entity;
 import sample.context.actor.ActorSession;
 import sample.context.orm.*;
 import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
 import sample.model.*;
-import sample.support.*;
+import sample.support.MockDomainHelper;
 
 /**
  * Spring コンテナを用いない JPA のみに特化した検証用途。
@@ -43,7 +42,7 @@ public class EntityTestSupport {
     /** テスト対象とするEntityクラス一覧 */
     private List<Class<?>> targetEntities = new ArrayList<>();
 
-    @Before
+    @BeforeEach
     public final void setup() {
         setupPreset();
         dh = new MockDomainHelper(clock);
@@ -98,7 +97,7 @@ public class EntityTestSupport {
         dh.setting(id, value);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         emf.close();
     }
@@ -130,7 +129,7 @@ public class EntityTestSupport {
         } else {
             props.getJpa().setAnnotatedClasses(targetEntities.toArray(new Class[0]));
         }
-        
+
         LocalContainerEntityManagerFactoryBean emfBean = props.entityManagerFactoryBean(ds);
         emfBean.afterPropertiesSet();
         emf = emfBean.getObject();
@@ -182,5 +181,5 @@ public class EntityTestSupport {
             return ds.dataSource();
         }
     }
-    
+
 }
