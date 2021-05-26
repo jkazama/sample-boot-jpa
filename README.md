@@ -104,7 +104,7 @@ main
 
 開発IDEである[Eclipse](https://eclipse.org/)で本サンプルを利用するには、事前に以下の手順を行っておく必要があります。
 
-- JDK8 以上のインストール
+- JDK11 以上のインストール
 - [Lombok](http://projectlombok.org/download.html) のパッチ当て ( .jar を実行してインストーラの指示通りに実行 )
 
 > 以降は Gradle Plugin [ Buildship ] の利用を前提としているため、 Eclipse Mars 以降を推奨します。
