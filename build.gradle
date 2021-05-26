@@ -1,15 +1,15 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.4.0"
-    id "io.spring.dependency-management" version "1.0.10.RELEASE"
+    id "org.springframework.boot" version "2.5.0"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-ext['lombok.version'] = "1.18.16"
+ext['lombok.version'] = "1.18.20"
 
-version = "2.4.0"
+version = "2.5.0"
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 def defaultEncoding = 'UTF-8'
 tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
@@ -30,7 +30,7 @@ springBoot {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -45,12 +45,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.ehcache:ehcache"
-    implementation "javax.cache:cache-api"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
     implementation "commons-io:commons-io:2.8.0"
     implementation "org.apache.commons:commons-lang3"
-    implementation "com.ibm.icu:icu4j:68.1"
+    implementation "com.ibm.icu:icu4j:69.1"
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     runtimeOnly "com.h2database:h2"
     runtimeOnly "mysql:mysql-connector-java"
@@ -60,7 +58,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "6.7"
+    gradleVersion = "7.0.2"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
