@@ -1,12 +1,12 @@
 plugins {
     id "java"
-    id "org.springframework.boot" version "2.5.0"
+    id "org.springframework.boot" version "2.6.0"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-ext['lombok.version'] = "1.18.20"
+ext['lombok.version'] = "1.18.22"
 
-version = "2.5.0"
+version = "2.6.0"
 
 sourceCompatibility = '11'
 targetCompatibility = '11'
@@ -46,9 +46,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    implementation "commons-io:commons-io:2.8.0"
+    implementation "commons-io:commons-io:2.11.0"
     implementation "org.apache.commons:commons-lang3"
-    implementation "com.ibm.icu:icu4j:69.1"
+    implementation "com.ibm.icu:icu4j:70.1"
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     runtimeOnly "com.h2database:h2"
     runtimeOnly "mysql:mysql-connector-java"
@@ -58,7 +58,7 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "7.0.2"
+    gradleVersion = "7.3"
 }
 
 // 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後

@@ -22,7 +22,7 @@ public class SecurityProperties {
     public SecurityCorsProperties cors() {
         return cors;
     }
-    
+
     /** Spring Securityに対する拡張設定情報 */
     @Data
     public static class SecurityAuthProperties {
@@ -37,7 +37,7 @@ public class SecurityProperties {
         /** 認証除外パス(認証対象からの除外) */
         private String[] excludesPath = new String[] { "/api/system/job/**" };
         /** 認証無視パス(フィルタ未適用の認証未考慮、静的リソース等) */
-        private String[] ignorePath = new String[] { "/css/**", "/js/**", "/img/**", "/**/favicon.ico" };
+        private String[] ignorePath = new String[] { "/css/**", "/js/**", "/img/**", "/*/favicon.ico" };
         /** ログインAPIパス */
         private String loginPath = "/api/login";
         /** ログアウトAPIパス */
@@ -50,13 +50,13 @@ public class SecurityProperties {
          * <ul>
          * <li>true: SecurityUserService
          * <li>false: SecurityAdminService
-         * </ul> 
+         * </ul>
          */
         private boolean admin = false;
         /** 認証が有効な時はtrue */
         private boolean enabled = true;
     }
-    
+
     /** CORS設定情報を表現します。 */
     @Data
     public static class SecurityCorsProperties {

@@ -6,10 +6,11 @@ import java.util.*;
 
 import org.hibernate.boot.*;
 import org.hibernate.boot.internal.MetadataBuilderImpl;
+import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
 import org.hibernate.boot.registry.*;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
-import org.springframework.boot.orm.jpa.hibernate.*;
+import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 
 /**
@@ -76,7 +77,7 @@ public class DdlExporter {
             throws Exception {
         MetadataBuilder builder = new MetadataBuilderImpl(metadataSources, serviceRegistry);
         Metadata metadata = builder
-                .applyPhysicalNamingStrategy(new SpringPhysicalNamingStrategy())
+                .applyPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy())
                 .applyImplicitNamingStrategy(new SpringImplicitNamingStrategy())
                 .build();
         return metadata;
