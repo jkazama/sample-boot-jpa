@@ -6,12 +6,11 @@ import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.autoconfigure.web.servlet.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
-import org.springframework.security.config.annotation.web.builders.*;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.*;
@@ -38,6 +37,7 @@ import sample.context.security.SecurityActorFinder.*;
  */
 @Setter
 @Getter
+@SuppressWarnings("deprecation")
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /** 拡張セキュリティ情報 */
@@ -58,20 +58,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
     /** CORS利用時のフィルタ */
     @Autowired(required = false)
     private CorsFilter corsFilter;
-
-    /** 適用対象となる DistpatcherServlet 登録情報 */
-    @Autowired
-    @Qualifier(DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME)
-    private DispatcherServletRegistrationBean dispatcherServletRegistration;
-
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().mvcMatchers(
-                Arrays.asList(props.auth().getIgnorePath())
-                        .stream()
-                        .map(dispatcherServletRegistration::getRelativePath)
-                        .toArray(String[]::new));
-    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

@@ -36,8 +36,6 @@ public class SecurityProperties {
         private String[] pathAdmin = new String[] { "/api/admin/**" };
         /** 認証除外パス(認証対象からの除外) */
         private String[] excludesPath = new String[] { "/api/system/job/**" };
-        /** 認証無視パス(フィルタ未適用の認証未考慮、静的リソース等) */
-        private String[] ignorePath = new String[] { "/css/**", "/js/**", "/img/**", "/*/favicon.ico" };
         /** ログインAPIパス */
         private String loginPath = "/api/login";
         /** ログアウトAPIパス */

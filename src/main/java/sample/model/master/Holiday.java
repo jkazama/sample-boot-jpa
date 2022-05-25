@@ -32,6 +32,7 @@ public class Holiday extends OrmActiveMetaRecord<Holiday> {
     private String category;
     /** 休日 */
     @ISODate
+    @Column(name = "holiday")
     private LocalDate day;
     /** 休日名称 */
     @Name(max = 40)

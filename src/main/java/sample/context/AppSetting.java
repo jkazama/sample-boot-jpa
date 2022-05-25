@@ -3,8 +3,8 @@ package sample.context;
 import java.math.BigDecimal;
 import java.util.*;
 
+import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.validation.constraints.Size;
 
 import org.hibernate.criterion.MatchMode;
@@ -36,6 +36,7 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
     @Size(max = 1300)
     private String outline;
     /** 値 */
+    @Column(name = "setting_value")
     @Size(max = 1300)
     private String value;
 
@@ -104,7 +105,7 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         });
     }
 
-    /** 検索パラメタ　*/
+    /** 検索パラメタ */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
