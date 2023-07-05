@@ -1,20 +1,35 @@
 package sample.model.asset;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-
-import lombok.*;
-import sample.ActionStatusType;
-import sample.ValidationException.ErrorKeys;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import sample.context.ActionStatusType;
 import sample.context.Dto;
-import sample.context.orm.*;
+import sample.context.ErrorKeys;
+import sample.context.orm.OrmActiveMetaRecord;
+import sample.context.orm.OrmRepository;
 import sample.model.asset.type.CashflowType;
-import sample.model.constraints.*;
-import sample.util.*;
+import sample.model.constraints.Amount;
+import sample.model.constraints.Category;
+import sample.model.constraints.Currency;
+import sample.model.constraints.ISODate;
+import sample.model.constraints.ISODateEmpty;
+import sample.model.constraints.ISODateTime;
+import sample.model.constraints.IdStr;
+import sample.util.AppValidator;
+import sample.util.TimePoint;
 
 /**
  * 入出金キャッシュフローを表現します。
@@ -80,7 +95,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
             v.verify(statusType.isUnprocessing(), ErrorKeys.ActionUnprocessing); // 「既に処理中/処理済です」
         });
 
-        setStatusType(ActionStatusType.Processed);
+        setStatusType(ActionStatusType.PROCESSED);
         update(rep);
         CashBalance.getOrNew(rep, accountId, currency).add(rep, amount);
         return this;
@@ -88,13 +103,14 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
 
     /**
      * キャッシュフローをエラー状態にします。
-     * <p>処理中に失敗した際に呼び出してください。
+     * <p>
+     * 処理中に失敗した際に呼び出してください。
      * low: 実際はエラー事由などを引数に取って保持する
      */
     public Cashflow error(final OrmRepository rep) {
         validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
 
-        setStatusType(ActionStatusType.Error);
+        setStatusType(ActionStatusType.ERROR);
         return update(rep);
     }
 
@@ -115,7 +131,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
             LocalDate valueDay) {
         return rep.tmpl().find(
                 "from Cashflow c where c.accountId=?1 and c.currency=?2 and c.valueDay<=?3 and c.statusType in ?4 order by c.id",
-                accountId, currency, valueDay, ActionStatusType.unprocessingTypes);
+                accountId, currency, valueDay, ActionStatusType.UNPROCESSING_TYPES);
     }
 
     /**
@@ -123,7 +139,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
      */
     public static List<Cashflow> findDoRealize(final OrmRepository rep, LocalDate valueDay) {
         return rep.tmpl().find("from Cashflow c where c.valueDay=?1 and c.statusType in ?2 order by c.id", valueDay,
-                ActionStatusType.unprocessedTypes);
+                ActionStatusType.UNPROCESSED_TYPES);
     }
 
     /**
@@ -132,13 +148,13 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
      */
     public static Cashflow register(final OrmRepository rep, final RegCashflow p) {
         TimePoint now = rep.dh().time().tp();
-        Validator.validate((v) -> v.checkField(now.beforeEqualsDay(p.getValueDay()),
+        AppValidator.validate((v) -> v.checkField(now.beforeEqualsDay(p.getValueDay()),
                 "valueDay", AssetErrorKeys.CashflowBeforeEqualsDay));
         Cashflow cf = p.create(now).save(rep);
         return cf.canRealize(rep) ? cf.realize(rep) : cf;
     }
 
-    /** 入出金キャッシュフローの登録パラメタ。  */
+    /** 入出金キャッシュフローの登録パラメタ。 */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -171,7 +187,7 @@ public class Cashflow extends OrmActiveMetaRecord<Cashflow> {
             m.setEventDay(eventDate.getDay());
             m.setEventDate(eventDate.getDate());
             m.setValueDay(valueDay);
-            m.setStatusType(ActionStatusType.Unprocessed);
+            m.setStatusType(ActionStatusType.UNPROCESSED);
             return m;
         }
     }

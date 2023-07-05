@@ -7,10 +7,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import sample.context.actor.*;
+import sample.context.actor.Actor;
+import sample.context.actor.ActorSession;
 import sample.context.audit.AuditHandler;
 import sample.context.lock.IdLockHandler;
-import sample.context.orm.*;
+import sample.context.orm.TxTemplate;
+import sample.context.orm.repository.DefaultRepository;
 import sample.model.BusinessDayHandler;
 import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.RegCashOut;
@@ -22,7 +24,7 @@ import sample.usecase.event.AppMailEvent.AppMailType;
  */
 @Service
 public class AssetService {
-    
+
     private final DefaultRepository rep;
     private final PlatformTransactionManager txm;
     private final ActorSession actorSession;
@@ -30,10 +32,10 @@ public class AssetService {
     private final IdLockHandler idLock;
     private final BusinessDayHandler businessDay;
     private final ApplicationEventPublisher event;
+
     public AssetService(
             DefaultRepository rep,
-            @Qualifier(DefaultRepository.BeanNameTx)
-            PlatformTransactionManager txm,
+            @Qualifier(DefaultRepository.BeanNameTx) PlatformTransactionManager txm,
             ActorSession actorSession,
             AuditHandler audit,
             IdLockHandler idLock,
@@ -60,7 +62,7 @@ public class AssetService {
             return CashInOut.findUnprocessed(rep, accId);
         });
     }
-    
+
     /** 匿名を除くActorを返します。 */
     private Actor actor() {
         return ServiceUtils.actorUser(actorSession.actor());
@@ -71,6 +73,7 @@ public class AssetService {
      * low: 公開リスクがあるためUI層には必要以上の情報を返さない事を意識します。
      * low: 監査ログの記録は状態を変えうる更新系ユースケースでのみ行います。
      * low: ロールバック発生時にメールが飛ばないようにトランザクション境界線を明確に分離します。
+     *
      * @return 振込出金依頼ID
      */
     public Long withdraw(final RegCashOut p) {

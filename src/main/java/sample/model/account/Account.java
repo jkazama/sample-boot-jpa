@@ -1,22 +1,31 @@
 package sample.model.account;
 
-import java.util.*;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import lombok.*;
-import sample.ValidationException;
-import sample.ValidationException.ErrorKeys;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import sample.context.Dto;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
 import sample.context.actor.Actor;
 import sample.context.actor.Actor.ActorRoleType;
-import sample.context.orm.*;
+import sample.context.orm.OrmActiveRecord;
+import sample.context.orm.OrmRepository;
 import sample.model.account.type.AccountStatusType;
-import sample.model.constraints.*;
-import sample.util.Validator;
+import sample.model.constraints.Email;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
+import sample.model.constraints.Password;
+import sample.util.AppValidator;
 
 /**
  * 口座を表現します。
@@ -77,12 +86,13 @@ public class Account extends OrmActiveRecord<Account> {
         return getValid(rep, id).orElseThrow(() -> new ValidationException("error.Account.loadValid"));
     }
 
-    /** 
+    /**
      * 口座の登録を行います。
-     * <p>ログイン情報も同時に登録されます。
+     * <p>
+     * ログイン情報も同時に登録されます。
      */
     public static Account register(final OrmRepository rep, final PasswordEncoder encoder, final RegAccount p) {
-        Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
+        AppValidator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
         p.createLogin(encoder.encode(p.plainPassword)).save(rep);
         return p.create().save(rep);
     }

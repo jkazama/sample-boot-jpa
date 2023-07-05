@@ -1,45 +1,46 @@
 package sample.util;
 
 /**
- * 正規表現定数インターフェース。
- * <p>Checker.matchと組み合わせて利用してください。
+ * Regular expression constant interface.
+ * <p>
+ * Use in combination with Checker.match.
  */
 public interface Regex {
-    /** Ascii */
+    /** ascii */
     String rAscii = "^\\p{ASCII}*$";
-    /** 英字 */
+    /** alphabetic character */
     String rAlpha = "^[a-zA-Z]*$";
-    /** 英字大文字 */
+    /** upper-case alphabetics */
     String rAlphaUpper = "^[A-Z]*$";
-    /** 英字小文字 */
+    /** lower-case alphabetics */
     String rAlphaLower = "^[a-z]*$";
-    /** 英数 */
+    /** alphabetic/numeric character */
     String rAlnum = "^[0-9a-zA-Z]*$";
-    /** シンボル */
+    /** symbol */
     String rSymbol = "^\\p{Punct}*$";
-    /** 英数記号 */
+    /** alphabetic/numeric/symbol */
     String rAlnumSymbol = "^[0-9a-zA-Z\\p{Punct}]*$";
-    /** 数字 */
+    /** numeric */
     String rNumber = "^[-]?[0-9]*$";
-    /** 整数 */
+    /** numeric natural */
     String rNumberNatural = "^[0-9]*$";
-    /** 倍精度浮動小数点 */
+    /** decimal */
     String rDecimal = "^[-]?(\\d+)(\\.\\d+)?$";
     // see UnicodeBlock
-    /** ひらがな */
+    /** hiragana */
     String rHiragana = "^\\p{InHiragana}*$";
-    /** カタカナ */
+    /** katakana */
     String rKatakana = "^\\p{InKatakana}*$";
-    /** 半角カタカナ */
+    /** half-width katakana */
     String rHankata = "^[｡-ﾟ]*$";
-    /** 半角文字列 */
-    String rHankaku = "^[\\p{InBasicLatin}｡-ﾟ]*$"; // ラテン文字 + 半角カタカナ
-    /** 全角文字列 */
-    String rZenkaku = "^[^\\p{InBasicLatin}｡-ﾟ]*$"; // 全角の定義を半角以外で割り切り
-    /** 漢字 */
+    /** half-width character string */
+    String rHankaku = "^[\\p{InBasicLatin}｡-ﾟ]*$";
+    /** full-width character string */
+    String rZenkaku = "^[^\\p{InBasicLatin}｡-ﾟ]*$";
+    /** kanji */
     String rKanji = "^[\\p{InCJKUnifiedIdeographs}々\\p{InCJKCompatibilityIdeographs}]*$";
-    /** 文字 */
+    /** string */
     String rWord = "^(?s).*$";
-    /** コード */
-    String rCode = "^[0-9a-zA-Z_-]*$"; // 英数 + アンダーバー + ハイフン
+    /** code */
+    String rCode = "^[0-9a-zA-Z_-]*$";
 }

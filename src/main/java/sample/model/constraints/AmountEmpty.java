@@ -5,8 +5,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.*;
 
-import javax.validation.*;
-import javax.validation.constraints.Digits;
+import jakarta.validation.*;
+import jakarta.validation.constraints.Digits;
 
 /**
  * 金額を表現する制約注釈。

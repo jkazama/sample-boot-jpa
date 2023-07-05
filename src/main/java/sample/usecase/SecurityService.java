@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import sample.ValidationException.ErrorKeys;
+import sample.context.ValidationException.ErrorKeys;
 import sample.context.security.SecurityActorFinder.*;
 import sample.util.ConvertUtils;
 
@@ -28,17 +28,19 @@ public class SecurityService {
              * <li>ログインID(全角は半角に自動変換)に合致するログイン情報があるか
              * <li>口座IDに合致する有効な口座情報があるか
              * </ul>
-             * <p>一般利用者には「ROLE_USER」の権限が自動で割り当てられます。
+             * <p>
+             * 一般利用者には「ROLE_USER」の権限が自動で割り当てられます。
              */
             @Override
             public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                 return (ActorDetails) Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan)
                         .flatMap((loginId) -> service.getLoginByLoginId(loginId)
                                 .flatMap((login) -> service.getAccount(login.getId()).map((account) -> {
-                    List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
-                            new SimpleGrantedAuthority("ROLE_USER") });
-                    return new ActorDetails(account.actor(), login.getPassword(), authorities);
-                }))).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
+                                    List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
+                                            new SimpleGrantedAuthority("ROLE_USER") });
+                                    return new ActorDetails(account.actor(), login.getPassword(), authorities);
+                                })))
+                        .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
             }
         };
     }
@@ -54,18 +56,20 @@ public class SecurityService {
              * <li>社員ID(全角は半角に自動変換)に合致する社員情報があるか
              * <li>社員情報に紐付く権限があるか
              * </ul>
-             * <p>社員には「ROLE_ADMIN」の権限が自動で割り当てられます。
+             * <p>
+             * 社員には「ROLE_ADMIN」の権限が自動で割り当てられます。
              */
             @Override
             public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                 return (ActorDetails) Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan)
                         .flatMap((staffId) -> service.getStaff(staffId).map((staff) -> {
-                    List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
-                            new SimpleGrantedAuthority("ROLE_ADMIN") }));
-                    service.findStaffAuthority(staffId)
-                            .forEach((auth) -> authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
-                    return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
-                })).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
+                            List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
+                                    new SimpleGrantedAuthority("ROLE_ADMIN") }));
+                            service.findStaffAuthority(staffId)
+                                    .forEach(
+                                            (auth) -> authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
+                            return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
+                        })).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
             }
         };
     }

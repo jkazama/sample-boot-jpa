@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE logback>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+  <logger name="sample" level="INFO"/>
+  <logger name="Audit" level="INFO"/>
+  <logger name="org.hibernate.SQL" level="DEBUG"/>
+  <logger name="org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter" level="DEBUG"/>
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>

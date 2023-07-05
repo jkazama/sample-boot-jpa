@@ -1,20 +1,30 @@
 package sample.model.master;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.*;
-
-import org.hibernate.criterion.MatchMode;
+import org.springframework.data.domain.ExampleMatcher.MatchMode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import lombok.*;
-import sample.ValidationException.ErrorKeys;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.Value;
 import sample.context.Dto;
+import sample.context.ErrorKeys;
 import sample.context.actor.Actor;
 import sample.context.actor.Actor.ActorRoleType;
-import sample.context.orm.*;
-import sample.model.constraints.*;
-import sample.util.Validator;
+import sample.context.orm.OrmActiveRecord;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
+import sample.model.constraints.OutlineEmpty;
+import sample.model.constraints.Password;
+import sample.util.AppValidator;
 
 /**
  * 社員を表現します。
@@ -70,7 +80,7 @@ public class Staff extends OrmActiveRecord<Staff> {
 
     /** 社員の登録を行います。 */
     public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, RegStaff p) {
-        Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
+        AppValidator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
         return p.create(encoder.encode(p.plainPassword)).save(rep);
     }
 

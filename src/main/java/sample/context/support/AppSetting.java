@@ -1,46 +1,44 @@
-package sample.context;
+package sample.context.support;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.validation.constraints.Size;
-
-import org.hibernate.criterion.MatchMode;
-
-import lombok.*;
-import sample.context.orm.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
+import lombok.var;
+import sample.context.DomainEntity;
+import sample.context.Dto;
+import sample.context.orm.JpqlBuilder;
+import sample.context.orm.OrmMatchMode;
+import sample.context.orm.OrmRepository;
 import sample.model.constraints.OutlineEmpty;
 
 /**
- * アプリケーション設定情報を表現します。
- * <p>事前に初期データが登録される事を前提とし、値の変更のみ許容します。
+ * Represents application configuration information.
+ * <p>
+ * It is assumed that the initial data is registered in advance, and only
+ * changes in values are allowed.
  */
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class AppSetting extends OrmActiveRecord<AppSetting> {
-    private static final long serialVersionUID = 1l;
+public class AppSetting implements DomainEntity {
 
-    /** 設定ID */
     @Id
     @Size(max = 120)
     private String id;
-    /** 区分 */
     @Size(max = 60)
     private String category;
-    /** 概要 */
     @Size(max = 1300)
     private String outline;
-    /** 値 */
-    @Column(name = "setting_value")
     @Size(max = 1300)
+    @Column(name = "setting_value", length = 1300, nullable = false)
     private String value;
 
-    /** 設定情報値を取得します。 */
     public String str() {
         return value;
     }
@@ -81,7 +79,6 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         return value == null ? defaultValue : new BigDecimal(value);
     }
 
-    /** 設定情報を取得します。 */
     public static Optional<AppSetting> get(OrmRepository rep, String id) {
         return rep.get(AppSetting.class, id);
     }
@@ -90,29 +87,29 @@ public class AppSetting extends OrmActiveRecord<AppSetting> {
         return rep.load(AppSetting.class, id);
     }
 
-    /** 設定情報値を設定します。 */
-    public AppSetting update(OrmRepository rep, String value) {
+    /** Change information value. */
+    public AppSetting change(OrmRepository rep, String value) {
         setValue(value);
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** アプリケーション設定情報を検索します。 */
+    /** Search application configuration information. */
     public static List<AppSetting> find(OrmRepository rep, FindAppSetting p) {
-        return rep.tmpl().find(AppSetting.class, (criteria) -> {
-            return criteria
-                    .like(new String[] { "id", "category", "outline" }, p.keyword, MatchMode.ANYWHERE)
-                    .result();
-        });
+        var jpql = JpqlBuilder.of("FROM AppSetting s")
+                .like(List.of("id", "category", "outline"), p.keyword, OrmMatchMode.ANYWHERE);
+        return rep.tmpl().find(jpql.build(), jpql.args());
     }
 
-    /** 検索パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FindAppSetting implements Dto {
-        private static final long serialVersionUID = 1l;
-        @OutlineEmpty
-        private String keyword;
+    /** search parameter */
+    @Builder
+    public record FindAppSetting(@OutlineEmpty String keyword) implements Dto {
+    }
+
+    public static AppSetting of(String id, String value) {
+        var m = new AppSetting();
+        m.id = id;
+        m.value = value;
+        return m;
     }
 
 }

@@ -1,37 +1,37 @@
 package sample;
 
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
-import org.springframework.orm.jpa.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
-import sample.context.orm.*;
-import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
-import sample.context.orm.SystemRepository.SystemDataSourceProperties;
+import jakarta.persistence.EntityManagerFactory;
+import sample.context.DomainHelper;
+import sample.context.orm.OrmInterceptor;
+import sample.context.orm.OrmRepository;
+import sample.context.orm.repository.DefaultRepository;
+import sample.context.orm.repository.DefaultRepository.DefaultDataSourceProperties;
+import sample.context.orm.repository.SystemRepository;
+import sample.context.orm.repository.SystemRepository.SystemDataSourceProperties;
 
 /**
- * アプリケーションのデータベース接続定義を表現します。
+ * Represents a database connection definition for an application.
  */
 @Configuration
-@EnableConfigurationProperties({ DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
 public class ApplicationDbConfig {
 
-    /** 永続化時にメタ情報の差込を行うインターセプタ */
-    @Bean
-    OrmInterceptor ormInterceptor() {
-        return new OrmInterceptor();
-    }
-
-    /** 標準スキーマへの接続定義を表現します。 */
+    /** Represents a connection definition to a standard schema. */
     @Configuration
     static class DefaultDbConfig {
 
         @Bean
-        DefaultRepository defaultRepository() {
-            return new DefaultRepository();
+        @Primary
+        OrmRepository defaultRepository(DomainHelper dh, OrmInterceptor interceptor) {
+            return DefaultRepository.of(dh, interceptor);
         }
 
         @Bean(name = DefaultRepository.BeanNameDs, destroyMethod = "close")
@@ -58,13 +58,13 @@ public class ApplicationDbConfig {
 
     }
 
-    /** システムスキーマへの接続定義を表現します。 */
+    /** Represents a connection definition to the system schema. */
     @Configuration
     static class SystemDbConfig {
 
         @Bean
-        SystemRepository systemRepository() {
-            return new SystemRepository();
+        SystemRepository systemRepository(DomainHelper dh, OrmInterceptor interceptor) {
+            return SystemRepository.of(dh, interceptor);
         }
 
         @Bean(name = SystemRepository.BeanNameDs, destroyMethod = "close")

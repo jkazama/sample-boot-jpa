@@ -1,36 +1,32 @@
 plugins {
-    id "java"
-    id "org.springframework.boot" version "2.7.0"
-    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+  id "java"
+  id 'org.springframework.boot' version '3.1.0'
+  id 'io.spring.dependency-management' version '1.1.0'
 }
 
-ext['lombok.version'] = "1.18.24"
+version = "3.1.1"
 
-version = "2.7.0"
-
-sourceCompatibility = '11'
-targetCompatibility = '11'
-
-def defaultEncoding = 'UTF-8'
-tasks.withType(AbstractCompile).each { it.options.encoding = defaultEncoding }
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
 
 javadoc {
-    options.encoding = defaultEncoding
-    options.addBooleanOption('Xdoclint:none', true)
+  options.addBooleanOption('Xdoclint:none', true)
 }
-
-compileJava.dependsOn(processResources)
 
 test {
-    include "**/model/**", "**/controller/**", "**/usecase/**", "**/util/**", "**/context/**"
+  useJUnitPlatform()
 }
 
+jar.enabled=false
 springBoot {
-    buildInfo()
+  buildInfo()
 }
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
@@ -38,6 +34,7 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compileOnly "org.projectlombok:lombok"
+    implementation "org.springdoc:springdoc-openapi-ui:1.7.0"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-aop"
@@ -45,75 +42,17 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-validation"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-    implementation "commons-io:commons-io:2.11.0"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6"
+    implementation "commons-io:commons-io:2.12.0"
     implementation "org.apache.commons:commons-lang3"
-    implementation "com.ibm.icu:icu4j:71.1"
-    implementation fileTree(dir: 'libs', includes: ['*.jar'])
+    runtimeOnly "net.logstash.logback:logstash-logback-encoder:7.3"
+    runtimeOnly "org.postgresql:postgresql:42.6.0"
     runtimeOnly "com.h2database:h2"
-    runtimeOnly "mysql:mysql-connector-java"
     testAnnotationProcessor "org.projectlombok:lombok"
     testCompileOnly "org.projectlombok:lombok"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 }
 
 wrapper {
-    gradleVersion = "7.4.2"
-}
-
-// 自分のプロジェクトとしてディープコピーしたい時は以下の変数を編集した後
-// 「 gradlew copyProject 」を実行してください。
-def yourProjectName = "sample"
-def yourProjectPackage = "your.sample"
-def yourProjectPath = "../${yourProjectName}"
-task copyProject {
-    def projectPath = yourProjectPath
-    def packagePath = yourProjectPackage.replaceAll(/\./, "/")
-    def javaPath = "${projectPath}/src/main/java/${packagePath}"
-    def testPath = "${projectPath}/src/test/java/${packagePath}"
-    copy {
-        from (".") { exclude ".*", "bin", "build", "LICENSE", "src/main/java", "src/test/java" }
-        into projectPath
-    }
-    ant.copy(file: ".gitignore", todir: "${projectPath}")
-    copy {
-        from ("src/main/java/sample")
-        into javaPath
-    }
-    copy {
-        from ("src/test/java/sample")
-        into testPath
-    }
-    ant.replace(token: "sample-boot-hibernate", value: yourProjectName) {
-        fileset(dir: projectPath) {
-            include(name: "README.md")
-            include(name: "settings.gradle")
-            include(name: "src/main/resources/application.yml")
-            include(name: "src/main/resources/banner.txt")
-        }
-    }
-    ant.replace(token: "version = \"${version}\"", value: "version = \"1.0.0\"") {
-        fileset(dir: projectPath) { include(name: "build.gradle") }
-    }
-    ant.replace(token: "package-to-scan: sample", value: "package-to-scan: ${yourProjectPackage}") {
-        fileset(dir: projectPath) { include(name: "src/main/resources/application.yml") }
-    }
-    ant.replace(token: "logger name=\"sample\"", value: "logger name=\"${yourProjectPackage}\"") {
-        fileset(dir: projectPath) { include(name: "src/main/resources/logback-spring.xml") }
-        fileset(dir: projectPath) { include(name: "src/test/resources/logback.xml") }
-    }
-    ant.replace(token: "import sample", value: "import ${yourProjectPackage}") {
-        fileset(dir: javaPath) { include(name: "**/*.java") }
-        fileset(dir: testPath) { include(name: "**/*.java") }
-    }
-    ant.replace(token: "package sample", value: "package ${yourProjectPackage}") {
-        fileset(dir: javaPath) { include(name: "**/*.java") }
-        fileset(dir: testPath) { include(name: "**/*.java") }
-    }
-    ant.replace(token: "PackageRoot = \"sample\"", value: "PackageRoot = \"${yourProjectPackage}\"") {
-        fileset(dir: testPath) { include(name: "**/DdlExporter.java") }
-    }
-    ant.replace(token: "packageToScan = \"sample\"", value: "packageToScan = \"${yourProjectPackage}\"") {
-        fileset(dir: testPath) { include(name: "**/EntityTestSupport.java") }
-    }    
+    gradleVersion = "8.2"
 }

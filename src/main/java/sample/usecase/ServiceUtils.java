@@ -1,7 +1,7 @@
 package sample.usecase;
 
-import sample.ValidationException;
-import sample.ValidationException.ErrorKeys;
+import sample.context.ValidationException;
+import sample.context.ValidationException.ErrorKeys;
 import sample.context.actor.Actor;
 
 /**

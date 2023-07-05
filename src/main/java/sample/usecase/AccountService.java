@@ -7,8 +7,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import sample.context.orm.*;
-import sample.model.account.*;
+import sample.context.orm.TxTemplate;
+import sample.context.orm.repository.DefaultRepository;
+import sample.model.account.Account;
+import sample.model.account.Login;
 
 /**
  * 口座ドメインに対する顧客ユースケース処理。

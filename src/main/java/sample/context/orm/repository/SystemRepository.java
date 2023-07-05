@@ -1,18 +1,23 @@
-package sample.context.orm;
+package sample.context.orm.repository;
 
-import javax.persistence.*;
 import javax.sql.DataSource;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.orm.jpa.*;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
-import lombok.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceContext;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import sample.context.DomainHelper;
+import sample.context.orm.OrmDataSourceProperties;
+import sample.context.orm.OrmInterceptor;
+import sample.context.orm.OrmRepository;
+import sample.context.orm.OrmRepositoryProperties;
 
-/** システムスキーマのRepositoryを表現します。 */
-@org.springframework.stereotype.Repository
-@Setter
+/** Represents Repository in the system schema. */
 public class SystemRepository extends OrmRepository {
-
     public static final String BeanNameDs = "systemDataSource";
     public static final String BeanNameEmf = "systemEntityManagerFactory";
     public static final String BeanNameTx = "systemTransactionManager";
@@ -20,22 +25,34 @@ public class SystemRepository extends OrmRepository {
     @PersistenceContext(unitName = BeanNameEmf)
     private EntityManager em;
 
+    public SystemRepository(DomainHelper dh, OrmInterceptor interceptor) {
+        super(dh, interceptor);
+    }
+
     @Override
     public EntityManager em() {
         return em;
     }
 
-    /** システムスキーマのDataSourceを生成します。 */
-    @ConfigurationProperties(prefix = "extension.datasource.system")
+    @Override
+    public void em(EntityManager em) {
+        this.em = em;
+    }
+
+    public static SystemRepository of(DomainHelper dh, OrmInterceptor interceptor) {
+        return new SystemRepository(dh, interceptor);
+    }
+
+    /** Generate a DataSource for the system schema. */
     @Data
     @EqualsAndHashCode(callSuper = false)
     public static class SystemDataSourceProperties extends OrmDataSourceProperties {
         private OrmRepositoryProperties jpa = new OrmRepositoryProperties();
-        
+
         public DataSource dataSource() {
             return super.dataSource();
         }
-        
+
         public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
                 final DataSource dataSource) {
             return jpa.entityManagerFactoryBean(BeanNameEmf, dataSource);

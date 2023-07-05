@@ -2,7 +2,7 @@ package sample.controller.admin;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 

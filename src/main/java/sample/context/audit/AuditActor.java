@@ -1,151 +1,157 @@
 package sample.context.audit;
 
-import java.time.*;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.MatchMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import lombok.*;
-import sample.ActionStatusType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
+import sample.context.ActionStatusType;
+import sample.context.DomainEntity;
 import sample.context.Dto;
 import sample.context.actor.Actor;
-import sample.context.actor.Actor.ActorRoleType;
-import sample.context.orm.*;
-import sample.context.orm.Sort.SortOrder;
-import sample.model.constraints.*;
-import sample.util.*;
+import sample.context.actor.type.ActorRoleType;
+import sample.context.orm.JpqlBuilder;
+import sample.context.orm.OrmMatchMode;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.Category;
+import sample.model.constraints.CategoryEmpty;
+import sample.model.constraints.DescriptionEmpty;
+import sample.model.constraints.ISODateTime;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.IdStrEmpty;
+import sample.util.ConvertUtils;
+import sample.util.DateUtils;
 
 /**
- * システム利用者の監査ログを表現します。
+ * Represents the audit log of application users.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class AuditActor extends OrmActiveRecord<AuditActor> {
-    private static final long serialVersionUID = 1l;
+public class AuditActor implements DomainEntity {
+    private static final String SEQUENCE_ID = "audit_actor_id_seq";
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_ID)
+    @SequenceGenerator(name = SEQUENCE_ID, sequenceName = SEQUENCE_ID, allocationSize = 1)
     private Long id;
-    /** 利用者ID */
     @IdStr
     private String actorId;
-    /** 利用者役割 */
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private ActorRoleType roleType;
-    /** 利用者ソース(IP等) */
     private String source;
-    /** カテゴリ */
     @Category
     private String category;
-    /** メッセージ */
     private String message;
-    /** 処理ステータス */
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private ActionStatusType statusType;
-    /** エラー事由 */
     @DescriptionEmpty
     private String errorReason;
-    /** 処理時間(msec) */
+    /** Processing time (msec) */
     private Long time;
-    /** 開始日時 */
     @NotNull
     private LocalDateTime startDate;
-    /** 終了日時(未完了時はnull) */
+    /** End date and time (null if not completed) */
     private LocalDateTime endDate;
 
-    /** 利用者監査ログを完了状態にします。 */
-    public AuditActor finish(final SystemRepository rep) {
+    /** User audit log is set to PROCESSED status. */
+    public AuditActor finish(final OrmRepository rep) {
+        if (Actor.ANONYMOUS.id().equals(this.actorId)) {
+            setActorId(rep.dh().actor().id());
+        }
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Processed);
+        setStatusType(ActionStatusType.PROCESSED);
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** 利用者監査ログを取消状態にします。 */
-    public AuditActor cancel(final SystemRepository rep, String errorReason) {
+    /** User audit log is set to CANCELLED status. */
+    public AuditActor cancel(final OrmRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Cancelled);
+        setStatusType(ActionStatusType.CANCELLED);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** 利用者監査ログを例外状態にします。 */
-    public AuditActor error(final SystemRepository rep, String errorReason) {
+    /** Set the user audit log to ERROR status. */
+    public AuditActor error(final OrmRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Error);
+        setStatusType(ActionStatusType.ERROR);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** 利用者監査ログを登録します。 */
-    public static AuditActor register(final SystemRepository rep, final RegAuditActor p) {
-        return p.create(rep.dh().actor(), rep.dh().time().date()).save(rep);
+    /** Search user audit logs. */
+    public static Page<AuditActor> find(final OrmRepository rep, final FindAuditActor p) {
+        var jpql = JpqlBuilder.of("FROM AuditActor aa")
+                .like(Arrays.asList("aa.actorId", "aa.source"), p.actorId, OrmMatchMode.ANYWHERE)
+                .equal("aa.category", p.category)
+                .in("aa.roleType", p.roleTypes)
+                .equal("aa.statusType", p.statusType)
+                .like(Arrays.asList("aa.message", "aa.errorReason"), p.keyword, OrmMatchMode.ANYWHERE)
+                .between("aa.startDate", p.fromDate, p.toDate)
+                .orderBy("aa.startDate DESC");
+        return rep.tmpl().find(jpql.build(), p.pageable(), jpql.args());
     }
 
-    /** 利用者監査ログを検索します。 */
-    public static PagingList<AuditActor> find(final SystemRepository rep, final FindAuditActor p) {
-        return rep.tmpl().find(AuditActor.class, (criteria) -> {
-            return criteria
-                    .like(new String[] { "actorId", "source" }, p.actorId, MatchMode.ANYWHERE)
-                    .equal("category", p.category)
-                    .equal("roleType", p.roleType)
-                    .equal("statusType", p.statusType)
-                    .like(new String[] { "message", "errorReason" }, p.keyword, MatchMode.ANYWHERE)
-                    .between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
-        }, p.page.sortIfEmpty(SortOrder.desc("startDate")));
+    /** search parameter */
+    @Builder
+    public static record FindAuditActor(
+            @IdStrEmpty String actorId,
+            @CategoryEmpty String category,
+            @DescriptionEmpty String keyword,
+            @NotNull Set<ActorRoleType> roleTypes,
+            ActionStatusType statusType,
+            @ISODateTime LocalDateTime fromDate,
+            @ISODateTime LocalDateTime toDate,
+            Integer size,
+            Integer page) {
+        public Pageable pageable() {
+            return PageRequest.of(
+                    page == null ? 0 : page,
+                    size == null || size <= 100 ? 100 : size);
+        }
     }
 
-    /** 検索パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FindAuditActor implements Dto {
-        private static final long serialVersionUID = 1l;
-        @IdStrEmpty
-        private String actorId;
-        @CategoryEmpty
-        private String category;
-        @DescriptionEmpty
-        private String keyword;
-        @NotNull
-        private ActorRoleType roleType = ActorRoleType.User;
-        private ActionStatusType statusType;
-        @ISODate
-        private LocalDate fromDay;
-        @ISODate
-        private LocalDate toDay;
-        @NotNull
-        private Pagination page = new Pagination();
+    /** Register user audit logs. */
+    public static AuditActor register(final OrmRepository rep, final RegAuditActor p) {
+        return rep.save(p.create(rep.dh().actor(), rep.dh().time().date()));
     }
 
-    /** 登録パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegAuditActor implements Dto {
-        private static final long serialVersionUID = 1l;
-        private String category;
-        private String message;
+    /** registered parameter */
+    @Builder
+    public static record RegAuditActor(
+            String category,
+            String message) implements Dto {
 
         public AuditActor create(final Actor actor, LocalDateTime now) {
-            AuditActor audit = new AuditActor();
-            audit.setActorId(actor.getId());
-            audit.setRoleType(actor.getRoleType());
-            audit.setSource(actor.getSource());
+            var audit = new AuditActor();
+            audit.setActorId(actor.id());
+            audit.setRoleType(actor.roleType());
+            audit.setSource(actor.source());
             audit.setCategory(category);
             audit.setMessage(ConvertUtils.left(message, 300));
-            audit.setStatusType(ActionStatusType.Processing);
+            audit.setStatusType(ActionStatusType.PROCESSING);
             audit.setStartDate(now);
             return audit;
         }
@@ -155,8 +161,15 @@ public class AuditActor extends OrmActiveRecord<AuditActor> {
         }
 
         public static RegAuditActor of(String category, String message) {
-            return new RegAuditActor(category, message);
+            return RegAuditActor.builder()
+                    .category(category)
+                    .message(message)
+                    .build();
         }
+    }
+
+    public static void purge(OrmRepository rep, LocalDate expiredDay) {
+        rep.tmpl().execute("DELETE FROM AuditActor aa WHERE aa.startDate <= ?1", expiredDay.atStartOfDay());
     }
 
 }

@@ -1,6 +1,7 @@
 package sample.usecase;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -8,9 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import sample.context.audit.AuditHandler;
-import sample.context.orm.*;
-import sample.model.master.*;
+import sample.context.orm.TxTemplate;
+import sample.context.orm.repository.DefaultRepository;
+import sample.model.master.Holiday;
 import sample.model.master.Holiday.RegHoliday;
+import sample.model.master.Staff;
+import sample.model.master.StaffAuthority;
 
 /**
  * サービスマスタドメインに対する社内ユースケース処理。

@@ -2,15 +2,20 @@ package sample.model.account;
 
 import java.util.Optional;
 
-import javax.persistence.*;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import lombok.*;
-import sample.ValidationException.ErrorKeys;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.Value;
 import sample.context.Dto;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import sample.context.ValidationException.ErrorKeys;
+import sample.context.orm.OrmActiveRecord;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Password;
 
 /**
  * 口座ログインを表現します。

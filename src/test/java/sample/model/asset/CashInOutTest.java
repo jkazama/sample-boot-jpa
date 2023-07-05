@@ -1,17 +1,25 @@
 package sample.model.asset;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-import sample.*;
-import sample.ValidationException.ErrorKeys;
+import sample.EntityTestSupport;
+import sample.context.ActionStatusType;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
 import sample.model.DomainErrorKeys;
-import sample.model.account.*;
-import sample.model.asset.CashInOut.*;
+import sample.model.account.Account;
+import sample.model.account.FiAccount;
+import sample.model.asset.CashInOut.FindCashInOut;
+import sample.model.asset.CashInOut.RegCashOut;
 import sample.model.asset.type.CashflowType;
 import sample.model.master.SelfFiAccount;
 
@@ -50,11 +58,11 @@ public class CashInOutTest extends EntityTestSupport {
             assertEquals(
                     1, CashInOut.find(rep, findParam(baseDay, basePlus1Day)).size());
             assertEquals(
-                    1, CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.Unprocessed)).size());
+                    1, CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.UNPROCESSED)).size());
             assertTrue(
-                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.Processed)).isEmpty());
+                    CashInOut.find(rep, findParam(baseDay, basePlus1Day, ActionStatusType.PROCESSED)).isEmpty());
             assertTrue(
-                    CashInOut.find(rep, findParam(basePlus1Day, basePlus2Day, ActionStatusType.Unprocessed)).isEmpty());
+                    CashInOut.find(rep, findParam(basePlus1Day, basePlus2Day, ActionStatusType.UNPROCESSED)).isEmpty());
         });
     }
 
@@ -96,7 +104,7 @@ public class CashInOutTest extends EntityTestSupport {
             assertEquals("FI" + accId, normal.getTargetFiAccountId());
             assertEquals(Remarks.CashOut + "-" + ccy, normal.getSelfFiCode());
             assertEquals("xxxxxx", normal.getSelfFiAccountId());
-            assertEquals(ActionStatusType.Unprocessed, normal.getStatusType());
+            assertEquals(ActionStatusType.UNPROCESSED, normal.getStatusType());
             assertNull(normal.getCashflowId());
 
             // 拘束額を考慮した出金依頼 [例外]
@@ -115,7 +123,7 @@ public class CashInOutTest extends EntityTestSupport {
         tx(() -> {
             // CF未発生の依頼を取消
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
-            assertEquals(ActionStatusType.Cancelled, normal.cancel(rep).getStatusType());
+            assertEquals(ActionStatusType.CANCELLED, normal.cancel(rep).getStatusType());
 
             // 発生日を迎えた場合は取消できない [例外]
             CashInOut today = fixtures.cio(accId, "300", true);
@@ -135,12 +143,12 @@ public class CashInOutTest extends EntityTestSupport {
         LocalDate baseDay = businessDay.day();
         tx(() -> {
             CashInOut normal = fixtures.cio(accId, "300", true).save(rep);
-            assertEquals(ActionStatusType.Error, normal.error(rep).getStatusType());
+            assertEquals(ActionStatusType.ERROR, normal.error(rep).getStatusType());
 
             // 処理済の時はエラーにできない [例外]
             CashInOut today = fixtures.cio(accId, "300", true);
             today.setEventDay(baseDay);
-            today.setStatusType(ActionStatusType.Processed);
+            today.setStatusType(ActionStatusType.PROCESSED);
             today.save(rep);
             try {
                 today.error(rep);
@@ -170,7 +178,7 @@ public class CashInOutTest extends EntityTestSupport {
             normal.setEventDay(baseDay);
             normal.save(rep);
             CashInOut processed = normal.process(rep);
-            assertEquals(ActionStatusType.Processed, processed.getStatusType());
+            assertEquals(ActionStatusType.PROCESSED, processed.getStatusType());
             assertNotNull(processed.getCashflowId());
 
             // 発生させたキャッシュフローの検証
@@ -182,7 +190,7 @@ public class CashInOutTest extends EntityTestSupport {
             assertEquals(Remarks.CashOut, cf.getRemark());
             assertEquals(baseDay, cf.getEventDay());
             assertEquals(basePlus3Day, cf.getValueDay());
-            assertEquals(ActionStatusType.Unprocessed, cf.getStatusType());
+            assertEquals(ActionStatusType.UNPROCESSED, cf.getStatusType());
         });
     }
 

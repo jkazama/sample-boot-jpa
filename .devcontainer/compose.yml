@@ -1,0 +1,23 @@
+services:
+  workspace-backend:
+    image: mcr.microsoft.com/vscode/devcontainers/java:17-jdk-bullseye
+    init: true
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - ..:/home/vscode/workspace:cached
+      - ~/.ssh:/home/vscode/.ssh
+    working_dir: /home/vscode/workspace
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - backend-db-data:/var/lib/postgresql/data
+      - ../data/db:/docker-entrypoint-initdb.d
+
+volumes:
+  backend-db-data:

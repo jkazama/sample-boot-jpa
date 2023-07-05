@@ -1,15 +1,29 @@
 package sample.model.master;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import sample.context.Dto;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import sample.context.orm.OrmActiveMetaRecord;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.Category;
+import sample.model.constraints.CategoryEmpty;
+import sample.model.constraints.ISODate;
+import sample.model.constraints.ISODateTime;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
 import sample.model.constraints.Year;
 import sample.util.DateUtils;
 

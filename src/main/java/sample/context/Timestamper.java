@@ -1,56 +1,96 @@
 package sample.context;
 
-import java.time.*;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Component;
 
-import lombok.Setter;
-import sample.util.*;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import sample.context.spring.ObjectProviderAccessor;
+import sample.context.support.AppSettingHandler;
+import sample.util.DateUtils;
+import sample.util.TimePoint;
 
 /**
- * 日時ユーティリティコンポーネント。
+ * Date and time utility component.
  */
-@Setter
-public class Timestamper {
+public interface Timestamper {
     public static final String KeyDay = "system.businessDay.day";
 
-    @Autowired(required = false)
-    private AppSettingHandler setting;
+    /** Returns the current business day */
+    LocalDate day();
 
-    private final Clock clock;
+    /** Returns the current LocalDateTime */
+    LocalDateTime date();
 
-    public Timestamper() {
-        clock = Clock.systemDefaultZone();
-    }
-
-    public Timestamper(final Clock clock) {
-        this.clock = clock;
-    }
-
-    /** 営業日を返します。 */
-    public LocalDate day() {
-        return setting == null ? LocalDate.now(clock) : DateUtils.day(setting.setting(KeyDay).str());
-    }
-
-    /** 日時を返します。 */
-    public LocalDateTime date() {
-        return LocalDateTime.now(clock);
-    }
-
-    /** 営業日/日時を返します。 */
-    public TimePoint tp() {
+    /** Returns the current TimePoint */
+    default TimePoint tp() {
         return TimePoint.of(day(), date());
     }
 
-    /**
-     * 営業日を指定日へ進めます。
-     * <p>AppSettingHandlerを設定時のみ有効です。
-     * @param day 更新営業日
-     */
-    public Timestamper proceedDay(LocalDate day) {
-        if (setting != null)
-            setting.update(KeyDay, DateUtils.dayFormat(day));
-        return this;
+    /** Proceed the business day to the target date */
+    Timestamper proceedDay(LocalDate day);
+
+    @Component
+    @RequiredArgsConstructor(staticName = "of")
+    public static class TimestamperImpl implements Timestamper {
+        private final ObjectProvider<AppSettingHandler> settingHandler;
+        private final ObjectProviderAccessor providerAccessor;
+        private final Clock clock = Clock.systemDefaultZone();
+
+        /** {@inheritDoc} */
+        @Override
+        public LocalDate day() {
+            return DateUtils.day(settingHandler().setting(KeyDay).str());
+        }
+
+        private AppSettingHandler settingHandler() {
+            return this.providerAccessor.bean(settingHandler, AppSettingHandler.class);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public LocalDateTime date() {
+            return LocalDateTime.now(clock);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Timestamper proceedDay(LocalDate day) {
+            this.settingHandler().update(KeyDay, DateUtils.dayFormat(day));
+            return this;
+        }
+
     }
 
+    @AllArgsConstructor(staticName = "of")
+    public static class TimestamperMock implements Timestamper {
+        private static final ZoneId DEFAULT_ZONE_ID = ZoneId.systemDefault();
+        private Clock clock;
+
+        /** {@inheritDoc} */
+        @Override
+        public LocalDate day() {
+            return LocalDate.now(clock);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public LocalDateTime date() {
+            return LocalDateTime.now(clock);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Timestamper proceedDay(LocalDate day) {
+            var fixedDate = day.atStartOfDay(DEFAULT_ZONE_ID);
+            this.clock = Clock.fixed(fixedDate.toInstant(), DEFAULT_ZONE_ID);
+            return this;
+        }
+
+    }
 }

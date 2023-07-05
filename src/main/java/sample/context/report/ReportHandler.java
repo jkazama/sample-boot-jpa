@@ -2,7 +2,7 @@ package sample.context.report;
 
 import java.io.*;
 
-import sample.InvocationException;
+import sample.context.InvocationException;
 import sample.context.report.csv.*;
 import sample.context.report.csv.CsvReader.CsvReadLine;
 import sample.context.report.csv.CsvWriter.CsvWrite;
@@ -16,7 +16,8 @@ public class ReportHandler {
 
     /**
      * 帳票をオンメモリ上でbyte配列にします。
-     * <p>大量データ等、パフォーマンス上のボトルネックが無いときはこちらの処理内でレポートを書き出しするようにしてください。
+     * <p>
+     * 大量データ等、パフォーマンス上のボトルネックが無いときはこちらの処理内でレポートを書き出しするようにしてください。
      */
     public byte[] convert(ReportToByte logic) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -30,7 +31,8 @@ public class ReportHandler {
 
     /**
      * CSVファイルを読み込んで行単位に処理を行います。
-     * @param data 読み込み対象となるバイナリ
+     *
+     * @param data  読み込み対象となるバイナリ
      * @param logic 行単位の読込処理
      */
     public void readCsv(byte[] data, CsvReadLine logic) {
@@ -43,7 +45,8 @@ public class ReportHandler {
 
     /**
      * CSVストリームを読み込んで行単位に処理を行います。
-     * @param ins 読み込み対象となるInputStream
+     *
+     * @param ins   読み込み対象となるInputStream
      * @param logic 行単位の読込処理
      */
     public void readCsv(InputStream ins, CsvReadLine logic) {
@@ -56,7 +59,8 @@ public class ReportHandler {
 
     /**
      * CSVファイルを書き出しします。
-     * @param file 出力対象となるファイル
+     *
+     * @param file  出力対象となるファイル
      * @param logic 書出処理
      */
     public void writeCsv(File file, CsvWrite logic) {
@@ -69,7 +73,8 @@ public class ReportHandler {
 
     /**
      * CSVストリームに書き出しします。
-     * @param out 出力Stream
+     *
+     * @param out   出力Stream
      * @param logic 書出処理
      */
     public void writeCsv(OutputStream out, CsvWrite logic) {

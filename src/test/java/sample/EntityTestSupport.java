@@ -1,29 +1,40 @@
 package sample;
 
 import java.time.Clock;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import org.junit.jupiter.api.*;
-import org.springframework.orm.jpa.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import sample.context.*;
+import jakarta.persistence.EntityManagerFactory;
+import sample.context.DomainEntity;
+import sample.context.SimpleObjectProvider;
+import sample.context.Timestamper;
 import sample.context.actor.ActorSession;
-import sample.context.orm.*;
-import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
-import sample.model.*;
+import sample.context.orm.OrmDataSourceProperties;
+import sample.context.orm.OrmInterceptor;
+import sample.context.orm.repository.DefaultRepository;
+import sample.context.orm.repository.DefaultRepository.DefaultDataSourceProperties;
+import sample.model.BusinessDayHandler;
+import sample.model.DataFixtures;
 import sample.support.MockDomainHelper;
 
 /**
  * Spring コンテナを用いない JPA のみに特化した検証用途。
- * <p>model パッケージでのみ利用してください。
+ * <p>
+ * model パッケージでのみ利用してください。
  */
 public class EntityTestSupport {
     protected Clock clock = Clock.systemDefaultZone();
@@ -147,7 +158,7 @@ public class EntityTestSupport {
     protected <T> T tx(Supplier<T> callable) {
         return new TransactionTemplate(txm).execute((status) -> {
             T ret = callable.get();
-            if (ret instanceof Entity) {
+            if (ret instanceof DomainEntity) {
                 ret.hashCode(); // for lazy loading
             }
             return ret;

@@ -7,7 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.*;
-import sample.InvocationException;
+import sample.context.InvocationException;
 
 /**
  * CSVの書き出し処理をサポートするユーティリティ。
@@ -43,7 +43,9 @@ public class CsvWriter {
 
     /**
      * CSV書出処理(上書き)を行います。
-     * <p>CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
+     * <p>
+     * CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
+     *
      * @param logic
      */
     public void write(final CsvWrite logic) {
@@ -62,7 +64,7 @@ public class CsvWriter {
             }
         }
     }
-    
+
     private void closeQuietly(final Closeable closeable) {
         try {
             if (closeable != null) {
@@ -74,8 +76,11 @@ public class CsvWriter {
 
     /**
      * CSV書出処理(追記)を行います。
-     * <p>CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
-     * <p>ファイル出力時のみ利用可能です。
+     * <p>
+     * CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
+     * <p>
+     * ファイル出力時のみ利用可能です。
+     *
      * @param logic
      */
     public void writeAppend(final CsvWrite logic) {
@@ -151,7 +156,7 @@ public class CsvWriter {
         }
     }
 
-    /** CSV出力処理を表現します。  */
+    /** CSV出力処理を表現します。 */
     public static interface CsvWrite {
         /**
          * @param stream 出力CSVインスタンス

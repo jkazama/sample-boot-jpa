@@ -2,11 +2,17 @@ package sample.model.master;
 
 import java.util.List;
 
-import javax.persistence.*;
-
-import lombok.*;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import sample.context.orm.OrmActiveRecord;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
 
 /**
  * 社員に割り当てられた権限を表現します。

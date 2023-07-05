@@ -1,6 +1,6 @@
 package sample.model.account;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import lombok.*;
 import sample.context.orm.*;
@@ -8,7 +8,8 @@ import sample.model.constraints.*;
 
 /**
  * 口座に紐づく金融機関口座を表現します。
- * <p>口座を相手方とする入出金で利用します。
+ * <p>
+ * 口座を相手方とする入出金で利用します。
  * low: サンプルなので支店や名称、名義といった本来必須な情報をかなり省略しています。(通常は全銀仕様を踏襲します)
  */
 @Entity

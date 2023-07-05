@@ -1,6 +1,6 @@
 package sample.model.master;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import lombok.*;
 import sample.context.orm.*;

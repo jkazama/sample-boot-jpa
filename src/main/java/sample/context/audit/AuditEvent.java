@@ -1,129 +1,131 @@
 package sample.context.audit;
 
-import java.time.*;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.criterion.MatchMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import lombok.*;
-import sample.ActionStatusType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
+import sample.context.ActionStatusType;
+import sample.context.DomainEntity;
 import sample.context.Dto;
-import sample.context.orm.*;
-import sample.context.orm.Sort.SortOrder;
-import sample.model.constraints.*;
+import sample.context.orm.JpqlBuilder;
+import sample.context.orm.OrmMatchMode;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.DescriptionEmpty;
+import sample.model.constraints.ISODateTime;
+import sample.model.constraints.NameEmpty;
 import sample.util.DateUtils;
 
 /**
- * システムイベントの監査ログを表現します。
+ * Represents the audit log of system events.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class AuditEvent extends OrmActiveRecord<AuditEvent> {
-    private static final long serialVersionUID = 1l;
+public class AuditEvent implements DomainEntity {
+    private static final String SEQUENCE_ID = "audit_event_id_seq";
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_ID)
+    @SequenceGenerator(name = SEQUENCE_ID, sequenceName = SEQUENCE_ID, allocationSize = 1)
     private Long id;
-    /** カテゴリ */
     private String category;
-    /** メッセージ */
     private String message;
-    /** 処理ステータス */
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private ActionStatusType statusType;
-    /** エラー事由 */
     private String errorReason;
-    /** 処理時間(msec) */
+    /** Processing time (msec) */
     private Long time;
-    /** 開始日時 */
     @NotNull
     private LocalDateTime startDate;
-    /** 終了日時(未完了時はnull) */
+    /** End date and time (null if not completed) */
     private LocalDateTime endDate;
 
-    /** イベント監査ログを完了状態にします。 */
-    public AuditEvent finish(final SystemRepository rep) {
+    /** Event audit log is set to PROCESSED status. */
+    public AuditEvent finish(final OrmRepository rep) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Processed);
+        setStatusType(ActionStatusType.PROCESSED);
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** イベント監査ログを取消状態にします。 */
-    public AuditEvent cancel(final SystemRepository rep, String errorReason) {
+    /** Event audit log is set to CANCELLED status. */
+    public AuditEvent cancel(final OrmRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Cancelled);
+        setStatusType(ActionStatusType.CANCELLED);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** イベント監査ログを例外状態にします。 */
-    public AuditEvent error(final SystemRepository rep, String errorReason) {
+    /** Set the event audit log to ERROR status. */
+    public AuditEvent error(final OrmRepository rep, String errorReason) {
         LocalDateTime now = rep.dh().time().date();
-        setStatusType(ActionStatusType.Error);
+        setStatusType(ActionStatusType.ERROR);
         setErrorReason(StringUtils.abbreviate(errorReason, 250));
         setEndDate(now);
         setTime(DateUtils.between(startDate, endDate).get().toMillis());
-        return update(rep);
+        return rep.update(this);
     }
 
-    /** イベント監査ログを登録します。 */
-    public static AuditEvent register(final SystemRepository rep, final RegAuditEvent p) {
-        return p.create(rep.dh().time().date()).save(rep);
+    /** Search the event audit log. */
+    public static Page<AuditEvent> find(final OrmRepository rep, final FindAuditEvent p) {
+        JpqlBuilder jpql = JpqlBuilder.of("FROM AuditEvent ae")
+                .equal("ae.category", p.category)
+                .equal("ae.statusType", p.statusType)
+                .like(Arrays.asList("ae.message", "ae.errorReason"), p.keyword, OrmMatchMode.ANYWHERE)
+                .between("ae.startDate", p.fromDate, p.toDate)
+                .orderBy("ae.startDate DESC");
+        return rep.tmpl().find(jpql.build(), p.pageable(), jpql.args());
     }
 
-    /** イベント監査ログを検索します。 */
-    public static PagingList<AuditEvent> find(final SystemRepository rep, final FindAuditEvent p) {
-        return rep.tmpl().find(AuditEvent.class, (criteria) -> {
-            return criteria
-                    .equal("category", p.category)
-                    .equal("statusType", p.statusType)
-                    .like(new String[] { "message", "errorReason" }, p.keyword, MatchMode.ANYWHERE)
-                    .between("startDate", p.fromDay.atStartOfDay(), DateUtils.dateTo(p.toDay));
-        }, p.page.sortIfEmpty(SortOrder.desc("startDate")));
+    /** search parameter */
+    @Builder
+    public static record FindAuditEvent(
+            @NameEmpty String category,
+            @DescriptionEmpty String keyword,
+            ActionStatusType statusType,
+            @ISODateTime LocalDateTime fromDate,
+            @ISODateTime LocalDateTime toDate,
+            Integer size,
+            Integer page) {
+        public Pageable pageable() {
+            return PageRequest.of(
+                    page == null ? 0 : page,
+                    size == null || size <= 100 ? 100 : size);
+        }
     }
 
-    /** 検索パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FindAuditEvent implements Dto {
-        private static final long serialVersionUID = 1l;
-        @NameEmpty
-        private String category;
-        @DescriptionEmpty
-        private String keyword;
-        private ActionStatusType statusType;
-        @ISODate
-        private LocalDate fromDay;
-        @ISODate
-        private LocalDate toDay;
-        @NotNull
-        private Pagination page = new Pagination();
+    /** Register event audit logs. */
+    public static AuditEvent register(final OrmRepository rep, final RegAuditEvent p) {
+        return rep.save(p.create(rep.dh().time().date()));
     }
 
-    /** 登録パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegAuditEvent implements Dto {
-        private static final long serialVersionUID = 1l;
-        @NameEmpty
-        private String category;
-        private String message;
+    /** registered parameter */
+    @Builder
+    public static record RegAuditEvent(
+            @NameEmpty String category,
+            String message) implements Dto {
 
         public AuditEvent create(LocalDateTime now) {
             AuditEvent event = new AuditEvent();
             event.setCategory(category);
             event.setMessage(message);
-            event.setStatusType(ActionStatusType.Processing);
+            event.setStatusType(ActionStatusType.PROCESSING);
             event.setStartDate(now);
             return event;
         }
@@ -133,8 +135,15 @@ public class AuditEvent extends OrmActiveRecord<AuditEvent> {
         }
 
         public static RegAuditEvent of(String category, String message) {
-            return new RegAuditEvent(category, message);
+            return RegAuditEvent.builder()
+                    .category(category)
+                    .message(message)
+                    .build();
         }
+    }
+
+    public static void purge(OrmRepository rep, LocalDate expiredDay) {
+        rep.tmpl().execute("DELETE FROM AuditActor aa WHERE aa.startDate <= ?1", expiredDay.atStartOfDay());
     }
 
 }

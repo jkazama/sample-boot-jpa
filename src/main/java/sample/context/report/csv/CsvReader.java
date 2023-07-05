@@ -6,7 +6,7 @@ import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.*;
-import sample.InvocationException;
+import sample.context.InvocationException;
 
 /**
  * CSVの読込処理をサポートするユーティリティです。
@@ -26,8 +26,10 @@ public class CsvReader {
 
     /**
      * CSV読込処理を行います。
-     * <p>大量データ処理を想定してメモリ内に全展開するのではなく、Iteratorを用いた
+     * <p>
+     * 大量データ処理を想定してメモリ内に全展開するのではなく、Iteratorを用いた
      * 行処理形式を利用しています。
+     *
      * @param logic
      */
     public void read(final CsvReadLine logic) {
@@ -45,7 +47,7 @@ public class CsvReader {
             }
         }
     }
-    
+
     private void closeQuietly(final Closeable closeable) {
         try {
             if (closeable != null) {
@@ -233,7 +235,7 @@ public class CsvReader {
         }
         return unescape;
     }
-    
+
     public static CsvReader of(byte[] data) {
         return new CsvReader(data, null, new CsvLayout());
     }
@@ -250,11 +252,11 @@ public class CsvReader {
         return new CsvReader(null, ins, layout);
     }
 
-    /** 行レベルのCSV読込処理を表現します。  */
+    /** 行レベルのCSV読込処理を表現します。 */
     public static interface CsvReadLine {
         /**
          * @param lineNum 実行行番号(1開始)
-         * @param cols 解析された列一覧
+         * @param cols    解析された列一覧
          */
         void execute(int lineNum, final List<String> cols);
     }

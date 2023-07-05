@@ -1,26 +1,28 @@
 package sample.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import sample.ValidationException;
-import sample.ValidationException.Warn;
+import sample.context.ValidationException;
+import sample.context.ValidationException.Warn;
 
 public class ValidatorTest {
 
     @Test
     public void ラムダ式ベースの検証() {
-        Validator.validate((v) -> {
+        AppValidator.validate((v) -> {
             boolean anyCheck = true;
             v.checkField(anyCheck, "name", "error.name");
         });
 
         // フィールドレベルのチェック
         try {
-            Validator.validate((v) -> {
+            AppValidator.validate((v) -> {
                 boolean anyCheck = false;
                 v.checkField(anyCheck, "name", "error.name");
                 v.checkField(anyCheck, "day", "error.day");
@@ -38,7 +40,7 @@ public class ValidatorTest {
 
         // グローバルチェック
         try {
-            Validator.validate((v) -> {
+            AppValidator.validate((v) -> {
                 boolean anyCheck = false;
                 v.check(anyCheck, "error.global");
             });
@@ -53,7 +55,7 @@ public class ValidatorTest {
 
     @Test
     public void 手続きベースの検証() {
-        Validator v = new Validator();
+        AppValidator v = new AppValidator();
         boolean anyCheck = false;
         v.checkField(anyCheck, "name", "error.name");
         try {

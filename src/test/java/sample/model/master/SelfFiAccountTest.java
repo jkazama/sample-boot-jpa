@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import sample.*;
-import sample.ValidationException.ErrorKeys;
+import sample.context.ValidationException;
+import sample.context.ValidationException.ErrorKeys;
 
 public class SelfFiAccountTest extends EntityTestSupport {
 

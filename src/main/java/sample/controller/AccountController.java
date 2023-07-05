@@ -1,16 +1,22 @@
 package sample.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import lombok.*;
-import sample.ValidationException;
-import sample.ValidationException.ErrorKeys;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
 import sample.context.actor.Actor;
-import sample.context.security.*;
+import sample.context.security.SecurityActorFinder;
 import sample.context.security.SecurityActorFinder.ActorDetails;
+import sample.context.security.SecurityProperties;
 import sample.usecase.AccountService;
 
 /**
@@ -22,7 +28,7 @@ public class AccountController {
 
     private final AccountService service;
     private final SecurityProperties securityProps;
-    
+
     public AccountController(AccountService service, SecurityProperties securityProps) {
         this.service = service;
         this.securityProps = securityProps;

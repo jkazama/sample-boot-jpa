@@ -1,12 +1,17 @@
 package sample.model.account;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
 
-import sample.*;
-import sample.ValidationException.ErrorKeys;
-import sample.model.account.Account.*;
+import sample.EntityTestSupport;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
+import sample.model.account.Account.ChgAccount;
+import sample.model.account.Account.RegAccount;
 import sample.model.account.type.AccountStatusType;
 
 public class AccountTest extends EntityTestSupport {

@@ -1,64 +1,40 @@
 package sample.model;
 
 import java.math.BigDecimal;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import lombok.Setter;
-import sample.ActionStatusType;
-import sample.context.*;
-import sample.context.orm.*;
-import sample.model.account.*;
+import sample.context.ActionStatusType;
+import sample.context.Timestamper;
+import sample.context.support.AppSetting;
+import sample.model.account.Account;
+import sample.model.account.FiAccount;
+import sample.model.account.Login;
 import sample.model.account.type.AccountStatusType;
-import sample.model.asset.*;
+import sample.model.asset.CashBalance;
+import sample.model.asset.CashInOut;
+import sample.model.asset.Cashflow;
 import sample.model.asset.Cashflow.RegCashflow;
+import sample.model.asset.Remarks;
 import sample.model.asset.type.CashflowType;
-import sample.model.master.*;
-import sample.util.*;
+import sample.model.master.Holiday;
+import sample.model.master.SelfFiAccount;
+import sample.model.master.Staff;
+import sample.model.master.StaffAuthority;
+import sample.util.DateUtils;
+import sample.util.TimePoint;
 
 /**
  * データ生成用のサポートコンポーネント。
- * <p>テストや開発時の簡易マスタデータ生成を目的としているため本番での利用は想定していません。
+ * <p>
+ * テストや開発時の簡易マスタデータ生成を目的としているため本番での利用は想定していません。
  */
 @Setter
 public class DataFixtures {
-
-    @Autowired
-    private Timestamper time;
-    @Autowired
-    private BusinessDayHandler businessDay;
-    @Autowired
-    private PasswordEncoder encoder;
-    @Autowired
-    private DefaultRepository rep;
-    @Autowired
-    @Qualifier(DefaultRepository.BeanNameTx)
-    private PlatformTransactionManager tx;
-    @Autowired
-    private SystemRepository repSystem;
-    @Autowired
-    @Qualifier(SystemRepository.BeanNameTx)
-    private PlatformTransactionManager txSystem;
-
-    @PostConstruct
-    public void initialize() {
-        new TransactionTemplate(txSystem).execute((status) -> {
-            initializeInTxSystem();
-            return true;
-        });
-        new TransactionTemplate(tx).execute((status) -> {
-            initializeInTx();
-            return true;
-        });
-    }
 
     public void initializeInTxSystem() {
         String day = DateUtils.dayFormat(LocalDate.now());
@@ -147,7 +123,7 @@ public class DataFixtures {
         m.setTargetFiAccountId("tFiAccId");
         m.setSelfFiCode("sFiCode");
         m.setSelfFiAccountId("sFiAccId");
-        m.setStatusType(ActionStatusType.Unprocessed);
+        m.setStatusType(ActionStatusType.UNPROCESSED);
         return m;
     }
 

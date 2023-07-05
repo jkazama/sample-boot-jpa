@@ -1,39 +1,58 @@
 package sample.context.security;
 
 import java.io.IOException;
-import java.util.*;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
+import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.*;
-import org.springframework.security.web.authentication.logout.*;
-import org.springframework.web.filter.*;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.filter.GenericFilterBean;
 
-import lombok.*;
-import sample.ValidationException.ErrorKeys;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import sample.context.ErrorKeys;
 import sample.context.actor.ActorSession;
-import sample.context.security.SecurityActorFinder.*;
+import sample.context.security.SecurityActorFinder.ActorDetails;
+import sample.context.security.SecurityActorFinder.SecurityActorService;
 
 /**
  * Spring Security(認証/認可)全般の設定を行います。
- * <p>認証はベーシック認証ではなく、HttpSessionを用いた従来型のアプローチで定義しています。
- * <p>設定はパターンを決め打ちしている関係上、既存の定義ファイルをラップしています。
+ * <p>
+ * 認証はベーシック認証ではなく、HttpSessionを用いた従来型のアプローチで定義しています。
+ * <p>
+ * 設定はパターンを決め打ちしている関係上、既存の定義ファイルをラップしています。
  * securityプリフィックスではなくextension.securityプリフィックスのものを利用してください。
- * <p>low: HttpSessionを利用しているため、横スケールする際に問題となります。その際は上位のL/Bで制御するか、
+ * <p>
+ * low: HttpSessionを利用しているため、横スケールする際に問題となります。その際は上位のL/Bで制御するか、
  * SpringSession(HttpSessionの実装をRedis等でサポート)を利用する事でコード変更無しに対応が可能となります。
- * <p>low: 本サンプルでは無効化していますが、CSRF対応はプロジェクト毎に適切な利用を検討してください。
+ * <p>
+ * low: 本サンプルでは無効化していますが、CSRF対応はプロジェクト毎に適切な利用を検討してください。
  */
 @Setter
 @Getter
@@ -106,7 +125,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /**
      * Spring Securityのカスタム認証プロバイダ。
-     * <p>主にパスワード照合を行っています。
+     * <p>
+     * 主にパスワード照合を行っています。
      */
     public static class SecurityProvider implements AuthenticationProvider {
         @Autowired
@@ -140,7 +160,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /**
      * Spring Securityのカスタムエントリポイント。
-     * <p>API化を念頭に例外発生時の実装差込をしています。
+     * <p>
+     * API化を念頭に例外発生時の実装差込をしています。
      */
     public static class SecurityEntryPoint implements AuthenticationEntryPoint {
         @Autowired
@@ -171,7 +192,8 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     /**
      * SpringSecurityの認証情報(Authentication)とActorSessionを紐付けるServletFilter。
-     * <p>dummyLoginが有効な時は常にSecurityContextHolderへAuthenticationを紐付けます。
+     * <p>
+     * dummyLoginが有効な時は常にSecurityContextHolderへAuthenticationを紐付けます。
      */
     @AllArgsConstructor
     public static class ActorSessionFilter extends GenericFilterBean {

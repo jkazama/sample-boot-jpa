@@ -5,15 +5,16 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.*;
 
-import javax.validation.*;
-import javax.validation.constraints.*;
+import jakarta.validation.*;
+import jakarta.validation.constraints.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 /**
  * ISOフォーマットの日付(必須)を表現する制約注釈。
- * <p>YYYY-MM-DDを想定します。
+ * <p>
+ * YYYY-MM-DDを想定します。
  */
 @Documented
 @Constraint(validatedBy = {})

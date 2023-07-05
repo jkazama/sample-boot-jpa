@@ -2,37 +2,33 @@ package sample.controller;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.*;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
-import org.springframework.http.*;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
-import sample.ValidationException;
-import sample.context.*;
+import sample.context.ValidationException;
 import sample.context.report.ReportFile;
 
 /**
  * Controllerで利用されるユーティリティ処理。
  */
 public class ControllerUtils {
-    
+
     /** i18nメッセージ変換を行います。 */
     public static String msg(MessageSource msg, String message, final Locale locale) {
         return msg.getMessage(message, new String[0], locale);
-    }
-
-    /**
-     * リソースファイル([basename].properties)内のキー/値のMap情報を返します。
-     * <p>API呼び出し側でi18n対応を行いたい時などに利用してください。
-     */
-    public static Map<String, String> labels(ResourceBundleHandler label, String basename, final Locale locale) {
-        return label.labels(basename, locale);
     }
 
     /**
@@ -61,52 +57,52 @@ public class ControllerUtils {
     }
 
     /** ファイルアップロード情報(MultipartFile)をReportFileへ変換します。 */
-    public static ReportFile uploadFile(final MultipartFile file) {
-        return uploadFile(file, (String[]) null);
+    public static ReportFile uploadFile(String field, final MultipartFile file) {
+        return uploadFile(field, file, (String[]) null);
     }
 
     /**
      * ファイルアップロード情報(MultipartFile)をReportFileへ変換します。
-     * <p>acceptExtensionsに許容するファイル拡張子(小文字統一)を設定してください。
+     * <p>
+     * acceptExtensionsに許容するファイル拡張子(小文字統一)を設定してください。
      */
-    public static ReportFile uploadFile(final MultipartFile file, final String... acceptExtensions) {
+    public static ReportFile uploadFile(String field, final MultipartFile file, final String... acceptExtensions) {
         String fname = StringUtils.lowerCase(file.getOriginalFilename());
         if (acceptExtensions != null && !FilenameUtils.isExtension(fname, acceptExtensions)) {
-            throw new ValidationException("file", "アップロードファイルには[{0}]を指定してください",
-                    new String[] { StringUtils.join(acceptExtensions) });
+            throw new ValidationException(
+                    field, "アップロードファイルには[{0}]を指定してください",
+                    new String[] { StringUtils.join(acceptExtensions, " / ") });
         }
         try {
-            return new ReportFile(file.getOriginalFilename(), file.getBytes());
+            return ReportFile.ofByteArray(file.getOriginalFilename(), file.getBytes());
         } catch (IOException e) {
-            throw new ValidationException("file", "アップロードファイルの解析に失敗しました");
+            throw new ValidationException(field, "アップロードファイルの解析に失敗しました");
         }
     }
 
     /**
-     * ファイルダウンロード設定を行います。
-     * <p>利用する際は戻り値をvoidで定義するようにしてください。
+     * ファイルダウンロードリソースを返します。
      */
-    public static void exportFile(final HttpServletResponse res, final ReportFile file) {
-        exportFile(res, file, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    public static ResponseEntity<Resource> exportFile(Supplier<ReportFile> fileFn) {
+        return exportFile(fileFn, MediaType.APPLICATION_OCTET_STREAM_VALUE);
     }
 
-    public static void exportFile(final HttpServletResponse res, final ReportFile file, final String contentType) {
+    public static ResponseEntity<Resource> exportFile(Supplier<ReportFile> fileFn, String contentType) {
+        ReportFile file = fileFn.get();
         String filename;
         try {
-            filename = URLEncoder.encode(file.getName(), "UTF-8").replace("+", "%20");
+            filename = URLEncoder.encode(file.name(), "UTF-8").replace("+", "%20");
         } catch (Exception e) {
-            throw new ValidationException("ファイル名が不正です");
+            filename = file.name();
         }
-        res.setContentLength(file.size());
-        res.setContentType(contentType);
-        res.setHeader("Content-Disposition",
-                "attachment; filename=" + filename);
-        try {
-            IOUtils.write(file.getData(), res.getOutputStream());
-        } catch (IOException e) {
-            throw new ValidationException("ファイル出力に失敗しました");
-        }
+        var result = ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HttpHeaders.CONTENT_TYPE, contentType);
+        Optional<Long> contentLength = file.size();
+        contentLength.ifPresent((len) -> {
+            result.header(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
+        });
+        return result.body(file.data());
     }
-
 
 }

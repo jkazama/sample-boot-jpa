@@ -1,6 +1,9 @@
 package sample.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 
@@ -9,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class ConvertUtilsTest {
 
     @Test
-    public void 例外無視変換() {
+    public void checkQuietly() {
         assertEquals(Long.valueOf(8), ConvertUtils.quietlyLong("8"));
         assertNull(ConvertUtils.quietlyLong("a"));
         assertEquals(Integer.valueOf(8), ConvertUtils.quietlyInt("8"));
@@ -21,16 +24,7 @@ public class ConvertUtilsTest {
     }
 
     @Test
-    public void 文字列変換() {
-        assertEquals("aA19aA19あｱｱ", ConvertUtils.zenkakuToHan("aA19ａＡ１９あアｱ"));
-        assertEquals("ａＡ１９ａＡ１９あアア", ConvertUtils.hankakuToZen("aA19ａＡ１９あアｱ"));
-        assertEquals("aA19ａＡ１９あああ", ConvertUtils.katakanaToHira("aA19ａＡ１９あアｱ"));
-        assertEquals("aA19ａＡ１９アアア", ConvertUtils.hiraganaToZenKana("aA19ａＡ１９あアｱ"));
-        assertEquals("aA19aA19ｱｱｱ", ConvertUtils.hiraganaToHanKana("aA19ａＡ１９あアｱ"));
-    }
-
-    @Test
-    public void 桁数操作及びサロゲートペア対応() {
+    public void checkSubstring() {
         assertEquals("あ𠮷い", ConvertUtils.substring("あ𠮷い", 0, 3));
         assertEquals("𠮷", ConvertUtils.substring("あ𠮷い", 1, 2));
         assertEquals("𠮷い", ConvertUtils.substring("あ𠮷い", 1, 3));

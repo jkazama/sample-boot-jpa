@@ -1,12 +1,17 @@
 package sample.model.account;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Test;
 
-import sample.*;
-import sample.ValidationException.ErrorKeys;
-import sample.model.account.Login.*;
+import sample.EntityTestSupport;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
+import sample.model.account.Login.ChgLoginId;
+import sample.model.account.Login.ChgPassword;
 
 public class LoginTest extends EntityTestSupport {
     @Override

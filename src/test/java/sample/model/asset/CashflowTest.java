@@ -1,14 +1,17 @@
 package sample.model.asset;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
-import sample.*;
-import sample.ValidationException.ErrorKeys;
+import sample.EntityTestSupport;
+import sample.context.ActionStatusType;
+import sample.context.ErrorKeys;
+import sample.context.ValidationException;
 
 // low: 簡易な正常系検証が中心。依存するCashBalanceの単体検証パスを前提。
 public class CashflowTest extends EntityTestSupport {
@@ -34,7 +37,7 @@ public class CashflowTest extends EntityTestSupport {
             // 翌日受渡でキャッシュフロー発生
             Cashflow cf = Cashflow.register(rep, fixtures.cfReg("test1", "1000", basePlus1Day));
             assertEquals(new BigDecimal("1000"), cf.getAmount());
-            assertEquals(ActionStatusType.Unprocessed, cf.getStatusType());
+            assertEquals(ActionStatusType.UNPROCESSED, cf.getStatusType());
             assertEquals(baseDay, cf.getEventDay());
             assertEquals(basePlus1Day, cf.getValueDay());
         });
@@ -60,7 +63,7 @@ public class CashflowTest extends EntityTestSupport {
 
             // キャッシュフローの残高反映検証。 0 + 1000 = 1000
             Cashflow cfNormal = fixtures.cf("test1", "1000", baseMinus1Day, baseDay).save(rep);
-            assertEquals(ActionStatusType.Processed, cfNormal.realize(rep).getStatusType());
+            assertEquals(ActionStatusType.PROCESSED, cfNormal.realize(rep).getStatusType());
             assertEquals(new BigDecimal("1000"), CashBalance.getOrNew(rep, "test1", "JPY").getAmount());
 
             // 処理済キャッシュフローの再実現 [例外]
@@ -73,7 +76,7 @@ public class CashflowTest extends EntityTestSupport {
 
             // 過日キャッシュフローの残高反映検証。 1000 + 2000 = 3000
             Cashflow cfPast = fixtures.cf("test1", "2000", baseMinus2Day, baseMinus1Day).save(rep);
-            assertEquals(ActionStatusType.Processed, cfPast.realize(rep).getStatusType());
+            assertEquals(ActionStatusType.PROCESSED, cfPast.realize(rep).getStatusType());
             assertEquals(new BigDecimal("3000"), CashBalance.getOrNew(rep, "test1", "JPY").getAmount());
         });
     }
