@@ -22,12 +22,25 @@ public enum ActorRoleType {
         return this == ANONYMOUS;
     }
 
+    public boolean isUser() {
+        return this == USER;
+    }
+
     public boolean isSystem() {
         return this == SYSTEM;
     }
 
     public boolean notSystem() {
         return !isSystem();
+    }
+
+    public static boolean has(String name) {
+        for (var roleType : values()) {
+            if (roleType.name().equals(name.toUpperCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -1,11 +1,15 @@
 package sample.context.audit;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
@@ -39,46 +43,77 @@ import sample.context.orm.repository.SystemRepository;
 public class AuditHandler {
     public static final Logger LoggerActor = LoggerFactory.getLogger("Audit.Actor");
     public static final Logger LoggerEvent = LoggerFactory.getLogger("Audit.Event");
+    public static final String AUDIT_PREFIX = "audit";
 
+    private final MessageSource msg;
     private final AuditPersister persister;
 
     /** Audit logs are logged for the given process. */
-    public <T> T audit(String message, final Supplier<T> callable) {
-        return audit("default", message, callable);
+    public <T> T audit(String message, Supplier<T> callable) {
+        return audit(message, List.of(), callable);
+    }
+
+    /** Audit logs are logged for the given process. */
+    public <T> T audit(String message, Collection<Object> messageArgs, Supplier<T> callable) {
+        return audit("default", message, messageArgs, callable);
     }
 
     /** Audit logs are recorded for the given process. */
-    public void audit(String message, final Runnable command) {
-        audit(message, () -> {
+    public void audit(String message, Runnable command) {
+        audit(message, List.of(), command);
+    }
+
+    /** Audit logs are logged for the given process. */
+    public void audit(String message, Collection<Object> messageArgs, Runnable command) {
+        audit(message, messageArgs, () -> {
             command.run();
             return true;
         });
     }
 
     /** Audit logs are recorded for the given process. */
-    public <T> T audit(String category, String message, final Supplier<T> callable) {
-        logger().trace(message(message, "[Start]", null));
+    public <T> T audit(String category, String message, Supplier<T> callable) {
+        return audit(category, message, List.of(), callable);
+    }
+
+    /** Audit logs are recorded for the given process. */
+    public <T> T audit(String category, String message, Collection<Object> messageArgs, Supplier<T> callable) {
+        Locale locale = ActorSession.actor().locale();
+        String keyMessage = AUDIT_PREFIX + "." + category + "." + message;
+        String mergeMessage;
+        if (messageArgs == null || messageArgs.isEmpty()) {
+            mergeMessage = msg.getMessage(keyMessage, new Object[0], message, locale);
+        } else {
+            mergeMessage = msg.getMessage(keyMessage, messageArgs.toArray(), message, locale);
+        }
+        logger().trace(message(mergeMessage, "[Start]", null));
         long start = System.currentTimeMillis();
         try {
-            T v = ActorSession.actor().roleType().isSystem() ? callEvent(category, message, callable)
-                    : callAudit(category, message, callable);
-            logger().info(message(message, "[End]", start));
+            T v = ActorSession.actor().roleType().isSystem()
+                    ? callEvent(category, mergeMessage, callable)
+                    : callAudit(category, mergeMessage, callable);
+            logger().info(message(mergeMessage, "[End]", start));
             return v;
         } catch (ValidationException e) {
-            logger().warn(message(message, "[Warn]", start));
+            logger().warn(message(mergeMessage, "[Warn]", start));
             throw e;
         } catch (RuntimeException e) {
-            logger().error(message(message, "[Error]", start));
+            logger().error(message(mergeMessage, "[Error]", start));
             throw (RuntimeException) e;
         } catch (Exception e) {
-            logger().error(message(message, "[Fatal]", start));
+            logger().error(message(mergeMessage, "[Fatal]", start));
             throw InvocationException.of(ErrorKeys.Exception, e);
         }
     }
 
     /** Audit logs are recorded for the given process. */
-    public void audit(String category, String message, final Runnable command) {
-        audit(category, message, () -> {
+    public void audit(String category, String message, Runnable command) {
+        audit(category, message, List.of(), command);
+    }
+
+    /** Audit logs are recorded for the given process. */
+    public void audit(String category, String message, Collection<Object> messageArgs, Runnable command) {
+        audit(category, message, messageArgs, () -> {
             command.run();
             return true;
         });
@@ -101,7 +136,7 @@ public class AuditHandler {
         return sb.toString();
     }
 
-    public <T> T callAudit(String category, String message, final Supplier<T> callable) {
+    public <T> T callAudit(String category, String message, Supplier<T> callable) {
         Optional<AuditActor> audit = Optional.empty();
         try {
             try { // Failure of the system schema should not affect the intrinsic errorに
@@ -140,7 +175,7 @@ public class AuditHandler {
         }
     }
 
-    public <T> T callEvent(String category, String message, final Supplier<T> callable) {
+    public <T> T callEvent(String category, String message, Supplier<T> callable) {
         Optional<AuditEvent> audit = Optional.empty();
         try {
             try { // Failure of the system schema should not affect the intrinsic error
@@ -189,49 +224,49 @@ public class AuditHandler {
         @Qualifier(SystemRepository.BeanNameTx)
         private final PlatformTransactionManager txm;
 
-        public AuditActor start(RegAuditActor p) {
+        public AuditActor start(final RegAuditActor p) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return AuditActor.register(rep, p);
             });
         }
 
-        public AuditActor finish(AuditActor audit) {
+        public AuditActor finish(final AuditActor audit) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return audit.finish(rep);
             });
         }
 
-        public AuditActor cancel(AuditActor audit, String errorReason) {
+        public AuditActor cancel(final AuditActor audit, String errorReason) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return audit.cancel(rep, errorReason);
             });
         }
 
-        public AuditActor error(AuditActor audit, String errorReason) {
+        public AuditActor error(final AuditActor audit, String errorReason) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return audit.error(rep, errorReason);
             });
         }
 
-        public AuditEvent start(RegAuditEvent p) {
+        public AuditEvent start(final RegAuditEvent p) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return AuditEvent.register(rep, p);
             });
         }
 
-        public AuditEvent finish(AuditEvent event) {
+        public AuditEvent finish(final AuditEvent event) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return event.finish(rep);
             });
         }
 
-        public AuditEvent cancel(AuditEvent event, String errorReason) {
+        public AuditEvent cancel(final AuditEvent event, String errorReason) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return event.cancel(rep, errorReason);
             });
         }
 
-        public AuditEvent error(AuditEvent event, String errorReason) {
+        public AuditEvent error(final AuditEvent event, String errorReason) {
             return TxTemplate.of(txm).propagation(Propagation.REQUIRES_NEW).tx(() -> {
                 return event.error(rep, errorReason);
             });

@@ -24,6 +24,7 @@ public interface AppSettingHandler {
 
     @Component
     public static class AppSettingHandlerImpl implements AppSettingHandler {
+        public static final String CacheItemKey = "AppSettingHandler.appSetting";
         private final OrmRepository rep;
 
         public AppSettingHandlerImpl(OrmRepository rep) {
@@ -32,7 +33,7 @@ public interface AppSettingHandler {
 
         /** {@inheritDoc} */
         @Override
-        @Cacheable(cacheNames = "AppSettingHandler.appSetting", key = "#id")
+        @Cacheable(cacheNames = CacheItemKey, key = "#id")
         @Transactional
         public AppSetting setting(String id) {
             AppSetting setting = AppSetting.load(rep, id);
@@ -42,7 +43,7 @@ public interface AppSettingHandler {
 
         /** {@inheritDoc} */
         @Override
-        @CacheEvict(cacheNames = "AppSettingHandler.appSetting", key = "#id")
+        @CacheEvict(cacheNames = CacheItemKey, key = "#id")
         @Transactional
         public AppSetting change(String id, String value) {
             return AppSetting.load(rep, id).change(rep, value);

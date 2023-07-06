@@ -1,4 +1,4 @@
 /**
- * 口座に関連したドメイン列挙型。
+ * Domain enumeration type associated with the account.
  */
 package sample.model.account.type;

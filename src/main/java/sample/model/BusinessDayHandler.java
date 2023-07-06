@@ -5,22 +5,22 @@ import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import sample.context.Timestamper;
 import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.DefaultRepository;
 import sample.model.master.Holiday;
 import sample.model.master.Holiday.RegHoliday;
 import sample.util.DateUtils;
 
 /**
- * ドメインに依存する営業日関連のユーティリティハンドラ。
+ * Domain-dependent business day-related utility handlers.
  */
+@Component
 public class BusinessDayHandler {
-
     private final Timestamper time;
     private final Optional<HolidayAccessor> holidayAccessor;
 
@@ -29,12 +29,12 @@ public class BusinessDayHandler {
         this.holidayAccessor = Optional.ofNullable(holidayAccessor);
     }
 
-    /** 営業日を返します。 */
+    /** Return business days. */
     public LocalDate day() {
         return time.day();
     }
 
-    /** 営業日を返します。 */
+    /** Return business days. */
     public LocalDate day(int daysToAdd) {
         LocalDate day = day();
         if (0 < daysToAdd) {
@@ -61,13 +61,12 @@ public class BusinessDayHandler {
         return day;
     }
 
-    /** 祝日もしくは週末時はtrue。 */
     private boolean isHolidayOrWeeekDay(LocalDate day) {
         return (DateUtils.isWeekend(day) || isHoliday(day));
     }
 
     private boolean isHoliday(LocalDate day) {
-        return holidayAccessor.map(v -> v.getHoliday(day).isPresent()).orElse(false);
+        return holidayAccessor.map(v -> v.get(day).isPresent()).orElse(false);
     }
 
     public static BusinessDayHandler of(Timestamper time) {
@@ -78,25 +77,28 @@ public class BusinessDayHandler {
         return new BusinessDayHandler(time, holidayAccessor);
     }
 
-    /** 祝日マスタを検索/登録するアクセサ。 */
-    @Setter
-    public static class HolidayAccessor {
-        private PlatformTransactionManager txm;
-        private OrmRepository rep;
+    /** Accessor to search/register holiday master */
+    public static interface HolidayAccessor {
 
-        public HolidayAccessor(PlatformTransactionManager txm, OrmRepository rep) {
-            this.txm = txm;
-            this.rep = rep;
-        }
+        Optional<Holiday> get(LocalDate holiday);
+
+        void register(final OrmRepository rep, final RegHoliday param);
+    }
+
+    @Component
+    @RequiredArgsConstructor(staticName = "of")
+    public static class HolidayAccessorImpl implements HolidayAccessor {
+        private final PlatformTransactionManager txm;
+        private final OrmRepository rep;
 
         @Cacheable(cacheNames = "HolidayAccessor.getHoliday")
-        public Optional<Holiday> getHoliday(LocalDate day) {
+        public Optional<Holiday> get(LocalDate day) {
             return TxTemplate.of(txm).readOnly().tx(() -> Holiday.get(rep, day));
         }
 
         @CacheEvict(cacheNames = "HolidayAccessor.getHoliday", allEntries = true)
-        public void register(final DefaultRepository rep, final RegHoliday p) {
-            TxTemplate.of(txm).tx(() -> Holiday.register(rep, p));
+        public void register(final OrmRepository rep, final RegHoliday param) {
+            TxTemplate.of(txm).tx(() -> Holiday.register(rep, param));
         }
 
     }

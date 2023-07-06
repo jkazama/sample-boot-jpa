@@ -13,6 +13,7 @@ import sample.context.ValidationException;
 import sample.model.account.Account.ChgAccount;
 import sample.model.account.Account.RegAccount;
 import sample.model.account.type.AccountStatusType;
+import sample.model.master.Login;
 
 public class AccountTest extends EntityTestSupport {
 
@@ -65,11 +66,11 @@ public class AccountTest extends EntityTestSupport {
             // 通常時取得
             Account valid = Account.loadValid(rep, "normal");
             assertEquals("normal", valid.getId());
-            assertEquals(AccountStatusType.Normal, valid.getStatusType());
+            assertEquals(AccountStatusType.NORMAL, valid.getStatusType());
 
             // 退会時取得
             Account withdrawal = fixtures.acc("withdrawal");
-            withdrawal.setStatusType(AccountStatusType.Withdrawal);
+            withdrawal.setStatusType(AccountStatusType.WITHDRAWAL);
             withdrawal.save(rep);
             try {
                 Account.loadValid(rep, "withdrawal");

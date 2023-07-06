@@ -1,12 +1,13 @@
 package sample.context;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import jakarta.validation.ConstraintViolation;
+import sample.util.Warn;
+import sample.util.Warns;
 
 /**
  * Expresses a business exception.
@@ -30,7 +31,16 @@ public class ValidationException extends RuntimeException {
      */
     public ValidationException(String message) {
         super(message);
-        warns = Warns.init(message);
+        warns = Warns.of(message);
+    }
+
+    /**
+     * Use in cases where you want to notify a global business exception that is not
+     * dependent on a field.
+     */
+    public ValidationException(String message, Collection<String> messageArgs) {
+        super(message);
+        warns = Warns.of(message);
     }
 
     /**
@@ -39,16 +49,16 @@ public class ValidationException extends RuntimeException {
      */
     public ValidationException(String field, String message) {
         super(message);
-        warns = Warns.init(field, message);
+        warns = Warns.ofField(field, message);
     }
 
     /**
      * Use this in cases where you want to notify a business exception that is
      * subordinate to a field.
      */
-    public ValidationException(String field, String message, String[] messageArgs) {
+    public ValidationException(String field, String message, Collection<String> messageArgs) {
         super(message);
-        warns = Warns.init(field, message, messageArgs);
+        warns = Warns.ofField(field, message, messageArgs);
     }
 
     /**
@@ -63,8 +73,8 @@ public class ValidationException extends RuntimeException {
     /** BeanValidaton Use in cases where you want to notify a business exception. */
     public ValidationException(final Set<ConstraintViolation<Object>> errors) {
         super(errors.stream().findFirst().map(v -> v.getMessage()).orElse(ErrorKeys.Exception));
-        this.warns = Warns.init();
-        errors.forEach((v) -> warns.add(v.getPropertyPath().toString(), v.getMessage()));
+        this.warns = Warns.of();
+        errors.forEach((v) -> warns.addField(v.getPropertyPath().toString(), v.getMessage()));
     }
 
     /** Returns a list of business exceptions that have occurred. */
@@ -81,19 +91,27 @@ public class ValidationException extends RuntimeException {
         return warns.head().map((v) -> v.messageArgs()).orElse(new String[0]);
     }
 
-    public static ValidationException of(String message) {
-        return new ValidationException(message);
+    public static ValidationException of(String message, String... messageArgs) {
+        if (messageArgs == null) {
+            return new ValidationException(null, message);
+        } else {
+            return new ValidationException(null, message, Arrays.asList(messageArgs));
+        }
     }
 
-    public static ValidationException of(String message, String[] messageArgs) {
+    public static ValidationException of(String message, Collection<String> messageArgs) {
         return new ValidationException(null, message, messageArgs);
     }
 
-    public static ValidationException of(String field, String message) {
-        return new ValidationException(field, message);
+    public static ValidationException ofField(String field, String message, String... messageArgs) {
+        if (messageArgs == null) {
+            return new ValidationException(field, message);
+        } else {
+            return new ValidationException(field, message, Arrays.asList(messageArgs));
+        }
     }
 
-    public static ValidationException of(String field, String message, String[] messageArgs) {
+    public static ValidationException ofField(String field, String message, Collection<String> messageArgs) {
         return new ValidationException(field, message, messageArgs);
     }
 
@@ -103,74 +121,6 @@ public class ValidationException extends RuntimeException {
 
     public static ValidationException of(Set<ConstraintViolation<Object>> errors) {
         return new ValidationException(errors);
-    }
-
-    /** Business Exception Information. */
-    public static class Warns implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private List<Warn> list = new ArrayList<>();
-
-        private Warns() {
-        }
-
-        public Warns add(String message) {
-            list.add(new Warn(null, message, null));
-            return this;
-        }
-
-        public Warns add(String field, String message) {
-            list.add(new Warn(field, message, null));
-            return this;
-        }
-
-        public Warns add(String field, String message, String[] messageArgs) {
-            list.add(new Warn(field, message, messageArgs));
-            return this;
-        }
-
-        public Optional<Warn> head() {
-            return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
-        }
-
-        public List<Warn> list() {
-            return list;
-        }
-
-        public boolean nonEmpty() {
-            return !list.isEmpty();
-        }
-
-        public static Warns init() {
-            return new Warns();
-        }
-
-        public static Warns init(String message) {
-            return init().add(message);
-        }
-
-        public static Warns init(String field, String message) {
-            return init().add(field, message);
-        }
-
-        public static Warns init(String field, String message, String[] messageArgs) {
-            return init().add(field, message, messageArgs);
-        }
-
-    }
-
-    /** Represents a field scope business exception token. */
-    public static record Warn(
-            /** business exception field key */
-            String field,
-            /** business exception message */
-            String message,
-            /** business exception message arguments */
-            String[] messageArgs) {
-
-        /** true on global exceptions not dependent on field */
-        public boolean global() {
-            return field == null;
-        }
     }
 
 }

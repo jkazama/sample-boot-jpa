@@ -33,7 +33,7 @@ public interface Timestamper {
     }
 
     /** Proceed the business day to the target date */
-    Timestamper proceedDay(LocalDate day);
+    Timestamper forwardDay(LocalDate day);
 
     @Component
     @RequiredArgsConstructor(staticName = "of")
@@ -60,8 +60,8 @@ public interface Timestamper {
 
         /** {@inheritDoc} */
         @Override
-        public Timestamper proceedDay(LocalDate day) {
-            this.settingHandler().update(KeyDay, DateUtils.dayFormat(day));
+        public Timestamper forwardDay(LocalDate day) {
+            this.settingHandler().change(KeyDay, DateUtils.dayFormat(day));
             return this;
         }
 
@@ -86,7 +86,7 @@ public interface Timestamper {
 
         /** {@inheritDoc} */
         @Override
-        public Timestamper proceedDay(LocalDate day) {
+        public Timestamper forwardDay(LocalDate day) {
             var fixedDate = day.atStartOfDay(DEFAULT_ZONE_ID);
             this.clock = Clock.fixed(fixedDate.toInstant(), DEFAULT_ZONE_ID);
             return this;

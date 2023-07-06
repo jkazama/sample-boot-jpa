@@ -2,28 +2,30 @@ package sample.context;
 
 /** Message key constants used in exceptions */
 public interface ErrorKeys {
+    String Prefix = "error.";
+
     /** There may have been a problem on the server side. */
-    String Exception = "error.Exception";
+    String Exception = Prefix + "Exception";
     /** No information found. */
-    String EntityNotFound = "error.EntityNotFoundException";
+    String EntityNotFound = Prefix + "EntityNotFoundException";
     /** Subject information has been updated by other users. */
-    String OptimisticLockingFailure = "error.OptimisticLockingFailure";
+    String OptimisticLockingFailure = Prefix + "OptimisticLockingFailure";
     /** Login failed. */
-    String Login = "error.Login";
+    String Login = Prefix + "Login";
     /** Authentication failed. */
-    String Authentication = "error.Authentication";
+    String Authentication = Prefix + "Authentication";
     /** You are unable to log in. Please contact the administrator. */
-    String AuthenticationInvalid = "error.AuthenticationInvalid";
+    String AuthenticationInvalid = Prefix + "AuthenticationInvalid";
     /** The use of the subject feature is not permitted. */
-    String AccessDenied = "error.AccessDeniedException";
+    String AccessDenied = Prefix + "AccessDeniedException";
     /** An unsupported feature was invoked. */
-    String UnsupportedOperation = "error.UnsupportedOperation";
+    String UnsupportedOperation = Prefix + "UnsupportedOperation";
 
     /** Incorrect body text formatting request accepted. */
-    String ServletRequestBinding = "error.ServletRequestBinding";
+    String ServletRequestBinding = Prefix + "ServletRequestBinding";
     /** Incorrect body text formatting request accepted. */
-    String HttpMessageNotReadable = "error.HttpMessageNotReadable";
+    String HttpMessageNotReadable = Prefix + "HttpMessageNotReadable";
     /** Accepted request for inappropriate media type. */
-    String HttpMediaTypeNotAcceptable = "error.HttpMediaTypeNotAcceptable";
+    String HttpMediaTypeNotAcceptable = Prefix + "HttpMediaTypeNotAcceptable";
 
 }

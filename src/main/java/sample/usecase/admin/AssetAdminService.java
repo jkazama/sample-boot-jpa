@@ -1,4 +1,4 @@
-package sample.usecase;
+package sample.usecase.admin;
 
 import java.time.LocalDate;
 import java.util.List;

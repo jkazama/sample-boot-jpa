@@ -103,7 +103,7 @@ public class AuditActor implements DomainEntity {
 
     /** Search user audit logs. */
     public static Page<AuditActor> find(final OrmRepository rep, final FindAuditActor p) {
-        var jpql = JpqlBuilder.of("FROM AuditActor aa")
+        var jpql = JpqlBuilder.of("SELECT aa FROM AuditActor aa")
                 .like(Arrays.asList("aa.actorId", "aa.source"), p.actorId, OrmMatchMode.ANYWHERE)
                 .equal("aa.category", p.category)
                 .in("aa.roleType", p.roleTypes)
@@ -168,8 +168,9 @@ public class AuditActor implements DomainEntity {
         }
     }
 
-    public static void purge(OrmRepository rep, LocalDate expiredDay) {
-        rep.tmpl().execute("DELETE FROM AuditActor aa WHERE aa.startDate <= ?1", expiredDay.atStartOfDay());
+    public static void purge(final OrmRepository rep, LocalDate expiredDay) {
+        var jpql = "DELETE FROM AuditActor aa WHERE aa.startDate <= ?1";
+        rep.tmpl().execute(jpql, expiredDay.atStartOfDay());
     }
 
 }

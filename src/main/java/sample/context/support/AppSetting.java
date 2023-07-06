@@ -7,7 +7,6 @@ import java.util.Optional;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import lombok.var;
@@ -16,6 +15,8 @@ import sample.context.Dto;
 import sample.context.orm.JpqlBuilder;
 import sample.context.orm.OrmMatchMode;
 import sample.context.orm.OrmRepository;
+import sample.model.constraints.CategoryEmpty;
+import sample.model.constraints.IdStr;
 import sample.model.constraints.OutlineEmpty;
 
 /**
@@ -29,13 +30,13 @@ import sample.model.constraints.OutlineEmpty;
 public class AppSetting implements DomainEntity {
 
     @Id
-    @Size(max = 120)
+    @IdStr(max = 120)
     private String id;
-    @Size(max = 60)
+    @CategoryEmpty(max = 60)
     private String category;
-    @Size(max = 1300)
+    @OutlineEmpty(max = 1300)
     private String outline;
-    @Size(max = 1300)
+    @OutlineEmpty(max = 1300)
     @Column(name = "setting_value", length = 1300, nullable = false)
     private String value;
 
@@ -95,8 +96,8 @@ public class AppSetting implements DomainEntity {
 
     /** Search application configuration information. */
     public static List<AppSetting> find(OrmRepository rep, FindAppSetting p) {
-        var jpql = JpqlBuilder.of("FROM AppSetting s")
-                .like(List.of("id", "category", "outline"), p.keyword, OrmMatchMode.ANYWHERE);
+        var jpql = JpqlBuilder.of("SELECT s FROM AppSetting s")
+                .like(List.of("s.id", "s.category", "s.outline"), p.keyword, OrmMatchMode.ANYWHERE);
         return rep.tmpl().find(jpql.build(), jpql.args());
     }
 

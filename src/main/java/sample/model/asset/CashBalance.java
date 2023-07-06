@@ -9,11 +9,8 @@ import java.util.Optional;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import sample.context.orm.OrmActiveRecord;
+import sample.context.DomainEntity;
 import sample.context.orm.OrmRepository;
 import sample.model.constraints.Amount;
 import sample.model.constraints.Currency;
@@ -24,70 +21,81 @@ import sample.util.Calculator;
 import sample.util.TimePoint;
 
 /**
- * 口座残高を表現します。
+ * Represents the account balance.
  */
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class CashBalance extends OrmActiveRecord<CashBalance> {
-    private static final long serialVersionUID = 1L;
+public class CashBalance implements DomainEntity {
 
-    /** ID */
     @Id
     @GeneratedValue
     private Long id;
-    /** 口座ID */
+    /** account Id */
     @IdStr
     private String accountId;
-    /** 基準日 */
     @ISODate
     private LocalDate baseDay;
-    /** 通貨 */
     @Currency
     private String currency;
-    /** 金額 */
     @Amount
     private BigDecimal amount;
-    /** 更新日 */
     @ISODateTime
     private LocalDateTime updateDate;
 
     /**
-     * 残高へ指定した金額を反映します。
-     * low ここではCurrencyを使っていますが、実際の通貨桁数や端数処理定義はDBや設定ファイル等で管理されます。
+     * Reflects the specified amount in the balance.
+     * low Although Currency is used here, the actual number of currency digits and
+     * fractional processing definitions are managed in the DB, configuration files,
+     * etc.
      */
     public CashBalance add(final OrmRepository rep, BigDecimal addAmount) {
         int scale = java.util.Currency.getInstance(currency).getDefaultFractionDigits();
-        RoundingMode mode = RoundingMode.DOWN;
-        setAmount(Calculator.of(amount).scale(scale, mode).add(addAmount).decimal());
-        return update(rep);
+        this.setAmount(Calculator.of(amount)
+                .scale(scale, RoundingMode.DOWN)
+                .add(addAmount)
+                .decimal());
+        return rep.update(this);
     }
 
     /**
-     * 指定口座の残高を取得します。(存在しない時は繰越保存後に取得します)
-     * low: 複数通貨の適切な考慮や細かい審査は本筋でないので割愛。
+     * Retrieves the balance of the designated account.
+     * (If it does not exist, it will be retrieved after the carryover is saved.)
+     * low: Proper consideration of multiple currencies and detailed screening is
+     * not the main point, so I will skip it.
      */
     public static CashBalance getOrNew(final OrmRepository rep, String accountId, String currency) {
         LocalDate baseDay = rep.dh().time().day();
-        Optional<CashBalance> m = rep.tmpl().get(
-                "from CashBalance c where c.accountId=?1 and c.currency=?2 and c.baseDay=?3 order by c.baseDay desc",
-                accountId, currency, baseDay);
+        var jpql = """
+                SELECT c
+                FROM CashBalance c
+                WHERE c.accountId=?1 AND c.currency=?2 AND c.baseDay=?3
+                ORDER BY c.baseDay DESC
+                """;
+        Optional<CashBalance> m = rep.tmpl().get(jpql, accountId, currency, baseDay);
         return m.orElseGet(() -> create(rep, accountId, currency));
     }
 
     private static CashBalance create(final OrmRepository rep, String accountId, String currency) {
         TimePoint now = rep.dh().time().tp();
-        Optional<CashBalance> m = rep.tmpl().get(
-                "from CashBalance c where c.accountId=?1 and c.currency=?2 order by c.baseDay desc", accountId,
-                currency);
-        if (m.isPresent()) { // 残高繰越
-            CashBalance prev = m.get();
-            return new CashBalance(null, accountId, now.getDay(), currency, prev.getAmount(), now.getDate()).save(rep);
-        } else {
-            return new CashBalance(null, accountId, now.getDay(), currency, BigDecimal.ZERO, now.getDate()).save(rep);
+        var jpql = """
+                SELECT c
+                FROM CashBalance c
+                WHERE c.accountId=?1 AND c.currency=?2
+                ORDER BY c.baseDay DESC
+                """;
+        Optional<CashBalance> current = rep.tmpl().get(jpql, accountId, currency);
+        var amount = BigDecimal.ZERO;
+        if (current.isPresent()) { // balance carried forward
+            amount = current.get().getAmount();
         }
+        var m = new CashBalance();
+        m.setAccountId(accountId);
+        m.setBaseDay(now.getDay());
+        m.setCurrency(currency);
+        m.setAmount(amount);
+        m.setUpdateDate(now.getDate());
+        return rep.save(m);
+
     }
 
 }

@@ -1,7 +1,11 @@
 /**
- * UI層のコンポーネントを管理します。
- * <p>アプリケーション層のコンポーネントを利用してユースケース処理を実現します。
- * UI層のコンポーネントが直接ドメイン層を呼び出す事やController同士で相互依存することは想定していません。<br>
- * ※EntityについてはDTOとして解釈することで許容しますが、必要以上の情報を返してセキュリティリスクを生まぬよう注意する必要があります。
+ * Manage UI layer components.
+ * <p>
+ * Use case processing is achieved through application layer components.
+ * It is not assumed that UI layer components directly call the domain layer or
+ * that controllers are interdependent on each other.
+ * DomainEntity is acceptable by interpreting it as a DTO, but care must be
+ * taken not to return more information than necessary and create a security
+ * risk.
  */
 package sample.controller;

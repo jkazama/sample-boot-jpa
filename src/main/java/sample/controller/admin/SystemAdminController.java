@@ -2,59 +2,63 @@ package sample.controller.admin;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import sample.context.audit.AuditActor;
 import sample.context.audit.AuditActor.FindAuditActor;
 import sample.context.audit.AuditEvent;
 import sample.context.audit.AuditEvent.FindAuditEvent;
-import sample.context.orm.PagingList;
 import sample.context.support.AppSetting;
 import sample.context.support.AppSetting.FindAppSetting;
 import sample.controller.ControllerUtils;
-import sample.usecase.SystemAdminService;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.OutlineEmpty;
+import sample.usecase.admin.SystemAdminService;
 
 /**
- * システムに関わる社内のUI要求を処理します。
+ * Processes internal UI requests related to the system.
  */
 @RestController
 @RequestMapping("/api/admin/system")
+@RequiredArgsConstructor
 public class SystemAdminController {
-
     private final SystemAdminService service;
 
-    public SystemAdminController(SystemAdminService service) {
-        this.service = service;
+    /** Search actor audit logs. */
+    @GetMapping(value = "/audit/actor")
+    public Page<AuditActor> findAuditActor(@Valid FindAuditActor param) {
+        return service.findAuditActor(param);
     }
 
-    /** 利用者監査ログを検索します。 */
-    @GetMapping(value = "/audit/actor/")
-    public PagingList<AuditActor> findAuditActor(@Valid FindAuditActor p) {
-        return service.findAuditActor(p);
+    /** Search system event audit logs. */
+    @GetMapping(value = "/audit/event")
+    public Page<AuditEvent> findAuditEvent(@Valid FindAuditEvent param) {
+        return service.findAuditEvent(param);
     }
 
-    /** イベント監査ログを検索します。 */
-    @GetMapping(value = "/audit/event/")
-    public PagingList<AuditEvent> findAuditEvent(@Valid FindAuditEvent p) {
-        return service.findAuditEvent(p);
+    /** FInd application configuration information. */
+    @GetMapping(value = "/setting")
+    public List<AppSetting> findAppSetting(@Valid FindAppSetting param) {
+        return service.findAppSetting(param);
     }
 
-    /** アプリケーション設定一覧を検索します。 */
-    @GetMapping(value = "/setting/")
-    public List<AppSetting> findAppSetting(@Valid FindAppSetting p) {
-        return service.findAppSetting(p);
+    /** Change application configuration information. */
+    @PostMapping("/setting")
+    public ResponseEntity<Void> changeAppSetting(@RequestBody @Valid ChgAppSetting param) {
+        return ControllerUtils.resultEmpty(() -> service.changeAppSetting(param.id, param.value));
     }
 
-    /** アプリケーション設定情報を変更します。 */
-    @PostMapping("/setting/{id}")
-    public ResponseEntity<Void> changeAppSetting(@PathVariable String id, String value) {
-        return ControllerUtils.resultEmpty(() -> service.changeAppSetting(id, value));
+    public static record ChgAppSetting(
+            @IdStr(max = 120) String id,
+            @OutlineEmpty(max = 1300) String value) {
     }
 
 }

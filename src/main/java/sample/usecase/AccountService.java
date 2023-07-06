@@ -1,44 +1,28 @@
 package sample.usecase;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.RequiredArgsConstructor;
+import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.DefaultRepository;
 import sample.model.account.Account;
-import sample.model.account.Login;
 
 /**
- * 口座ドメインに対する顧客ユースケース処理。
+ * Customer use case processing for the account domain.
  */
 @Service
+@RequiredArgsConstructor
 public class AccountService {
-    private final DefaultRepository rep;
+    private final OrmRepository rep;
     private final PlatformTransactionManager txm;
 
-    public AccountService(
-            DefaultRepository rep,
-            @Qualifier(DefaultRepository.BeanNameTx) PlatformTransactionManager txm) {
-        this.rep = rep;
-        this.txm = txm;
-    }
-
-    /** ログイン情報を取得します。 */
-    @Cacheable("AccountService.getLoginByLoginId")
-    public Optional<Login> getLoginByLoginId(String loginId) {
-        return TxTemplate.of(txm).readOnly().tx(
-                () -> Login.getByLoginId(rep, loginId));
-    }
-
-    /** 有効な口座情報を取得します。 */
-    @Cacheable("AccountService.getAccount")
-    public Optional<Account> getAccount(String id) {
-        return TxTemplate.of(txm).readOnly().tx(
-                () -> Account.getValid(rep, id));
+    /** Returns valid account information. */
+    public Account loadAccount() {
+        var accountId = rep.dh().actor().id();
+        return TxTemplate.of(txm).readOnly().tx(() -> {
+            return Account.loadValid(rep, accountId);
+        });
     }
 
 }

@@ -11,7 +11,7 @@ import org.springframework.core.io.Resource;
 import lombok.Builder;
 import sample.context.Dto;
 
-/** ファイルイメージを表現します。 */
+/** Represents a report file image. */
 @Builder
 public record ReportFile(
         String name,

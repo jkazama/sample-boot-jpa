@@ -84,7 +84,7 @@ public class AuditEvent implements DomainEntity {
 
     /** Search the event audit log. */
     public static Page<AuditEvent> find(final OrmRepository rep, final FindAuditEvent p) {
-        JpqlBuilder jpql = JpqlBuilder.of("FROM AuditEvent ae")
+        JpqlBuilder jpql = JpqlBuilder.of("SELECT ae FROM AuditEvent ae")
                 .equal("ae.category", p.category)
                 .equal("ae.statusType", p.statusType)
                 .like(Arrays.asList("ae.message", "ae.errorReason"), p.keyword, OrmMatchMode.ANYWHERE)
@@ -142,8 +142,9 @@ public class AuditEvent implements DomainEntity {
         }
     }
 
-    public static void purge(OrmRepository rep, LocalDate expiredDay) {
-        rep.tmpl().execute("DELETE FROM AuditActor aa WHERE aa.startDate <= ?1", expiredDay.atStartOfDay());
+    public static void purge(final OrmRepository rep, LocalDate expiredDay) {
+        var jpql = "DELETE FROM AuditActor aa WHERE aa.startDate <= ?1";
+        rep.tmpl().execute(jpql, expiredDay.atStartOfDay());
     }
 
 }

@@ -71,7 +71,8 @@ public class ResourceBundleHandler {
             var factory = new ResourceBundleFactory();
             factory.setDefaultEncoding(encoding);
             return Optional.ofNullable(factory.getResourceBundle(basename, locale))
-                    .orElseThrow(() -> new IllegalArgumentException("指定されたbasenameのリソースファイルは見つかりませんでした。[]"));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "No resource file with the specified basename was found. [" + basename + "]"));
         }
     }
 

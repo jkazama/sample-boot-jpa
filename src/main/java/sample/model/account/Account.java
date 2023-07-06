@@ -5,148 +5,128 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import sample.context.DomainEntity;
 import sample.context.Dto;
 import sample.context.ErrorKeys;
 import sample.context.ValidationException;
 import sample.context.actor.Actor;
-import sample.context.actor.Actor.ActorRoleType;
-import sample.context.orm.OrmActiveRecord;
+import sample.context.actor.type.ActorRoleType;
 import sample.context.orm.OrmRepository;
+import sample.model.DomainErrorKeys;
 import sample.model.account.type.AccountStatusType;
-import sample.model.constraints.Email;
 import sample.model.constraints.IdStr;
+import sample.model.constraints.MailAddress;
 import sample.model.constraints.Name;
 import sample.model.constraints.Password;
+import sample.model.master.Login;
+import sample.model.master.Login.RegLogin;
 import sample.util.AppValidator;
 
 /**
- * 口座を表現します。
- * low: サンプル用に必要最低限の項目だけ
+ * Represents an account.
+ * low: Only the minimum required fields for the sample.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class Account extends OrmActiveRecord<Account> {
-    private static final long serialVersionUID = 1L;
+public class Account implements DomainEntity {
 
-    /** 口座ID */
+    /** account ID */
     @Id
     @IdStr
-    private String id;
-    /** 口座名義 */
+    private String accountId;
+    /** account name */
     @Name
     private String name;
-    /** メールアドレス */
-    @Email
-    private String mail;
-    /** 口座状態 */
+    @MailAddress
+    private String mailAddress;
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private AccountStatusType statusType;
 
     public Actor actor() {
-        return new Actor(id, name, ActorRoleType.User);
+        return Actor.of(accountId, name, ActorRoleType.USER);
     }
 
-    /** 口座に紐付くログイン情報を取得します。 */
-    public Login loadLogin(final OrmRepository rep) {
-        return Login.load(rep, id);
+    public Account change(final OrmRepository rep, final ChgAccount param) {
+        return rep.update(param.bind(this));
     }
 
-    /** 口座を変更します。 */
-    public Account change(final OrmRepository rep, final ChgAccount p) {
-        return p.bind(this).update(rep);
+    @Builder
+    public static record ChgAccount(
+            @IdStr String accountId,
+            @Name String name,
+            @MailAddress String mailAddress) implements Dto {
+
+        public Account bind(final Account current) {
+            current.setName(this.name);
+            current.setMailAddress(this.mailAddress);
+            return current;
+        }
     }
 
-    /** 口座を取得します。 */
-    public static Optional<Account> get(final OrmRepository rep, String id) {
-        return rep.get(Account.class, id);
+    public static Optional<Account> get(final OrmRepository rep, String accountId) {
+        return rep.get(Account.class, accountId);
     }
 
-    /** 有効な口座を取得します。 */
-    public static Optional<Account> getValid(final OrmRepository rep, String id) {
-        return get(rep, id).filter((acc) -> acc.getStatusType().valid());
+    /** Obtain a valid account. */
+    public static Optional<Account> getValid(final OrmRepository rep, String accountId) {
+        return get(rep, accountId).filter((v) -> v.getStatusType().isValid());
     }
 
-    /** 口座を取得します。(例外付) */
-    public static Account load(final OrmRepository rep, String id) {
-        return rep.load(Account.class, id);
+    /** Returns a valid account. */
+    public static Account load(final OrmRepository rep, String accountId) {
+        return rep.load(Account.class, accountId);
     }
 
-    /** 有効な口座を取得します。(例外付) */
-    public static Account loadValid(final OrmRepository rep, String id) {
-        return getValid(rep, id).orElseThrow(() -> new ValidationException("error.Account.loadValid"));
+    /** Returns a valid account. */
+    public static Account loadValid(final OrmRepository rep, String accountId) {
+        return getValid(rep, accountId)
+                .orElseThrow(() -> ValidationException.of(ErrorKeys.EntityNotFound, accountId));
     }
 
     /**
-     * 口座の登録を行います。
+     * Register your account.
      * <p>
-     * ログイン情報も同時に登録されます。
+     * Login information will be registered at the same time.
      */
-    public static Account register(final OrmRepository rep, final PasswordEncoder encoder, final RegAccount p) {
-        AppValidator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
-        p.createLogin(encoder.encode(p.plainPassword)).save(rep);
-        return p.create().save(rep);
+    public static Account register(
+            final OrmRepository rep, final PasswordEncoder encoder, final RegAccount param) {
+        AppValidator.validate((v) -> {
+            v.checkField(
+                    !get(rep, param.accountId).isPresent(), "accountId", DomainErrorKeys.DuplicateId);
+        });
+        Login.register(rep, encoder, param.createLogin());
+        return rep.save(param.create());
     }
 
-    /** 登録パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegAccount implements Dto {
-        private static final long serialVersionUID = 1l;
-
-        @IdStr
-        private String id;
-        @Name
-        private String name;
-        @Email
-        private String mail;
-        /** パスワード(未ハッシュ) */
-        @Password
-        private String plainPassword;
+    @Builder
+    public static record RegAccount(
+            @IdStr String accountId,
+            @Name String name,
+            @MailAddress String mailAddress,
+            /** Password (unhashed) */
+            @Password String plainPassword) implements Dto {
 
         public Account create() {
-            Account m = new Account();
-            m.setId(id);
-            m.setName(name);
-            m.setMail(mail);
-            m.setStatusType(AccountStatusType.Normal);
+            var m = new Account();
+            m.setAccountId(this.accountId);
+            m.setName(this.name);
+            m.setMailAddress(this.mailAddress);
+            m.setStatusType(AccountStatusType.NORMAL);
             return m;
         }
 
-        public Login createLogin(String password) {
-            Login m = new Login();
-            m.setId(id);
-            m.setLoginId(id);
-            m.setPassword(password);
-            return m;
-        }
-    }
-
-    /** 変更パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ChgAccount implements Dto {
-        private static final long serialVersionUID = 1l;
-        @Name
-        private String name;
-        @Email
-        private String mail;
-
-        public Account bind(final Account m) {
-            m.setName(name);
-            m.setMail(mail);
-            return m;
+        public RegLogin createLogin() {
+            return RegLogin.builder()
+                    .actorId(accountId)
+                    .roleType(ActorRoleType.USER)
+                    .plainPassword(plainPassword)
+                    .build();
         }
     }
 

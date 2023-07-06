@@ -94,6 +94,9 @@ public record Actor(
     /** {@inheritDoc} */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.authorityIds.isEmpty()) {
+            return List.of(new SimpleGrantedAuthority(roleType.name()));
+        }
         return this.authorityIds.stream()
                 .map(v -> new SimpleGrantedAuthority(v))
                 .collect(Collectors.toSet());

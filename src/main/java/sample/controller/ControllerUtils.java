@@ -3,14 +3,12 @@ package sample.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.MessageSource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,19 +20,18 @@ import sample.context.ValidationException;
 import sample.context.report.ReportFile;
 
 /**
- * Controllerで利用されるユーティリティ処理。
+ * Utility processes used by the Controller.
  */
-public class ControllerUtils {
-
-    /** i18nメッセージ変換を行います。 */
-    public static String msg(MessageSource msg, String message, final Locale locale) {
-        return msg.getMessage(message, new String[0], locale);
-    }
+public abstract class ControllerUtils {
 
     /**
-     * 指定したキー/値をMapに変換します。
-     * get等でnullを返す可能性があるときはこのメソッドでMap化してから返すようにしてください。
-     * ※nullはJSONバインドされないため、クライアント側でStatusが200にもかかわらず例外扱いされる可能性があります。
+     * Converts the specified key/value to a Map.
+     * <p>
+     * If there is a possibility of returning null in get, etc., use this method to
+     * map the data before returning it.
+     * null is not JSON bound and may be treated as an exception even though
+     * Status
+     * is 200 on the client side.
      */
     public static <T> Map<String, T> objectToMap(String key, final T t) {
         Map<String, T> ret = new HashMap<>();
@@ -46,7 +43,10 @@ public class ControllerUtils {
         return objectToMap("result", t);
     }
 
-    /** 戻り値を生成して返します。(戻り値がプリミティブまたはnullを許容する時はこちらを利用してください) */
+    /**
+     * Generate and return ResponseEntity. (Use this when the return value is
+     * allowed to be primitive or null.)
+     */
     public static <T> ResponseEntity<T> result(Supplier<T> command) {
         return ResponseEntity.status(HttpStatus.OK).body(command.get());
     }
@@ -56,32 +56,33 @@ public class ControllerUtils {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    /** ファイルアップロード情報(MultipartFile)をReportFileへ変換します。 */
+    /** Converts file upload information (MultipartFile) to ReportFile. */
     public static ReportFile uploadFile(String field, final MultipartFile file) {
         return uploadFile(field, file, (String[]) null);
     }
 
     /**
-     * ファイルアップロード情報(MultipartFile)をReportFileへ変換します。
+     * Converts file upload information (MultipartFile) to ReportFile.
      * <p>
-     * acceptExtensionsに許容するファイル拡張子(小文字統一)を設定してください。
+     * Set the acceptable file extensions (lower case unified) in acceptExtensions.
      */
     public static ReportFile uploadFile(String field, final MultipartFile file, final String... acceptExtensions) {
         String fname = StringUtils.lowerCase(file.getOriginalFilename());
         if (acceptExtensions != null && !FilenameUtils.isExtension(fname, acceptExtensions)) {
-            throw new ValidationException(
-                    field, "アップロードファイルには[{0}]を指定してください",
-                    new String[] { StringUtils.join(acceptExtensions, " / ") });
+            throw ValidationException.ofField(
+                    field,
+                    ControllerErrorKeys.UploadFileExtension,
+                    StringUtils.join(acceptExtensions, " / "));
         }
         try {
             return ReportFile.ofByteArray(file.getOriginalFilename(), file.getBytes());
         } catch (IOException e) {
-            throw new ValidationException(field, "アップロードファイルの解析に失敗しました");
+            throw ValidationException.ofField(field, ControllerErrorKeys.UploadFileParse);
         }
     }
 
     /**
-     * ファイルダウンロードリソースを返します。
+     * Returns the file download resource.
      */
     public static ResponseEntity<Resource> exportFile(Supplier<ReportFile> fileFn) {
         return exportFile(fileFn, MediaType.APPLICATION_OCTET_STREAM_VALUE);

@@ -31,21 +31,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.client.HttpClientErrorException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import sample.context.ErrorKeys;
 import sample.context.ValidationException;
-import sample.context.ValidationException.Warn;
-import sample.context.ValidationException.Warns;
 import sample.context.actor.ActorSession;
+import sample.util.Warn;
+import sample.util.Warns;
 
 /**
- * REST用の例外Map変換サポート。
+ * Exception Map conversion support for REST.
  * <p>
- * AOPアドバイスで全てのRestControllerに対して例外処理を当て込みます。
+ * Apply exception handling to all RestControllers with AOP advice.
  */
 @ControllerAdvice(annotations = RestController.class)
 @RequiredArgsConstructor(staticName = "of")
@@ -54,7 +53,6 @@ public class RestErrorAdvice {
 
     private final MessageSource msg;
 
-    /** Servlet例外 */
     @ExceptionHandler(ServletRequestBindingException.class)
     public ResponseEntity<Map<String, String[]>> handleServletRequestBinding(ServletRequestBindingException e) {
         log.warn(e.getMessage());
@@ -65,14 +63,12 @@ public class RestErrorAdvice {
         return ActorSession.actor().locale();
     }
 
-    /** メッセージ内容の読み込み失敗例外 */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String[]>> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
         log.warn(e.getMessage());
         return ErrorHolder.of(msg, locale(), ErrorKeys.HttpMessageNotReadable).result(HttpStatus.BAD_REQUEST);
     }
 
-    /** メディアタイプのミスマッチ例外 */
     @ExceptionHandler(HttpMediaTypeException.class)
     public ResponseEntity<Map<String, String[]>> handleHttpMediaTypeException(
             HttpMediaTypeException e) {
@@ -80,7 +76,6 @@ public class RestErrorAdvice {
         return ErrorHolder.of(msg, locale(), ErrorKeys.HttpMediaTypeNotAcceptable).result(HttpStatus.BAD_REQUEST);
     }
 
-    /** 楽観的排他(Hibernateのバージョンチェック)の例外 */
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, String[]>> handleOptimisticLockingFailureException(
             OptimisticLockingFailureException e) {
@@ -88,30 +83,21 @@ public class RestErrorAdvice {
         return ErrorHolder.of(msg, locale(), ErrorKeys.OptimisticLockingFailure).result(HttpStatus.BAD_REQUEST);
     }
 
-    /** 権限例外 */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, String[]>> handleAccessDeniedException(AccessDeniedException e) {
         log.warn(e.getMessage());
         return ErrorHolder.of(msg, locale(), ErrorKeys.AccessDenied).result(HttpStatus.UNAUTHORIZED);
     }
 
-    /** 指定した情報が存在しない例外 */
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, String[]>> handleEntityNotFoundException(EntityNotFoundException e) {
-        log.warn(e.getMessage(), e);
-        return ErrorHolder.of(msg, locale(), ErrorKeys.EntityNotFound).result(HttpStatus.BAD_REQUEST);
-    }
-
-    /** BeanValidation(JSR303)の制約例外 */
+    /** BeanValidation(JSR303) Constraint Exception */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, String[]>> handleConstraintViolation(ConstraintViolationException e) {
         log.warn(e.getMessage());
-        Warns warns = Warns.init();
-        e.getConstraintViolations().forEach((v) -> warns.add(v.getPropertyPath().toString(), v.getMessage()));
+        var warns = Warns.of();
+        e.getConstraintViolations().forEach((v) -> warns.addField(v.getPropertyPath().toString(), v.getMessage()));
         return ErrorHolder.of(msg, locale(), warns.list()).result(HttpStatus.BAD_REQUEST);
     }
 
-    /** Controllerへのリクエスト紐付け例外(for JSON) */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String[]>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         log.warn(e.getMessage());
@@ -125,7 +111,6 @@ public class RestErrorAdvice {
         return ErrorHolder.of(msg, locale(), convert(e).list()).result(HttpStatus.BAD_REQUEST);
     }
 
-    /** Controllerへのリクエスト紐付け例外 */
     @ExceptionHandler(BindException.class)
     public ResponseEntity<Map<String, String[]>> handleBind(BindException e) {
         log.warn(e.getMessage());
@@ -133,25 +118,25 @@ public class RestErrorAdvice {
     }
 
     private Warns convert(BindingResult e) {
-        Warns warns = Warns.init();
+        var warns = Warns.of();
         e.getFieldErrors().forEach(err -> {
             String[] args = Arrays.stream(err.getArguments())
                     .filter((arg) -> !(arg instanceof MessageSourceResolvable))
                     .map(Object::toString)
                     .toArray(String[]::new);
-            warns.add(err.getField(), err.getDefaultMessage(), args);
+            warns.addField(err.getField(), err.getDefaultMessage(), args);
         });
         return warns;
     }
 
-    public static Warns convert(List<ObjectError> errors) {
-        Warns warns = Warns.init();
+    public static sample.util.Warns convert(List<ObjectError> errors) {
+        var warns = Warns.of();
         errors.forEach((oe) -> {
             String field = "";
             if (1 == oe.getCodes().length) {
                 field = bindField(oe.getCodes()[0]);
             } else if (1 < oe.getCodes().length) {
-                // プリフィックスは冗長なので外す
+                // Remove prefixes because they are redundant.
                 field = bindField(oe.getCodes()[1]);
             }
             List<String> args = Arrays.stream(oe.getArguments())
@@ -162,7 +147,7 @@ public class RestErrorAdvice {
             if (0 <= oe.getCodes()[0].indexOf("typeMismatch")) {
                 message = oe.getCodes()[2];
             }
-            warns.add(field, message, args.toArray(new String[0]));
+            warns.addField(field, message, args);
         });
         return warns;
     }
@@ -171,7 +156,6 @@ public class RestErrorAdvice {
         return Optional.ofNullable(field).map((v) -> v.substring(v.indexOf('.') + 1)).orElse("");
     }
 
-    /** RestTemplate 例外時のブリッジサポート */
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<String> handleHttpClientError(HttpClientErrorException e) {
         HttpHeaders headers = new HttpHeaders();
@@ -179,7 +163,7 @@ public class RestErrorAdvice {
         return new ResponseEntity<>(e.getResponseBodyAsString(), headers, e.getStatusCode());
     }
 
-    /** アプリケーション例外 */
+    /** business exception */
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, String[]>> handleValidation(ValidationException e) {
         ErrorHolder error = ErrorHolder.of(msg, locale(), e);
@@ -187,34 +171,40 @@ public class RestErrorAdvice {
         return error.result(HttpStatus.BAD_REQUEST);
     }
 
-    /** IO例外（Tomcatの Broken pipe はサーバー側の責務ではないので除外しています) */
+    /**
+     * IO exception (Broken pipe in Tomcat is excluded because it is not a
+     * server-side responsibility)
+     */
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Map<String, String[]>> handleIOException(IOException e) {
         if (e.getMessage() != null && e.getMessage().contains("Broken pipe")) {
-            log.info("クライアント事由で処理が打ち切られました。");
-            return new ResponseEntity<>(HttpStatus.OK);
+            log.info("The process was terminated for client reasons.");
+            return ResponseEntity.ok().build();
         } else {
             return handleException(e);
         }
     }
 
-    /** 汎用例外 */
+    /** general purpose exception */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String[]>> handleException(Exception e) {
-        log.error("予期せぬ例外が発生しました。", e);
-        return ErrorHolder.of(msg, locale(), ErrorKeys.Exception, "サーバー側で問題が発生した可能性があります。")
+        log.error("An unexpected exception occurred.", e);
+        return ErrorHolder.of(msg, locale(), ErrorKeys.Exception)
                 .result(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
-     * 例外情報のスタックを表現します。
+     * Represents a stack of exception information.
      * <p>
-     * スタックした例外情報は{@link #result(HttpStatus)}を呼び出す事でMapを持つResponseEntityへ変換可能です。
-     * Mapのkeyはfiled指定値、valueはメッセージキーの変換値(messages-validation.properties)が入ります。
+     * Stacked exception information can be converted to ResponseEntity with Map by
+     * calling {@link #result(HttpStatus)}. The key of the map is the value
+     * specified as filed, and the value is the converted value of the message key
+     * (messages-validation.properties).
      * <p>
-     * {@link #errorGlobal}で登録した場合のキーは空文字となります。
+     * The key will be an empty string when registered with {@link #errorGlobal}.
      * <p>
-     * クライアント側は戻り値を [{"fieldA": "messageA"}, {"fieldB": "messageB"}]で受け取ります。
+     * The client side receives the return value as [{"fieldA": "messageA"},
+     * {"fieldB": "messageB"}].
      */
     @Builder
     public static record ErrorHolder(
@@ -222,12 +212,12 @@ public class RestErrorAdvice {
             Locale locale,
             Map<String, List<String>> errors) {
 
-        /** グローバルな例外を返します。 */
+        /** Returns a global exception. */
         public String errorGlobal() {
             return Optional.ofNullable(errors.get("")).map(v -> v.get(0)).orElse(null);
         }
 
-        /** グローバルな例外(フィールドキーが空)を追加します。 */
+        /** Add a global exception (field key is empty). */
         public ErrorHolder errorGlobal(String msgKey, String defaultMsg, String... msgArgs) {
             if (!errors.containsKey(""))
                 errors.put("", new ArrayList<>());
@@ -235,12 +225,12 @@ public class RestErrorAdvice {
             return this;
         }
 
-        /** グローバルな例外(フィールドキーが空)を追加します。 */
+        /** Add a global exception (field key is empty). */
         public ErrorHolder errorGlobal(String msgKey, String... msgArgs) {
             return errorGlobal(msgKey, msgKey, msgArgs);
         }
 
-        /** フィールド単位の例外を追加します。 */
+        /** Add per-field exceptions. */
         public ErrorHolder error(String field, String msgKey, String... msgArgs) {
             if (!errors.containsKey(field))
                 errors.put(field, new ArrayList<>());
@@ -248,7 +238,9 @@ public class RestErrorAdvice {
             return this;
         }
 
-        /** 保有する例外情報をResponseEntityへ変換します。 */
+        /**
+         * Converts the exception information held by the client into a ResponseEntity.
+         */
         public ResponseEntity<Map<String, String[]>> result(HttpStatus status) {
             return new ResponseEntity<Map<String, String[]>>(
                     errors.entrySet().stream().collect(Collectors.toMap(

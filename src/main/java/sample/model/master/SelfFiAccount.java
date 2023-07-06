@@ -1,40 +1,42 @@
 package sample.model.master;
 
-import jakarta.persistence.*;
-
-import lombok.*;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.Data;
+import sample.context.DomainEntity;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.Category;
+import sample.model.constraints.Currency;
+import sample.model.constraints.IdStr;
 
 /**
- * サービス事業者の決済金融機関を表現します。
- * low: サンプルなので支店や名称、名義といったなど本来必須な情報をかなり省略しています。(通常は全銀仕様を踏襲します)
+ * Represents the service provider's settlement financial institution.
+ * low: Since this is a sample, much of the required information such as
+ * branches, names, names, etc. has been omitted.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class SelfFiAccount extends OrmActiveRecord<SelfFiAccount> {
-    private static final long serialVersionUID = 1L;
+public class SelfFiAccount implements DomainEntity {
 
-    /** ID */
     @Id
     @GeneratedValue
     private Long id;
-    /** 利用用途カテゴリ */
+    /** Usage Categories */
     @Category
     private String category;
-    /** 通貨 */
     @Currency
     private String currency;
-    /** 金融機関コード */
+    /** Financial Institution Code */
     @IdStr
     private String fiCode;
-    /** 金融機関口座ID */
+    /** Financial Institution Account No. */
     @IdStr
     private String fiAccountId;
 
     public static SelfFiAccount load(final OrmRepository rep, String category, String currency) {
-        return rep.tmpl().load("from SelfFiAccount a where a.category=?1 and a.currency=?2", category, currency);
+        var jpql = "SELECT a FROM SelfFiAccount a WHERE a.category=?1 AND a.currency=?2";
+        return rep.tmpl().load(jpql, category, currency);
     }
 
 }

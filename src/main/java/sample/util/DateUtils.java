@@ -214,6 +214,16 @@ public abstract class DateUtils {
         return targetDate.isBefore(baseDate) || targetDate.isEqual(baseDate);
     }
 
+    /** true if targetDay is included in the period */
+    public static boolean includes(LocalDate targetDay, LocalDate fromDay, LocalDate toDay) {
+        return isAfterEquals(fromDay, targetDay) && isBeforeEquals(toDay, targetDay);
+    }
+
+    /** true if targetDate is included in the period */
+    public static boolean includes(LocalDateTime targetDate, LocalDateTime fromDate, LocalDateTime toDate) {
+        return isAfterEquals(fromDate, targetDate) && isBeforeEquals(toDate, targetDate);
+    }
+
     /**
      * Determines if the specified business day is a weekend (Saturday or Sunday).
      * (Argument is required)
