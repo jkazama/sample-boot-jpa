@@ -85,7 +85,7 @@ public class Staff implements DomainEntity {
      * <p>
      * Login information will be registered at the same time.
      */
-    public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, RegStaff param) {
+    public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, final RegStaff param) {
         AppValidator.validate((v) -> {
             v.checkField(!get(rep, param.staffId).isPresent(), "staffId", DomainErrorKeys.DuplicateId);
         });

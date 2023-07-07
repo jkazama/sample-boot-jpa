@@ -129,6 +129,7 @@ public class RestErrorAdvice {
         return warns;
     }
 
+    @SuppressWarnings("null")
     public static sample.util.Warns convert(List<ObjectError> errors) {
         var warns = Warns.of();
         errors.forEach((oe) -> {

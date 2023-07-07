@@ -20,9 +20,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * メールアドレス(必須)を表現する制約注釈。
- * low: とりあえずHibernateのEmailValidatorを利用しますが、恐らく最終的に
- * 固有のConstraintValidatorを作らされる事になると思います。
+ * Constraint annotation expressing the e-mail address (required).
+ * low: Prepare an appropriate Validator implementation
  */
 @Documented
 @Constraint(validatedBy = {})

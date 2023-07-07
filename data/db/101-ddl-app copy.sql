@@ -1,0 +1,34 @@
+drop table if exists account cascade;
+drop table if exists cash_balance cascade;
+drop table if exists cashflow cascade;
+drop table if exists cash_in_out cascade;
+drop table if exists fi_account cascade;
+drop table if exists holiday cascade;
+drop table if exists login cascade;
+drop table if exists self_fi_account cascade;
+drop table if exists staff cascade;
+drop table if exists staff_authority cascade;
+drop sequence if exists cash_balance_id_seq;
+drop sequence if exists cashflow_id_seq;
+drop sequence if exists fi_account_id_seq;
+drop sequence if exists holiday_id_seq;
+drop sequence if exists self_fi_account_id_seq;
+drop sequence if exists staff_authority_id_seq;
+
+create sequence cash_balance_id_seq start with 1 increment by 1;
+create sequence cashflow_id_seq start with 1 increment by 1;
+create sequence fi_account_id_seq start with 1 increment by 1;
+create sequence holiday_id_seq start with 1 increment by 1;
+create sequence self_fi_account_id_seq start with 1 increment by 1;
+create sequence staff_authority_id_seq start with 1 increment by 1;
+
+create table account (account_id varchar(30) not null, mail_address varchar(256), name varchar(30), status_type smallint, primary key (account_id));
+create table cash_balance (id bigint not null default nextval('cash_balance_id_seq'), account_id varchar(30), amount numeric(38,2), base_day date, currency varchar(3), update_date timestamp(6), primary key (id));
+create table cashflow (cashflow_id bigint not null default nextval('cashflow_id_seq'), account_id varchar(30), amount numeric(38,2), cashflow_type smallint, create_date timestamp(6), create_id varchar(30), currency varchar(3), event_date timestamp(6), event_day date, remark varchar(30), status_type smallint, update_date timestamp(6), update_id varchar(30), value_day date, primary key (cashflow_id));
+create table cash_in_out (cash_in_out_id varchar(30) not null, abs_amount numeric(38,2), account_id varchar(30), cashflow_id bigint, create_date timestamp(6), create_id varchar(30), currency varchar(3), event_day date, request_date timestamp(6), request_day date, self_fi_account_id varchar(30), self_fi_code varchar(30), status_type smallint, target_fi_account_id varchar(30), target_fi_code varchar(30), update_date timestamp(6), update_id varchar(30), value_day date, withdrawal boolean not null, primary key (cash_in_out_id));
+create table fi_account (id bigint not null default nextval('fi_account_id_seq'), account_id varchar(30), category varchar(30), currency varchar(3), fi_account_id varchar(30), fi_code varchar(30), primary key (id));
+create table holiday (id bigint not null default nextval('holiday_id_seq'), category varchar(30), create_date timestamp(6), create_id varchar(30), holiday date not null, name varchar(30), outline varchar(2), update_date timestamp(6), update_id varchar(30), primary key (id));
+create table login (actor_id varchar(30) not null, role_type smallint not null, login_id varchar(30), password varchar(255), primary key (actor_id, role_type));
+create table self_fi_account (id bigint not null default nextval('self_fi_account_id_seq'), category varchar(30), currency varchar(3), fi_account_id varchar(30), fi_code varchar(30), primary key (id));
+create table staff (staff_id varchar(30) not null, name varchar(30), role_type smallint, primary key (staff_id));
+create table staff_authority (id bigint not null default nextval('staff_authority_id_seq'), authority varchar(30), staff_id varchar(30), primary key (id));

@@ -1,4 +1,4 @@
 /**
- * 資産に関連したドメイン列挙型。
+ * Domain enumerated type associated with the asset.
  */
 package sample.model.asset.type;

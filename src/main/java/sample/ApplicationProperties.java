@@ -13,13 +13,13 @@ import sample.context.orm.repository.SystemRepository.SystemDataSourceProperties
 @Data
 public class ApplicationProperties {
     private boolean cors;
-    private DatasourceProps datasource;
+    private DatasourceProps datasource = new DatasourceProps();
     private MailProps mail;
 
     @Data
     public static class DatasourceProps {
-        private DefaultDataSourceProperties app;
-        private SystemDataSourceProperties system;
+        private DefaultDataSourceProperties app = new DefaultDataSourceProperties();
+        private SystemDataSourceProperties system = new SystemDataSourceProperties();
     }
 
     @Data

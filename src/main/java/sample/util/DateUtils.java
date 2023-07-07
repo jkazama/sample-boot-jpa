@@ -201,7 +201,7 @@ public abstract class DateUtils {
 
     /** true if baseDay <= targetDay */
     public static boolean isAfterEquals(LocalDate baseDay, LocalDate targetDay) {
-        return targetDay.isBefore(baseDay) || targetDay.isEqual(baseDay);
+        return targetDay.isAfter(baseDay) || targetDay.isEqual(baseDay);
     }
 
     /** true if targetDate <= baseDate */
@@ -211,7 +211,7 @@ public abstract class DateUtils {
 
     /** true if baseDate <= targetDate */
     public static boolean isAfterEquals(LocalDateTime baseDate, LocalDateTime targetDate) {
-        return targetDate.isBefore(baseDate) || targetDate.isEqual(baseDate);
+        return targetDate.isAfter(baseDate) || targetDate.isEqual(baseDate);
     }
 
     /** true if targetDay is included in the period */

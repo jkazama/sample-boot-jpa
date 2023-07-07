@@ -1,15 +1,19 @@
 package sample.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
 public class TimePointTest {
 
     @Test
-    public void 初期化検証() {
+    public void checkInit() {
         LocalDate targetDay = LocalDate.of(2015, 8, 28);
         LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);
 
@@ -27,7 +31,7 @@ public class TimePointTest {
     }
 
     @Test
-    public void 比較検証() {
+    public void checkCompare() {
         LocalDate targetDay = LocalDate.of(2015, 8, 28);
         LocalDateTime targetDate = LocalDateTime.of(2015, 8, 29, 1, 23, 31);
 

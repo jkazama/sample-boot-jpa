@@ -8,7 +8,9 @@ import java.util.Optional;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import lombok.Data;
 import sample.context.DomainEntity;
 import sample.context.orm.OrmRepository;
@@ -26,9 +28,11 @@ import sample.util.TimePoint;
 @Entity
 @Data
 public class CashBalance implements DomainEntity {
+    private static final String SequenceId = "cash_balance_id_seq";
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
     private Long id;
     /** account Id */
     @IdStr

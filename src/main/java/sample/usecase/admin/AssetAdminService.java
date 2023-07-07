@@ -2,10 +2,13 @@ package sample.usecase.admin;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import sample.context.audit.AuditHandler;
 import sample.context.lock.IdLockHandler;
@@ -17,65 +20,65 @@ import sample.model.asset.CashInOut.FindCashInOut;
 import sample.model.asset.Cashflow;
 
 /**
- * 資産ドメインに対する社内ユースケース処理。
+ * Internal use case processing for asset domains.
  */
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class AssetAdminService {
-
     private final DefaultRepository rep;
     private final PlatformTransactionManager txm;
     private final AuditHandler audit;
     private final IdLockHandler idLock;
 
-    public AssetAdminService(
-            DefaultRepository rep,
-            PlatformTransactionManager txm,
-            AuditHandler audit,
-            IdLockHandler idLock) {
-        this.rep = rep;
-        this.txm = txm;
-        this.audit = audit;
-        this.idLock = idLock;
-    }
-
     /**
-     * 振込入出金依頼を検索します。
-     * low: 口座横断的なので割り切りでREADロックはかけません。
+     * Search for a transfer deposit/withdrawal request.
+     * low: do not apply a READ lock on the split because it is cross-accounting.
      */
     public List<CashInOut> findCashInOut(final FindCashInOut p) {
-        return TxTemplate.of(txm).readOnly().tx(
-                () -> CashInOut.find(rep, p));
+        return TxTemplate.of(txm).readOnly().tx(() -> {
+            return CashInOut.find(rep, p);
+        });
     }
 
     /**
-     * 振込出金依頼を締めます。
+     * Close the withdrawal request.
      */
     public void closingCashOut() {
-        audit.audit("振込出金依頼の締め処理をする", () -> {
-            TxTemplate.of(txm).tx(() -> closingCashOutInTx());
+        audit.audit("asset", "closingCashOut", () -> {
+            TxTemplate.of(txm).tx(() -> {
+                closingCashOutInTx();
+            });
         });
     }
 
     private void closingCashOutInTx() {
-        // low: 以降の処理は口座単位でfilter束ねしてから実行する方が望ましい。
-        // low: 大量件数の処理が必要な時はそのままやるとヒープが死ぬため、idソートでページング分割して差分実行していく。
+        // low: It is preferable to perform subsequent processing after filter bundling
+        // on an account-by-account.
+        // low: When processing a large number of cases, the heap will die if it is done
+        // as it is, so paging is divided by id sorting and executed in increments.
         CashInOut.findUnprocessed(rep).forEach(cio -> {
-            // low: TX内のロックが適切に動くかはIdLockHandlerの実装次第。
-            // 調整が難しいようなら大人しく営業停止時間(IdLock必要な処理のみ非活性化されている状態)を作って、
-            // ロック無しで一気に処理してしまう方がシンプル。
-            idLock.call(cio.getAccountId(), LockType.Write, () -> {
+            // low: It is up to the implementation of IdLockHandler to ensure that the locks
+            // in the TX work properly.
+            // If it is difficult to adjust, it is simpler to create a business halt time
+            // (only processes that need IdLock are deactivated) and process them all at
+            // once without locking.
+            idLock.call(cio.getAccountId(), LockType.WRITE, () -> {
                 try {
                     cio.process(rep);
-                    // low: SQLの発行担保。扱う情報に相互依存が無く、セッションキャッシュはリークしがちなので都度消しておく。
+                    // low: SQL publishing collateral. There is no interdependence in the
+                    // information handled, and the session cache tends to leak, so it should be
+                    // deleted each time.
                     rep.flushAndClear();
                 } catch (Exception e) {
-                    log.error("[" + cio.getId() + "] 振込出金依頼の締め処理に失敗しました。", e);
+                    log.error("The closing process for a transfer withdrawal request failed.["
+                            + cio.getCashInOutId() + "]", e);
                     try {
                         cio.error(rep);
                         rep.flush();
                     } catch (Exception ex) {
-                        // low: 2重障害(恐らくDB起因)なのでloggerのみの記載に留める
+                        // low: Only logger is mentioned since it is a double failure.
+                        // (probably caused by DB).
                     }
                 }
             });
@@ -83,34 +86,35 @@ public class AssetAdminService {
     }
 
     /**
-     * キャッシュフローを実現します。
+     * Realize cash flow.
      * <p>
-     * 受渡日を迎えたキャッシュフローを残高に反映します。
+     * Cash flows with delivery dates are reflected in the balance.
      */
     public void realizeCashflow() {
-        audit.audit("キャッシュフローを実現する", () -> {
-            TxTemplate.of(txm).tx(() -> realizeCashflowInTx());
-        });
-    }
-
-    private void realizeCashflowInTx() {
-        // low: 日回し後の実行を想定
+        // low: Assume execution after day forward.
         LocalDate day = rep.dh().time().day();
-        for (final Cashflow cf : Cashflow.findDoRealize(rep, day)) {
-            idLock.call(cf.getAccountId(), LockType.Write, () -> {
-                try {
-                    cf.realize(rep);
-                    rep.flushAndClear();
-                } catch (Exception e) {
-                    log.error("[" + cf.getId() + "] キャッシュフローの実現に失敗しました。", e);
-                    try {
-                        cf.error(rep);
-                        rep.flush();
-                    } catch (Exception ex) {
-                    }
-                }
+        audit.audit("asset", "realizeCashflow", List.of(day), () -> {
+            Map<String, List<Cashflow>> cashflowsByAccount = Cashflow.findDoRealize(rep, day).stream()
+                    .collect(Collectors.groupingBy(Cashflow::getAccountId));
+            cashflowsByAccount.forEach((accountId, cashflows) -> {
+                TxTemplate.of(txm).writeIdLock(idLock, accountId).tx(() -> {
+                    cashflows.forEach(cf -> {
+                        try {
+                            cf.realize(rep);
+                            rep.flushAndClear();
+                        } catch (Exception e) {
+                            log.error("Failed to realize cash flow.[" + cf.getCashflowId() + "]", e);
+                            try {
+                                cf.error(rep);
+                                rep.flush();
+                            } catch (Exception ex) {
+                                // nothing.
+                            }
+                        }
+                    });
+                });
             });
-        }
+        });
     }
 
 }

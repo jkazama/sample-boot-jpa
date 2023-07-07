@@ -18,62 +18,63 @@ import sample.context.ErrorKeys;
 import sample.context.ValidationException;
 
 /**
- * JPA の EntityManager に対する簡易アクセサ。 ( セッション毎に生成して利用してください )
+ * A simple accessor to JPA's EntityManager. (Generate and use it for each
+ * session.)
  * <p>
- * EntityManager のメソッドで利用したい処理があれば必要に応じてラップメソッドを追加してください。
+ * If there are any EntityManager methods that you wish to use, add wrap methods
+ * as necessary.
  */
 @RequiredArgsConstructor(staticName = "of")
 public class OrmTemplate {
     private final EntityManager em;
 
-    /** 指定したエンティティの ID 値を取得します。 */
+    /** Returns the ID value of the specified entity. */
     public <T> Object idValue(T entity) {
         var info = OrmUtils.entityInformation(em, entity.getClass());
         return info.getId(entity);
     }
 
     /**
-     * JPQL で一件取得します。
+     * Returns one case with JPQL.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
-    public <T> Optional<T> get(final String qlString, final Object... args) {
+    public <T> Optional<T> get(String qlString, final Object... args) {
         List<T> list = find(qlString, args);
         return list.stream().findFirst();
     }
 
     /**
-     * JPQL で一件取得します。(存在しない時は ValidationException )
+     * Returns one case in JPQL. (ValidationException if it does not exist )
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
-    public <T> T load(final String qlString, final Object... args) {
+    public <T> T load(String qlString, final Object... args) {
         Optional<T> v = get(qlString, args);
         return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
     }
 
     /**
-     * JPQL で検索します。
+     * Search by JPQL.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> find(final String qlString, final Object... args) {
+    public <T> List<T> find(String qlString, final Object... args) {
         return bindArgs(em.createQuery(qlString), args).getResultList();
     }
 
     /**
-     * JPQL でページング検索します。
+     * Paging search in JPQL.
      * <p>
-     * カウント句がうまく構築されない時はPagination#ignoreTotalをtrueにして、
-     * 別途通常の検索でトータル件数を算出するようにして下さい。
-     * <p>
-     * page に設定されたソート条件は無視されるので、 qlString 構築時に明示的な設定をしてください。
-     * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
-    public <T> Page<T> find(final String qlString, final Pageable page, final Object... args) {
+    public <T> Page<T> find(String qlString, final Pageable page, final Object... args) {
         @SuppressWarnings("deprecation")
         long total = load(QueryUtils.createCountQueryFor(qlString), args);
         List<T> list = bindArgs(em.createQuery(qlString), page, args).getResultList();
@@ -81,49 +82,65 @@ public class OrmTemplate {
     }
 
     /**
-     * 定義済み JPQL で一件取得します。
+     * Paging search in JPQL.
      * <p>
-     * 事前に name に合致する @NamedQuery 定義が必要です。
-     * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
-    public <T> Optional<T> getNamed(final String name, final Object... args) {
+    @SuppressWarnings("unchecked")
+    public <T> Page<T> find(String qlString, String qlCount, final Pageable page, final Object... args) {
+        long total = load(qlCount, args);
+        List<T> list = bindArgs(em.createQuery(qlString), page, args).getResultList();
+        return new PageImpl<>(list, page, total);
+    }
+
+    /**
+     * Returns one case with predefined JPQL.
+     * <p>
+     * A prior @NamedQuery definition matching name is required.
+     * <p>
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
+     */
+    public <T> Optional<T> getNamed(String name, final Object... args) {
         List<T> list = findNamed(name, args);
         return list.stream().findFirst();
     }
 
     /**
-     * 定義済み JPQL で一件取得をします。(存在しない時は ValidationException )
+     * Returns one case with predefined JPQL. (ValidationException if it does not
+     * exist)
      * <p>
-     * 事前に name に合致する @NamedQuery 定義が必要です。
+     * A prior @NamedQuery definition matching name is required.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
-    public <T> T loadNamed(final String name, final Object... args) {
+    public <T> T loadNamed(String name, final Object... args) {
         Optional<T> v = getNamed(name, args);
         return v.orElseThrow(() -> new ValidationException(ErrorKeys.EntityNotFound));
     }
 
     /**
-     * 定義済み JPQL で検索します。
+     * Search by predefined JPQL.
      * <p>
-     * 事前に name に合致する @NamedQuery 定義が必要です。
+     * A prior @NamedQuery definition matching name is required.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> findNamed(final String name, final Object... args) {
+    public <T> List<T> findNamed(String name, final Object... args) {
         return bindArgs(em.createNamedQuery(name), args).getResultList();
     }
 
     /**
-     * 定義済み JPQL でページング検索します。
+     * Search by predefined JPQL.
      * <p>
-     * 事前に name に合致する @NamedQuery 定義が必要です。
+     * A prior @NamedQuery definition matching name is required.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
-     * <p>
-     * page に設定されたソート条件は無視されます。
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
     public <T> Page<T> findNamed(
@@ -137,21 +154,23 @@ public class OrmTemplate {
     }
 
     /**
-     * SQLで検索します。
+     * Search in SQL.
      * <p>
-     * 検索結果としてselectの値配列一覧が返されます。
+     * A list of select value arrays is returned as a result of the search.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> findBySql(final String sql, final Object... args) {
+    public <T> List<T> findBySql(String sql, final Object... args) {
         return bindArgs(em.createNativeQuery(sql), args).getResultList();
     }
 
     /**
-     * SQL で検索します。
+     * Search in SQL.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> findBySql(String sql, Class<T> clazz, final Object... args) {
@@ -159,11 +178,12 @@ public class OrmTemplate {
     }
 
     /**
-     * SQL でページング検索します。
+     * SQL paging search.
      * <p>
-     * 検索結果として select の値配列一覧が返されます。
+     * A list of value arrays of select is returned as a result of the search.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
     public <T> Page<T> findBySql(
@@ -182,11 +202,10 @@ public class OrmTemplate {
     }
 
     /**
-     * SQL でページング検索します。
+     * SQL paging search.
      * <p>
-     * page に設定されたソート条件は無視されるので、 sql 構築時に明示的な設定をしてください。
-     * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     @SuppressWarnings("unchecked")
     public <T> Page<T> findBySql(
@@ -206,43 +225,47 @@ public class OrmTemplate {
     }
 
     /**
-     * JPQL を実行します。
+     * Execute JPQL.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     public int execute(String qlString, final Object... args) {
         return bindArgs(em.createQuery(qlString), args).executeUpdate();
     }
 
     /**
-     * 定義済み JPQL を実行します。
+     * Execute predefined JPQL.
      * <p>
-     * 事前に name に合致する @NamedQuery 定義が必要です。
+     * A prior @NamedQuery definition matching name is required.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     public int executeNamed(String name, final Object... args) {
         return bindArgs(em.createNamedQuery(name), args).executeUpdate();
     }
 
     /**
-     * SQL を実行をします。
+     * Execute SQL.
      * <p>
-     * args に Map を指定した時は名前付き引数として取り扱います。 ( Map のキーには文字列を指定してください )
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     public int executeSql(String sql, final Object... args) {
         return bindArgs(em.createNativeQuery(sql), args).executeUpdate();
     }
 
-    /** ストアド を処理をします。 */
+    /** Processes stored data. */
     public void callStoredProcedure(String procedureName, Consumer<StoredProcedureQuery> proc) {
         proc.accept((StoredProcedureQuery) bindArgs(em.createStoredProcedureQuery(procedureName)));
     }
 
     /**
-     * クエリに値を紐付けします。
+     * Tie the value to the query.
      * <p>
-     * Map 指定時はキーに文字を指定します。それ以外は自動的に 1 開始のポジション指定をおこないます。
+     * When Map is specified in args, it is treated as a named argument. (The key of
+     * Map must be a string.)
      */
     public Query bindArgs(final Query query, final Object... args) {
         return bindArgs(query, null, args);

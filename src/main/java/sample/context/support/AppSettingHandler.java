@@ -1,11 +1,14 @@
 package sample.context.support;
 
+import java.util.Optional;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
+import lombok.extern.slf4j.Slf4j;
 import sample.context.orm.OrmRepository;
 
 /**
@@ -23,8 +26,10 @@ public interface AppSettingHandler {
     long nextId(String id);
 
     @Component
+    @Slf4j
     public static class AppSettingHandlerImpl implements AppSettingHandler {
         public static final String CacheItemKey = "AppSettingHandler.appSetting";
+        private static final String UIDKeyPrefix = "uid.";
         private final OrmRepository rep;
 
         public AppSettingHandlerImpl(OrmRepository rep) {
@@ -36,9 +41,13 @@ public interface AppSettingHandler {
         @Cacheable(cacheNames = CacheItemKey, key = "#id")
         @Transactional
         public AppSetting setting(String id) {
-            AppSetting setting = AppSetting.load(rep, id);
-            setting.hashCode(); // for loading
-            return setting;
+            Optional<AppSetting> setting = rep.get(AppSetting.class, id);
+            if (setting.isEmpty()) {
+                log.warn("Initial registered settings do not exist [{}]", id);
+                return rep.save(AppSetting.of(id, null));
+            } else {
+                return setting.get();
+            }
         }
 
         /** {@inheritDoc} */
@@ -52,32 +61,16 @@ public interface AppSettingHandler {
         /** {@inheritDoc} */
         @Override
         @Transactional(TxType.REQUIRES_NEW)
-        public long nextId(String id) {
-            AppSetting setting = rep.loadForUpdate(AppSetting.class, id);
+        public synchronized long nextId(String id) {
+            String uidKey = UIDKeyPrefix + id;
+            if (rep.get(AppSetting.class, uidKey).isEmpty()) {
+                rep.save(AppSetting.of(uidKey, "0"));
+            }
+            var setting = rep.loadForUpdate(AppSetting.class, uidKey);
             long nextId = setting.longValue() + 1;
             setting.setValue(String.valueOf(nextId));
             rep.update(setting);
             return nextId;
         }
     }
-
-    // public static class AppSettingHandlerMock implements AppSettingHandler {
-    // private final Map<String, AppSetting> mockMap = new HashMap<>();
-
-    // @Override
-    // public AppSetting setting(String id) {
-    // return this.mockMap.get(id);
-    // }
-
-    // @Override
-    // public AppSetting change(String id, String value) {
-    // this.mockMap.put(id, AppSetting.of(id, value));
-    // return this.mockMap.get(id);
-    // }
-
-    // @Override
-    // public long nextId(String id) {
-    // return setting(id).longValue() + 1;
-    // }
-    // }
 }

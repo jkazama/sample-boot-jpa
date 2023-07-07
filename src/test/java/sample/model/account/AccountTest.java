@@ -5,78 +5,95 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import sample.EntityTestSupport;
 import sample.context.ErrorKeys;
 import sample.context.ValidationException;
+import sample.context.actor.type.ActorRoleType;
+import sample.model.DataFixtures;
+import sample.model.DomainErrorKeys;
+import sample.model.DomainTester;
+import sample.model.DomainTester.DomainTesterBuilder;
 import sample.model.account.Account.ChgAccount;
 import sample.model.account.Account.RegAccount;
 import sample.model.account.type.AccountStatusType;
 import sample.model.master.Login;
+import sample.model.master.Login.LoginId;
 
-public class AccountTest extends EntityTestSupport {
+public class AccountTest {
+    private DomainTester tester;
+    private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    @Override
-    protected void setupPreset() {
-        targetEntities(Account.class, Login.class);
-    }
-
-    @Override
-    protected void before() {
-        tx(() -> {
-            fixtures.acc("normal").save(rep);
+    @BeforeEach
+    public void before() {
+        tester = DomainTesterBuilder.from(Account.class, Login.class).build();
+        tester.txInitializeData(rep -> {
+            rep.save(DataFixtures.account("normal"));
         });
     }
 
+    @AfterEach
+    public void after() {
+        tester.close();
+    }
+
     @Test
-    public void 口座情報を登録する() {
-        tx(() -> {
-            // 通常登録
+    public void register() {
+        tester.tx(rep -> {
+            // Normal registration
             assertFalse(Account.get(rep, "new").isPresent());
             Account.register(rep, encoder, new RegAccount("new", "name", "new@example.com", "password"));
             Account created = Account.load(rep, "new");
             assertEquals("name", created.getName());
-            assertEquals("new@example.com", created.getMail());
-            Login login = Login.load(rep, "new");
+            assertEquals("new@example.com", created.getMailAddress());
+            Login login = Login.load(rep, LoginId.of("new", ActorRoleType.USER));
             assertTrue(encoder.matches("password", login.getPassword()));
-            // 同一ID重複
+            // Duplicate same ID
             try {
                 Account.register(rep, encoder, new RegAccount("normal", "name", "new@example.com", "password"));
                 fail();
             } catch (ValidationException e) {
-                assertEquals(ErrorKeys.DuplicateId, e.getMessage());
+                assertEquals(DomainErrorKeys.DuplicateId, e.getMessage());
             }
         });
     }
 
     @Test
-    public void 口座情報を変更する() {
-        tx(() -> {
-            Account changed = Account.load(rep, "normal")
-                    .change(rep, new ChgAccount("changed", "changed@example.com"));
+    public void change() {
+        tester.tx(rep -> {
+            Account changed = Account
+                    .load(rep, "normal")
+                    .change(rep, ChgAccount.builder()
+                            .accountId("normal")
+                            .name("changed")
+                            .mailAddress("changed@example.com")
+                            .build());
             assertEquals("changed", changed.getName());
-            assertEquals("changed@example.com", changed.getMail());
+            assertEquals("changed@example.com", changed.getMailAddress());
         });
     }
 
     @Test
-    public void 有効口座を取得する() {
-        tx(() -> {
-            // 通常時取得
+    public void loadValid() {
+        tester.tx(rep -> {
+            // for valid
             Account valid = Account.loadValid(rep, "normal");
-            assertEquals("normal", valid.getId());
+            assertEquals("normal", valid.getAccountId());
             assertEquals(AccountStatusType.NORMAL, valid.getStatusType());
 
-            // 退会時取得
-            Account withdrawal = fixtures.acc("withdrawal");
+            // for withdrawal
+            Account withdrawal = DataFixtures.account("withdrawal");
             withdrawal.setStatusType(AccountStatusType.WITHDRAWAL);
-            withdrawal.save(rep);
+            rep.save(withdrawal);
             try {
                 Account.loadValid(rep, "withdrawal");
                 fail();
             } catch (ValidationException e) {
-                assertEquals("error.Account.loadValid", e.getMessage());
+                assertEquals(ErrorKeys.EntityNotFound, e.getMessage());
             }
         });
     }

@@ -42,11 +42,11 @@ import sample.util.DateUtils;
 @Entity
 @Data
 public class AuditActor implements DomainEntity {
-    private static final String SEQUENCE_ID = "audit_actor_id_seq";
+    private static final String SequenceId = "audit_actor_id_seq";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_ID)
-    @SequenceGenerator(name = SEQUENCE_ID, sequenceName = SEQUENCE_ID, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
     private Long id;
     @IdStr
     private String actorId;

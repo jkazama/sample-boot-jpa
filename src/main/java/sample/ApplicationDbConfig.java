@@ -14,9 +14,7 @@ import sample.context.DomainHelper;
 import sample.context.orm.OrmInterceptor;
 import sample.context.orm.OrmRepository;
 import sample.context.orm.repository.DefaultRepository;
-import sample.context.orm.repository.DefaultRepository.DefaultDataSourceProperties;
 import sample.context.orm.repository.SystemRepository;
-import sample.context.orm.repository.SystemRepository.SystemDataSourceProperties;
 
 /**
  * Represents a database connection definition for an application.
@@ -36,24 +34,24 @@ public class ApplicationDbConfig {
 
         @Bean(name = DefaultRepository.BeanNameDs, destroyMethod = "close")
         @Primary
-        DataSource dataSource(DefaultDataSourceProperties props) {
-            return props.dataSource();
+        DataSource dataSource(ApplicationProperties props) {
+            return props.getDatasource().getApp().dataSource();
         }
 
         @Bean(name = DefaultRepository.BeanNameEmf)
         @Primary
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
-                DefaultDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(DefaultRepository.BeanNameDs) final DataSource dataSource) {
-            return props.entityManagerFactoryBean(dataSource);
+            return props.getDatasource().getApp().entityManagerFactoryBean(dataSource);
         }
 
         @Bean(name = DefaultRepository.BeanNameTx)
         @Primary
         JpaTransactionManager transactionManager(
-                DefaultDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(DefaultRepository.BeanNameEmf) final EntityManagerFactory emf) {
-            return props.transactionManager(emf);
+            return props.getDatasource().getApp().transactionManager(emf);
         }
 
     }
@@ -68,22 +66,22 @@ public class ApplicationDbConfig {
         }
 
         @Bean(name = SystemRepository.BeanNameDs, destroyMethod = "close")
-        DataSource systemDataSource(SystemDataSourceProperties props) {
-            return props.dataSource();
+        DataSource systemDataSource(ApplicationProperties props) {
+            return props.getDatasource().getSystem().dataSource();
         }
 
         @Bean(name = SystemRepository.BeanNameEmf)
         LocalContainerEntityManagerFactoryBean systemEntityManagerFactoryBean(
-                SystemDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(SystemRepository.BeanNameDs) final DataSource dataSource) {
-            return props.entityManagerFactoryBean(dataSource);
+            return props.getDatasource().getSystem().entityManagerFactoryBean(dataSource);
         }
 
         @Bean(name = SystemRepository.BeanNameTx)
         JpaTransactionManager systemTransactionManager(
-                SystemDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(SystemRepository.BeanNameEmf) final EntityManagerFactory emf) {
-            return props.transactionManager(emf);
+            return props.getDatasource().getSystem().transactionManager(emf);
         }
 
     }

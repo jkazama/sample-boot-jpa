@@ -9,7 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Data;
-import lombok.var;
 import sample.context.DomainEntity;
 import sample.context.Dto;
 import sample.context.orm.JpqlBuilder;

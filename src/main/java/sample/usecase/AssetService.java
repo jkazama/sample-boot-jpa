@@ -19,8 +19,8 @@ import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.RegCashOut;
 import sample.model.constraints.AbsAmount;
 import sample.model.constraints.Currency;
-import sample.usecase.event.AppMailEvent;
-import sample.usecase.event.AppMailEvent.AppMailType;
+import sample.usecase.event.NotificationEvent;
+import sample.usecase.event.type.NotificationType;
 
 /**
  * Customer use case processing for the asset domain.
@@ -70,7 +70,8 @@ public class AssetService {
             });
             // low: After the transaction is finalized, you will be notified by e-mail that
             // your withdrawal request has been accepted.
-            eventPublisher.publishEvent(AppMailEvent.of(AppMailType.FinishRequestWithdraw, cio));
+            eventPublisher.publishEvent(
+                    NotificationEvent.of(NotificationType.FINISH_REQUEST_WITHDRAW, cio));
             return cio.getCashInOutId();
         });
     }

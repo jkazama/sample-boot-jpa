@@ -7,7 +7,10 @@ import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -39,10 +42,13 @@ import sample.util.TimePoint;
 @Entity
 @Data
 public class Cashflow implements DomainMetaEntity {
+    private static final String SequenceId = "cashflow_id_seq";
 
     /** cashflow ID */
     @Id
-    private String cashflowId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
+    private Long cashflowId;
     /** account ID */
     @IdStr
     private String accountId;
@@ -79,7 +85,7 @@ public class Cashflow implements DomainMetaEntity {
     /** The cash flow is processed and reflected in the balance. */
     public Cashflow realize(final OrmRepository rep) {
         AppValidator.validate((v) -> {
-            v.verify(canRealize(rep), AssetErrorKeys.CashflowRealizeDay);
+            v.verify(canRealize(rep), AssetErrorKeys.RealizeDay);
             v.verify(statusType.isUnprocessing(), DomainErrorKeys.StatusType);
         });
 
@@ -109,7 +115,7 @@ public class Cashflow implements DomainMetaEntity {
         return rep.dh().time().tp().afterEqualsDay(valueDay);
     }
 
-    public static Cashflow load(final OrmRepository rep, String cashflowId) {
+    public static Cashflow load(final OrmRepository rep, Long cashflowId) {
         return rep.load(Cashflow.class, cashflowId);
     }
 
@@ -151,7 +157,7 @@ public class Cashflow implements DomainMetaEntity {
     public static Cashflow register(final OrmRepository rep, final RegCashflow p) {
         TimePoint now = rep.dh().time().tp();
         AppValidator.validate((v) -> {
-            v.checkField(now.beforeEqualsDay(p.valueDay()), "valueDay", AssetErrorKeys.CashflowBeforeEqualsDay);
+            v.checkField(now.beforeEqualsDay(p.valueDay()), "valueDay", AssetErrorKeys.AfterValueDay);
         });
         Cashflow cf = rep.save(p.create(now));
         return cf.canRealize(rep) ? cf.realize(rep) : cf;

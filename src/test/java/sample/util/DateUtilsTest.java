@@ -1,8 +1,11 @@
 package sample.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -13,7 +16,7 @@ public class DateUtilsTest {
     private final LocalDate targetDay = LocalDate.of(2015, 8, 29);
 
     @Test
-    public void 初期化検証() {
+    public void checkConvert() {
         assertEquals(targetDay, DateUtils.day("2015-08-29"));
         assertEquals(
                 targetDate,
@@ -29,7 +32,7 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void フォーマット検証() {
+    public void checkFormat() {
         assertEquals(
                 "01:23:31",
                 DateUtils.dateFormat(targetDate, DateTimeFormatter.ISO_LOCAL_TIME));
@@ -37,20 +40,20 @@ public class DateUtilsTest {
     }
 
     @Test
-    public void サポートユーティリティ検証() {
+    public void checkSupport() {
         LocalDate startDay = LocalDate.of(2015, 8, 1);
         LocalDate endDay = LocalDate.of(2015, 8, 31);
         assertTrue(DateUtils.between(startDay, endDay).isPresent());
         assertFalse(DateUtils.between(startDay, null).isPresent());
         assertFalse(DateUtils.between(null, endDay).isPresent());
-        assertEquals(30, DateUtils.between(startDay, endDay).get().getDays()); // 31でない点に注意
+        assertEquals(30, DateUtils.between(startDay, endDay).get().getDays()); // Note that it is not 31
 
         LocalDateTime startDate = LocalDateTime.of(2015, 8, 1, 01, 23, 31);
         LocalDateTime endDate = LocalDateTime.of(2015, 8, 31, 00, 23, 31);
         assertTrue(DateUtils.between(startDate, endDate).isPresent());
         assertFalse(DateUtils.between(startDate, null).isPresent());
         assertFalse(DateUtils.between(null, endDate).isPresent());
-        assertEquals(29, DateUtils.between(startDate, endDate).get().toDays()); // 30でない点に注意
+        assertEquals(29, DateUtils.between(startDate, endDate).get().toDays()); // Note that it is not 30
 
         assertTrue(DateUtils.isWeekend(LocalDate.of(2015, 8, 29)));
         assertFalse(DateUtils.isWeekend(LocalDate.of(2015, 8, 28)));

@@ -5,31 +5,39 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import lombok.Value;
-import sample.EntityTestSupport;
+import lombok.Builder;
 import sample.context.ErrorKeys;
 import sample.context.ValidationException;
+import sample.model.DataFixtures;
+import sample.model.DomainTester;
+import sample.model.DomainTester.DomainTesterBuilder;
 
-public class FiAccountTest extends EntityTestSupport {
+public class FiAccountTest {
 
-    @Override
-    protected void setupPreset() {
-        targetEntities(FiAccount.class, Account.class);
+    private DomainTester tester;
+
+    @BeforeEach
+    public void before() {
+        tester = DomainTesterBuilder.from(FiAccount.class, Account.class).build();
+        tester.txInitializeData(rep -> {
+            rep.save(DataFixtures.fiAcc("normal", "sample", "JPY"));
+        });
     }
 
-    @Override
-    protected void before() {
-        tx(() -> fixtures.fiAcc("normal", "sample", "JPY").save(rep));
+    @AfterEach
+    public void after() {
+        tester.close();
     }
 
     @Test
-    public void 金融機関口座を取得する() {
-        tx(() -> {
-            FiAccount normal = FiAccount.load(rep, "normal", "sample", "JPY");
+    public void load() {
+        tester.tx(rep -> {
+            var normal = FiAccount.load(rep, "normal", "sample", "JPY");
             assertEquals("normal", normal.getAccountId());
             assertEquals("sample", normal.getCategory());
             assertEquals("JPY", normal.getCurrency());
@@ -45,16 +53,17 @@ public class FiAccountTest extends EntityTestSupport {
     }
 
     @Test
-    public void Hibernate5_1で追加されたアドホックなJoin検証() {
-        tx(() -> {
-            fixtures.fiAcc("sample", "join", "JPY").save(rep);
-            fixtures.acc("sample").save(rep);
+    public void checkAdHocJoin() {
+        tester.tx(rep -> {
+            rep.save(DataFixtures.fiAcc("sample", "join", "JPY"));
+            rep.save(DataFixtures.account("sample"));
 
-            List<FiAccountJoin> list = rep.tmpl()
-                    .find("from FiAccount fa left join Account a on fa.accountId = a.id where fa.accountId = ?1",
-                            "sample")
-                    .stream().map(FiAccountTest::mapJoin).collect(Collectors.toList());
-
+            var jpql = """
+                    SELECT fa,a FROM FiAccount fa LEFT JOIN Account a ON fa.accountId = a.id WHERE fa.accountId = ?1
+                    """;
+            List<FiAccountJoin> list = rep.tmpl().find(jpql, "sample").stream()
+                    .map(FiAccountTest::mapJoin)
+                    .toList();
             assertFalse(list.isEmpty());
             FiAccountJoin m = list.get(0);
             assertEquals("sample", m.accountId);
@@ -67,14 +76,19 @@ public class FiAccountTest extends EntityTestSupport {
         Object[] values = (Object[]) v;
         FiAccount fa = (FiAccount) values[0];
         Account a = (Account) values[1];
-        return new FiAccountJoin(fa.getAccountId(), a.getName(), fa.getFiCode(), fa.getFiAccountId());
+        return FiAccountJoin.builder()
+                .accountId(fa.getAccountId())
+                .name(a.getName())
+                .fiCode(fa.getFiCode())
+                .fiAcountId(fa.getFiAccountId())
+                .build();
     }
 
-    @Value
-    private static class FiAccountJoin {
-        private String accountId;
-        private String name;
-        private String fiCode;
-        private String fiAcountId;
+    @Builder
+    private static record FiAccountJoin(
+            String accountId,
+            String name,
+            String fiCode,
+            String fiAcountId) {
     }
 }

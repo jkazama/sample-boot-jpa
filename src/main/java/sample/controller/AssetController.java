@@ -53,7 +53,7 @@ public class AssetController {
             LocalDate valueDay,
             ActionStatusType statusType,
             LocalDateTime updateDate,
-            String cashflowId) implements Dto {
+            Long cashflowId) implements Dto {
         public static UserCashOut of(final CashInOut cio) {
             return UserCashOut.builder()
                     .cashInOutId(cio.getCashInOutId())

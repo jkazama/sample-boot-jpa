@@ -1,20 +1,28 @@
 package sample.model.constraints;
 
-import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.*;
-
-import jakarta.validation.*;
-import jakarta.validation.constraints.NotNull;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import jakarta.validation.ReportAsSingleViolation;
+import jakarta.validation.constraints.NotNull;
+
 /**
- * ISOフォーマットの時間(必須)を表現する制約注釈。
+ * Constraint annotation expressing ISO format time (required).
  * <p>
- * HH:mm:ss.SSSZ を想定します。
+ * Assume HH:mm:ss.SSSXXX.
  */
 @Documented
 @Constraint(validatedBy = {})

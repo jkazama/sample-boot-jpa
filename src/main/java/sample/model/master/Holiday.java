@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.Data;
@@ -33,16 +36,19 @@ import sample.util.DateUtils;
 @Entity
 @Data
 public class Holiday implements DomainMetaEntity {
+    private static final String SequenceId = "holiday_id_seq";
     public static final String CategoryDefault = "default";
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
     private Long id;
     /** Holiday classification (currency, country, financial institution, etc.) */
     @Category
     private String category;
     @ISODate
-    private LocalDate holiday;
+    @Column(name = "holiday", nullable = false)
+    private LocalDate day;
     @NameEmpty(max = 40)
     private String name;
     @OutlineEmpty
@@ -62,7 +68,7 @@ public class Holiday implements DomainMetaEntity {
 
     public static Optional<Holiday> get(final OrmRepository rep, String category, LocalDate day) {
         var jpql = """
-                SELECT h FROM Holiday h WHERE h.category=?1 AND h.hoilday=?2
+                SELECT h FROM Holiday h WHERE h.category=?1 AND h.day=?2
                 """;
         return rep.tmpl().get(jpql, category, day);
     }
@@ -71,10 +77,10 @@ public class Holiday implements DomainMetaEntity {
         return load(rep, CategoryDefault, day);
     }
 
-    public static Holiday load(final OrmRepository rep, String category, LocalDate holiday) {
-        return get(rep, category, holiday)
+    public static Holiday load(final OrmRepository rep, String category, LocalDate day) {
+        return get(rep, category, day)
                 .orElseThrow(
-                        () -> ValidationException.of(ErrorKeys.EntityNotFound, holiday.toString()));
+                        () -> ValidationException.of(ErrorKeys.EntityNotFound, day.toString()));
     }
 
     public static List<Holiday> find(final OrmRepository rep, final FindHoliday param) {
@@ -84,8 +90,8 @@ public class Holiday implements DomainMetaEntity {
         var jpql = """
                 SELECT h
                 FROM Holiday h
-                WHERE h.category=?1 AND h.hoilday BETWEEN ?2 AND ?3
-                ORDER BY h.hoilday
+                WHERE h.category=?1 AND h.day BETWEEN ?2 AND ?3
+                ORDER BY h.day
                 """;
         return rep.tmpl().find(jpql, category, fromDay, toDay);
     }
@@ -103,12 +109,15 @@ public class Holiday implements DomainMetaEntity {
      * Batch registration after deleting all holidays for the specified year.
      */
     public static void register(final OrmRepository rep, final RegHoliday param) {
+        var category = param.category != null ? param.category : CategoryDefault;
         var fromDay = LocalDate.ofYearDay(param.year, 1);
         var toDay = DateUtils.dayTo(param.year);
         var jpqlDel = """
-                DELETE FROM Holiday h WHERE h.category=?1 AND h.hoilday BETWEEN ?2 AND ?3
+                DELETE FROM Holiday h WHERE h.category=?1 AND h.day BETWEEN ?2 AND ?3
                 """;
-        rep.tmpl().execute(jpqlDel, param.category, fromDay, toDay);
+        rep.tmpl().execute(jpqlDel, category, fromDay, toDay);
+        rep.flushAndClear();
+        System.out.println(rep.findAll(Holiday.class));
         param.list.stream()
                 .filter(v -> DateUtils.includes(v.holiday(), fromDay, toDay))
                 .forEach(v -> rep.saveOrUpdate(v.create(param)));
@@ -129,7 +138,7 @@ public class Holiday implements DomainMetaEntity {
         public Holiday create(RegHoliday parent) {
             var m = new Holiday();
             m.setCategory(parent.category != null ? parent.category : CategoryDefault);
-            m.setHoliday(this.holiday);
+            m.setDay(this.holiday);
             m.setName(this.name);
             return m;
         }

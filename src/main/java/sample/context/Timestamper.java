@@ -3,12 +3,10 @@ package sample.context;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import sample.context.spring.ObjectProviderAccessor;
 import sample.context.support.AppSettingHandler;
@@ -45,7 +43,14 @@ public interface Timestamper {
         /** {@inheritDoc} */
         @Override
         public LocalDate day() {
-            return DateUtils.day(settingHandler().setting(KeyDay).str());
+            var setting = settingHandler().setting(KeyDay);
+            if (setting.getValue() == null) {
+                LocalDate day = date().toLocalDate();
+                settingHandler().change(KeyDay, DateUtils.dayFormat(day));
+                return day;
+            } else {
+                return DateUtils.day(settingHandler().setting(KeyDay).str());
+            }
         }
 
         private AppSettingHandler settingHandler() {
@@ -67,30 +72,4 @@ public interface Timestamper {
 
     }
 
-    @AllArgsConstructor(staticName = "of")
-    public static class TimestamperMock implements Timestamper {
-        private static final ZoneId DEFAULT_ZONE_ID = ZoneId.systemDefault();
-        private Clock clock;
-
-        /** {@inheritDoc} */
-        @Override
-        public LocalDate day() {
-            return LocalDate.now(clock);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public LocalDateTime date() {
-            return LocalDateTime.now(clock);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Timestamper forwardDay(LocalDate day) {
-            var fixedDate = day.atStartOfDay(DEFAULT_ZONE_ID);
-            this.clock = Clock.fixed(fixedDate.toInstant(), DEFAULT_ZONE_ID);
-            return this;
-        }
-
-    }
 }

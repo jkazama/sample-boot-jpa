@@ -9,18 +9,17 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import sample.context.ValidationException;
-import sample.context.ValidationException.Warn;
 
 public class ValidatorTest {
 
     @Test
-    public void ラムダ式ベースの検証() {
+    public void checkLambda() {
         AppValidator.validate((v) -> {
             boolean anyCheck = true;
             v.checkField(anyCheck, "name", "error.name");
         });
 
-        // フィールドレベルのチェック
+        // for Field
         try {
             AppValidator.validate((v) -> {
                 boolean anyCheck = false;
@@ -32,13 +31,13 @@ public class ValidatorTest {
         } catch (ValidationException e) {
             List<Warn> warns = e.list();
             assertEquals(2, warns.size());
-            assertEquals("name", warns.get(0).getField());
-            assertEquals("error.name", warns.get(0).getMessage());
-            assertEquals("day", warns.get(1).getField());
-            assertEquals("error.day", warns.get(1).getMessage());
+            assertEquals("name", warns.get(0).field());
+            assertEquals("error.name", warns.get(0).message());
+            assertEquals("day", warns.get(1).field());
+            assertEquals("error.day", warns.get(1).message());
         }
 
-        // グローバルチェック
+        // for Global
         try {
             AppValidator.validate((v) -> {
                 boolean anyCheck = false;
@@ -48,13 +47,13 @@ public class ValidatorTest {
         } catch (ValidationException e) {
             List<Warn> warns = e.list();
             assertEquals(1, warns.size());
-            assertNull(warns.get(0).getField());
-            assertEquals("error.global", warns.get(0).getMessage());
+            assertNull(warns.get(0).field());
+            assertEquals("error.global", warns.get(0).message());
         }
     }
 
     @Test
-    public void 手続きベースの検証() {
+    public void checkSequence() {
         AppValidator v = new AppValidator();
         boolean anyCheck = false;
         v.checkField(anyCheck, "name", "error.name");

@@ -9,6 +9,7 @@ import sample.context.actor.Actor;
 import sample.context.actor.ActorSession;
 import sample.context.spring.ObjectProviderAccessor;
 import sample.context.support.AppSettingHandler;
+import sample.context.support.IdGenerator;
 
 /**
  * Provides access to infrastructure layer components required for domain
@@ -23,6 +24,9 @@ public interface DomainHelper {
 
     /** Returns date/time utility. */
     Timestamper time();
+
+    /** Returns UID Generator */
+    IdGenerator uid();
 
     /** Returns the application configuration utility. */
     AppSettingHandler setting();
@@ -40,7 +44,8 @@ public interface DomainHelper {
     public static class DomainHelperProviderImpl implements DomainHelper {
         private final ApplicationProperties props;
         private final ObjectProvider<Timestamper> time;
-        private final ObjectProvider<AppSettingHandler> settingHandler;
+        private final ObjectProvider<IdGenerator> uid;
+        private final ObjectProvider<AppSettingHandler> setting;
         private final ObjectProviderAccessor accessor;
 
         /** {@inheritDoc} */
@@ -51,8 +56,14 @@ public interface DomainHelper {
 
         /** {@inheritDoc} */
         @Override
+        public IdGenerator uid() {
+            return this.accessor.bean(uid, IdGenerator.class);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public AppSettingHandler setting() {
-            return this.accessor.bean(settingHandler, AppSettingHandler.class);
+            return this.accessor.bean(setting, AppSettingHandler.class);
         }
 
         /** {@inheritDoc} */
@@ -62,31 +73,5 @@ public interface DomainHelper {
         }
 
     }
-
-    // /** Domain helpers for mock testing */
-    // public static class DomainHelperMock implements DomainHelper {
-    // private final ApplicationProperties props = new ApplicationProperties();
-    // private final Timestamper time = new TimestamperMock();
-    // private final AppSettingHandler setting = new AppSettingHandlerMock();
-
-    // /** {@inheritDoc} */
-    // @Override
-    // public Timestamper time() {
-    // return time;
-    // }
-
-    // /** {@inheritDoc} */
-    // @Override
-    // public AppSettingHandler setting() {
-    // return this.setting;
-    // }
-
-    // /** {@inheritDoc} */
-    // @Override
-    // public ApplicationProperties props() {
-    // return this.props;
-    // }
-
-    // }
 
 }

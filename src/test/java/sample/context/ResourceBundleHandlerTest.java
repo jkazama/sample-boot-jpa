@@ -9,7 +9,7 @@ import sample.context.support.ResourceBundleHandler;
 public class ResourceBundleHandlerTest {
 
     @Test
-    public void ラベル取得検証() {
+    public void checkLabel() {
         ResourceBundleHandler handler = new ResourceBundleHandler();
         assertTrue(0 < handler.labels("messages").size());
     }

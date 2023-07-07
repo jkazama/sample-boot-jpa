@@ -1,36 +1,38 @@
 package sample.context.report.csv;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PushbackReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import sample.context.InvocationException;
 
 /**
- * CSVの読込処理をサポートするユーティリティです。
+ * This utility supports CSV read processing.
  */
-@Data
-@AllArgsConstructor
+@RequiredArgsConstructor(staticName = "of")
 public class CsvReader {
+    private final byte[] data;
+    private final InputStream ins;
+    private final CsvLayout layout;
 
-    private byte[] data;
-    private InputStream ins;
-    private CsvLayout layout = new CsvLayout();
-
-    /** バイナリリソース経由での読み込み時にtrue */
+    /** true when reading via binary resource */
     public boolean fromBinary() {
         return data != null;
     }
 
     /**
-     * CSV読込処理を行います。
+     * CSV reading process.
      * <p>
-     * 大量データ処理を想定してメモリ内に全展開するのではなく、Iteratorを用いた
-     * 行処理形式を利用しています。
-     *
-     * @param logic
+     * Instead of expanding all of the data in memory for mass data processing, a
+     * row processing format using Iterator is used.
      */
     public void read(final CsvReadLine logic) {
         InputStream ins = null;
@@ -40,7 +42,7 @@ public class CsvReader {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new InvocationException("リソース処理中に例外が発生しました", e);
+            throw new InvocationException("An exception occurred during resource processing", e);
         } finally {
             if (fromBinary()) {
                 closeQuietly(ins);
@@ -57,17 +59,23 @@ public class CsvReader {
         }
     }
 
+    /**
+     * CSV reading process.
+     * <p>
+     * Instead of expanding all of the data in memory for mass data processing, a
+     * row processing format using Iterator is used.
+     */
     public void readStream(final InputStream in, final CsvReadLine logic) throws Exception {
-        PushbackReader reader = new PushbackReader(new InputStreamReader(in, layout.getCharset()), 2);
+        var reader = new PushbackReader(new InputStreamReader(in, layout.charset()), 2);
         try {
             int lineNum = 0;
             boolean title = false;
             while (hasNext(in, reader)) {
                 lineNum++;
-                List<String> row = readStreamLine(reader); // ヘッダ定義でも行を読み込み、シークを先に進める
-                if (lineNum == 1 && StringUtils.isNotBlank(layout.getHeader())) {
+                List<String> row = readStreamLine(reader); // Read rows even in header definitions and advance the seek
+                if (lineNum == 1 && StringUtils.isNotBlank(layout.header())) {
                     title = true;
-                    continue; // ヘッダ定義存在時は最初の行をスキップ
+                    continue; // Skip first line if header definition exists
                 }
                 logic.execute(title ? lineNum - 1 : lineNum, row);
             }
@@ -76,7 +84,6 @@ public class CsvReader {
         }
     }
 
-    /** 行の存在判定を行います */
     private boolean hasNext(final InputStream in, final PushbackReader reader) throws Exception {
         in.available();
         int i = reader.read();
@@ -87,12 +94,11 @@ public class CsvReader {
         return false;
     }
 
-    /** InputStreamから行文字列を取得してparseLineを実行します */
     private List<String> readStreamLine(final PushbackReader reader) throws Exception {
         boolean inQt = false;
-        char qt = layout.getQuote();
-        String eol = layout.getEolSymbols();
-        StringBuilder sb = new StringBuilder();
+        char qt = layout.quote();
+        String eol = layout.eolSymbols();
+        var sb = new StringBuilder();
         int cp = -1;
         while ((cp = nextCodePoint(reader)) != -1) {
             sb.appendCodePoint(cp);
@@ -100,10 +106,10 @@ public class CsvReader {
                 if (inQt) {
                     int len = 1;
                     while ((cp = nextCodePoint(reader)) != -1) {
-                        if (qt == cp) {// エスケープ
+                        if (qt == cp) {// escape
                             len++;
                             sb.appendCodePoint(cp);
-                        } else { // 終端
+                        } else { // eol
                             reader.unread(Character.toChars(cp));
                             break;
                         }
@@ -113,11 +119,11 @@ public class CsvReader {
                     } else {
                         inQt = true;
                     }
-                } else if (!layout.isNonQuote()) {
+                } else if (!layout.nonQuote()) {
                     inQt = true;
                 }
             }
-            if (!inQt && sb.toString().endsWith(eol)) { // 行処理
+            if (!inQt && sb.toString().endsWith(eol)) { // line processing
                 return parseRow(stripEol(sb));
             }
         }
@@ -131,7 +137,7 @@ public class CsvReader {
         return new ArrayList<>();
     }
 
-    /** サロゲートペアを考慮した次の文字位置を返します */
+    /** Returns the next character position considering surrogate pairs */
     private int nextCodePoint(final PushbackReader r) throws IOException {
         int i = r.read();
         if (i == -1) {
@@ -143,22 +149,23 @@ public class CsvReader {
             if (Character.isLowSurrogate(lo)) {
                 return Character.toCodePoint(ch, lo);
             } else {
-                throw new IOException("想定外のサロゲートペアを検出しました。[" + String.valueOf(ch) + ", " + String.valueOf(lo) + "]");
+                throw new IOException("An unexpected surrogate pair was detected.[" + String.valueOf(ch) + ", "
+                        + String.valueOf(lo) + "]");
             }
         }
         return String.valueOf(ch).codePointAt(0);
     }
 
     private String stripEol(StringBuilder sb) {
-        return sb.substring(0, sb.length() - layout.getEolSymbols().length());
+        return sb.substring(0, sb.length() - layout.eolSymbols().length());
     }
 
-    /** CSV文字列を解析して列一覧を返します */
+    /** parses a CSV string and returns a list of columns */
     public List<String> parseRow(String row) {
-        int pdelim = String.valueOf(layout.getDelim()).codePointAt(0);
-        int pquote = String.valueOf(layout.getQuote()).codePointAt(0);
+        int pdelim = String.valueOf(layout.delim()).codePointAt(0);
+        int pquote = String.valueOf(layout.quote()).codePointAt(0);
         List<String> columns = new ArrayList<>();
-        StringBuilder column = new StringBuilder();
+        var column = new StringBuilder();
         boolean inQuote = false;
         int max = row.codePointCount(0, row.length());
         for (int i = 0; i < max; i = row.offsetByCodePoints(i, 1)) {
@@ -181,17 +188,17 @@ public class CsvReader {
                     if (cnt % 2 != 0) {
                         inQuote = false;
                     }
-                } else if (!layout.isNonQuote()) {
+                } else if (!layout.nonQuote()) {
                     inQuote = true;
                     column.append(Character.toChars(c));
                 } else {
                     column.append(Character.toChars(c));
                 }
-            } else if (c == pdelim && !inQuote) { // 列切替
+            } else if (c == pdelim && !inQuote) { // column switching
                 columns.add(unescape(StringUtils.trimToEmpty(column.toString())));
                 column = new StringBuilder();
                 inQuote = false;
-            } else { // 末尾追記
+            } else { // postscript
                 column.append(Character.toChars(c));
             }
         }
@@ -200,13 +207,13 @@ public class CsvReader {
     }
 
     private String unescape(String input) {
-        if (StringUtils.isBlank(input) || layout.isNonQuote()) {
+        if (StringUtils.isBlank(input) || layout.nonQuote()) {
             return input;
         }
-        char delim = layout.getDelim();
-        char quote = layout.getQuote();
+        char delim = layout.delim();
+        char quote = layout.quote();
         String quoteStr = String.valueOf(quote);
-        String eolStr = layout.getEolSymbols();
+        String eolStr = layout.eolSymbols();
         List<String> eols = new ArrayList<>(eolStr.length());
         for (int i = 0, n = eolStr.codePointCount(0, eolStr.length()); i < n; i++) {
             eols.add(String.valueOf(Character.toChars(eolStr.codePointAt(i))));
@@ -237,26 +244,30 @@ public class CsvReader {
     }
 
     public static CsvReader of(byte[] data) {
-        return new CsvReader(data, null, new CsvLayout());
+        return CsvReader.of(data, null, CsvLayout.simple());
     }
 
     public static CsvReader of(byte[] data, CsvLayout layout) {
-        return new CsvReader(data, null, layout);
+        return CsvReader.of(data, null, layout);
     }
 
     public static CsvReader of(InputStream ins) {
-        return new CsvReader(null, ins, new CsvLayout());
+        return CsvReader.of(null, ins, CsvLayout.simple());
     }
 
     public static CsvReader of(InputStream ins, CsvLayout layout) {
-        return new CsvReader(null, ins, layout);
+        return CsvReader.of(null, ins, layout);
     }
 
-    /** 行レベルのCSV読込処理を表現します。 */
+    public static CsvReader of(byte[] data, InputStream ins) {
+        return CsvReader.of(data, ins, CsvLayout.simple());
+    }
+
+    /** Represents row-level CSV read processing. */
     public static interface CsvReadLine {
         /**
-         * @param lineNum 実行行番号(1開始)
-         * @param cols    解析された列一覧
+         * @param lineNum Execution line number (1 start)
+         * @param cols    List of parsed columns
          */
         void execute(int lineNum, final List<String> cols);
     }

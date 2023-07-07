@@ -56,7 +56,7 @@ public class Login implements DomainEntity {
         @IdStr
         private String actorId;
         @NotNull
-        private ActorRoleType actorRoleType;
+        private ActorRoleType roleType;
     }
 
     /**

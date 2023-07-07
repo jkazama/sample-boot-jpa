@@ -2,7 +2,6 @@ package sample.context.mail;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.Builder;
@@ -31,7 +30,6 @@ public interface MailHandler {
     @RequiredArgsConstructor(staticName = "of")
     @Slf4j
     public static class MailHandlerImpl implements MailHandler {
-        @Value("${sample.mail.enabled:true}")
         private final ApplicationProperties props;
 
         @Override

@@ -118,6 +118,7 @@ After launching the server on port 8080, you can test execution of RESTful API b
 
 #### Customer Use Case
 
+- `curl -X POST -b cookie.txt -d 'loginId=sample,password=sample' http://localhost:8080/api/login`
 - `curl -X POST -H "Content-Type: application/json" -d '{"accountId"  : "sample" , "currency" : "JPY", "absAmount": 1000}' http://localhost:8080/asset/cio/withdraw`
     - Request for withdrawal.
 - `curl 'http://localhost:8080/asset/cio/unprocessedOut'`
