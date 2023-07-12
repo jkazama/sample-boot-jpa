@@ -92,16 +92,16 @@ public class AuditHandler {
             T v = ActorSession.actor().roleType().isSystem()
                     ? callEvent(category, mergeMessage, callable)
                     : callAudit(category, mergeMessage, callable);
-            logger().info(message(mergeMessage, "[End]", start));
+            logger().info(message(mergeMessage, "[Finish]", start));
             return v;
         } catch (ValidationException e) {
             logger().warn(message(mergeMessage, "[Warn]", start));
             throw e;
         } catch (RuntimeException e) {
-            logger().error(message(mergeMessage, "[Error]", start));
+            logger().warn(message(mergeMessage, "[Error]", start));
             throw (RuntimeException) e;
         } catch (Exception e) {
-            logger().error(message(mergeMessage, "[Fatal]", start));
+            logger().warn(message(mergeMessage, "[Fatal]", start));
             throw InvocationException.of(ErrorKeys.Exception, e);
         }
     }

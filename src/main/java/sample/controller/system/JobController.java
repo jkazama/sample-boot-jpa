@@ -1,11 +1,13 @@
 package sample.controller.system;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import sample.context.actor.type.ActorRoleType;
 import sample.controller.ControllerUtils;
 import sample.usecase.admin.AssetAdminService;
 import sample.usecase.admin.SystemAdminService;
@@ -28,6 +30,7 @@ import sample.usecase.admin.SystemAdminService;
  */
 @RestController
 @RequestMapping("/api/system/job")
+@PreAuthorize(ActorRoleType.AUTHORIZE_ADMINISTRATOR)
 @RequiredArgsConstructor
 public class JobController {
     private final AssetAdminService asset;

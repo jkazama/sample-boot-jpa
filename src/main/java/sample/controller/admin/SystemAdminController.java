@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import sample.context.actor.type.ActorRoleType;
 import sample.context.audit.AuditActor;
 import sample.context.audit.AuditActor.FindAuditActor;
 import sample.context.audit.AuditEvent;
@@ -28,6 +30,7 @@ import sample.usecase.admin.SystemAdminService;
  */
 @RestController
 @RequestMapping("/api/admin/system")
+@PreAuthorize(ActorRoleType.AUTHORIZE_INTERNAL)
 @RequiredArgsConstructor
 public class SystemAdminController {
     private final SystemAdminService service;

@@ -1,9 +1,8 @@
 sample-boot-jpa
 ---
 
-### はじめに
+### Preface
 
-Preface
 It is DDD sample implementation from [Spring Boot](https://spring.io/projects/spring-boot) / [Spring Security](https://spring.io/projects/spring-security) / [Spring Data JPA](https://spring.io/projects/spring-data-jpa).
 It is not a framework, please use it as a base template when you start a project using Spring Boot.
 
@@ -118,28 +117,31 @@ After launching the server on port 8080, you can test execution of RESTful API b
 
 #### Customer Use Case
 
-- `curl -X POST -b cookie.txt -d 'loginId=sample,password=sample' http://localhost:8080/api/login`
-- `curl -X POST -H "Content-Type: application/json" -d '{"accountId"  : "sample" , "currency" : "JPY", "absAmount": 1000}' http://localhost:8080/asset/cio/withdraw`
+- `curl -X POST -c cookie.txt -d 'loginId=sample&password=sample' http://localhost:8080/api/login`
+- `curl -X POST -b cookie.txt -H "Content-Type: application/json" -d '{"accountId"  : "sample" , "currency" : "USD", "absAmount": 1000}' http://localhost:8080/api/asset/cio/withdraw`
     - Request for withdrawal.
-- `curl 'http://localhost:8080/asset/cio/unprocessedOut'`
+- `curl -b cookie.txt 'http://localhost:8080/api/asset/cio/unprocessedOut'`
     - Search for outstanding withdrawal requests
 
 #### Internal Use Case
 
-- `curl 'http://localhost:8080/admin/asset/cio?updFromDay=yyyy-MM-dd&updToDay=yyyy-MM-dd'`
+- `curl -X POST -c cookie.txt -d 'loginId=ADMINISTRATOR-admin&password=admin' http://localhost:8080/api/login`
+- `curl -b cookie.txt 'http://localhost:8080/api/admin/asset/cio?updFromDay=yyyy-MM-dd&updToDay=yyyy-MM-dd'`
     - Search for deposit and withdrawal requests.
     - Please set real date for upd\*Day
 
 #### Batch Use Case
 
-- `curl -X POST http://localhost:8080/system/job/daily/closingCashOut`
+- `curl -X POST -c cookie.txt -d 'loginId=ADMINISTRATOR-admin&password=admin' http://localhost:8080/api/login`
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/closingCashOut`
     - Close the withdrawal request.
-- `curl -X POST http://localhost:8080/system/job/daily/processDay`
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/forwardDay`
     - Set the business day to the next day.
-- `curl -X POST http://localhost:8080/system/job/daily/realizeCashflow`
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/realizeCashflow`
     - Realize cash flow. (Reflected to the balance on the delivery date)
 
 > Please execute according to the business day appropriately
+> When executing from a job agent, change the port or block the path with L/B, etc. Here is an example based on the assumption that the administrator executes from the UI
 
 ### License
 

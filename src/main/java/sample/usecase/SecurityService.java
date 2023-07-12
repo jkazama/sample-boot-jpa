@@ -7,8 +7,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import lombok.RequiredArgsConstructor;
 import sample.context.ErrorKeys;
+import sample.context.actor.Actor;
 import sample.context.actor.type.ActorRoleType;
 import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
@@ -28,14 +27,32 @@ import sample.model.master.Staff;
  */
 @Service
 @RequiredArgsConstructor
-public class SecurityService implements UserDetailsService, AuthenticationProvider {
+public class SecurityService implements AuthenticationProvider {
     private final OrmRepository rep;
     private final PlatformTransactionManager txm;
     private final PasswordEncoder encoder;
 
     /** {@inheritDoc} */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        if (authentication.getPrincipal() == null ||
+                authentication.getCredentials() == null) {
+            throw new BadCredentialsException(ErrorKeys.Login);
+        }
+        Login login = this.loadLoginByUsername(authentication.getPrincipal().toString());
+        String presentedPassword = authentication.getCredentials().toString();
+        if (!encoder.matches(presentedPassword, login.getPassword())) {
+            throw new BadCredentialsException(ErrorKeys.Login);
+        }
+        Actor actor = TxTemplate.of(txm).readOnly().tx(() -> {
+            return login.getRoleType().isUser()
+                    ? Account.load(rep, login.getActorId()).actor()
+                    : Staff.load(rep, login.getActorId()).actor();
+        });
+        return new UsernamePasswordAuthenticationToken(actor, "", actor.getAuthorities());
+    }
+
+    private Login loadLoginByUsername(String username) throws UsernameNotFoundException {
         int idx = username.indexOf("-");
         String roleTypeStr = "USER";
         String loginId;
@@ -51,28 +68,8 @@ public class SecurityService implements UserDetailsService, AuthenticationProvid
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
         return TxTemplate.of(txm).readOnly().tx(() -> {
             return Login.getByLoginId(rep, roleType, loginId)
-                    .map(login -> {
-                        return login.getRoleType().isUser()
-                                ? Account.load(rep, login.getActorId()).actor()
-                                : Staff.load(rep, login.getActorId()).actor();
-                    })
                     .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
         });
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        if (authentication.getPrincipal() == null ||
-                authentication.getCredentials() == null) {
-            throw new BadCredentialsException(ErrorKeys.Login);
-        }
-        UserDetails details = this.loadUserByUsername(authentication.getPrincipal().toString());
-        String presentedPassword = authentication.getCredentials().toString();
-        if (!encoder.matches(presentedPassword, details.getPassword())) {
-            throw new BadCredentialsException(ErrorKeys.Login);
-        }
-        return new UsernamePasswordAuthenticationToken(details, "", details.getAuthorities());
     }
 
     /** {@inheritDoc} */

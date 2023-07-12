@@ -18,6 +18,9 @@ public enum ActorRoleType {
     /** System (automatic processing on the system) */
     SYSTEM;
 
+    public static final String AUTHORIZE_INTERNAL = "hasAnyAuthority('INTERNAL','ADMINISTRATOR')";
+    public static final String AUTHORIZE_ADMINISTRATOR = "hasAuthority('ADMINISTRATOR')";
+
     public boolean isAnonymous() {
         return this == ANONYMOUS;
     }

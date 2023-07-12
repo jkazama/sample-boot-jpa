@@ -3,7 +3,6 @@ package sample.context.actor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -48,7 +47,7 @@ public record Actor(
         /** Group ID List */
         List<String> groupIds,
         /** Authority ID List */
-        Set<String> authorityIds) implements Dto, UserDetails {
+        List<String> authorityIds) implements Dto, UserDetails {
 
     /** Anonymous user constant */
     public static final Actor ANONYMOUS = Actor.of("unknown", ActorRoleType.ANONYMOUS);
@@ -135,7 +134,7 @@ public record Actor(
                 .avatar(avatar)
                 .extensions(new HashMap<>(extensions))
                 .groupIds(new ArrayList<>(groupIds))
-                .authorityIds(new HashSet<>(authorityIds));
+                .authorityIds(new ArrayList<>(authorityIds));
     }
 
     public static ActorBuilder builderDefault() {
@@ -143,7 +142,7 @@ public record Actor(
                 .locale(Locale.getDefault())
                 .extensions(new HashMap<>())
                 .groupIds(new ArrayList<>())
-                .authorityIds(new HashSet<>());
+                .authorityIds(new ArrayList<>());
     }
 
     public static Actor of(String id, ActorRoleType roleType) {
@@ -155,6 +154,9 @@ public record Actor(
                 .id(id)
                 .name(name)
                 .roleType(roleType)
+                .extensions(new HashMap<>())
+                .groupIds(new ArrayList<>())
+                .authorityIds(new ArrayList<>())
                 .build();
     }
 
