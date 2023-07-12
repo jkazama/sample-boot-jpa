@@ -140,7 +140,7 @@ After launching the server on port 8080, you can test execution of RESTful API b
 - `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/realizeCashflow`
     - Realize cash flow. (Reflected to the balance on the delivery date)
 
-> Please execute according to the business day appropriately
+> Please execute according to the business day appropriately.  
 > When executing from a job agent, change the port or block the path with L/B, etc. Here is an example based on the assumption that the administrator executes from the UI
 
 ### License
