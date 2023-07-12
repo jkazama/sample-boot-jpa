@@ -3,13 +3,6 @@
     "configurations": [
         {
             "type": "java",
-            "name": "DdlExporter",
-            "request": "launch",
-            "mainClass": "sample.model.DdlExporter",
-            "projectName": "sample-boot-jpa"
-        },
-        {
-            "type": "java",
             "name": "Run sample-boot-jpa",
             "request": "launch",
             "cwd": "${workspaceFolder}",
