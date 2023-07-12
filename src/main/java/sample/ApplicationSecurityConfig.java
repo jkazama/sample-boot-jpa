@@ -1,92 +1,160 @@
 package sample;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import java.time.Duration;
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.cors.*;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import sample.context.security.*;
-import sample.context.security.SecurityConfigurer.*;
+import jakarta.servlet.Filter;
+import lombok.extern.slf4j.Slf4j;
+import sample.context.actor.Actor;
+import sample.context.actor.ActorSession;
 
 /**
- * アプリケーションのセキュリティ定義を表現します。
+ * Represents the security definition of the application.
  */
 @Configuration
-@EnableConfigurationProperties({ SecurityProperties.class })
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+@Slf4j
 public class ApplicationSecurityConfig {
 
-    /** パスワード用のハッシュ(BCrypt)エンコーダー。 */
     @Bean
     PasswordEncoder passwordEncoder() {
-        // low: きちんとやるのであれば、strengthやSecureRandom使うなど外部切り出し含めて検討してください
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(4);
     }
 
-    /** CORS全体適用 */
+    /** Define Spring Security settings (authentication/authorization). */
     @Bean
-    @ConditionalOnProperty(prefix = "extension.security.cors", name = "enabled", matchIfMissing = false)
-    CorsFilter corsFilter(SecurityProperties props) {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(props.cors().isAllowCredentials());
-        config.addAllowedOrigin(props.cors().getAllowedOrigin());
-        config.addAllowedHeader(props.cors().getAllowedHeader());
-        config.addAllowedMethod(props.cors().getAllowedMethod());
-        config.setMaxAge(props.cors().getMaxAge());
-        source.registerCorsConfiguration(props.cors().getPath(), config);
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ApplicationProperties props)
+            throws Exception {
+        http.csrf(csrf -> csrf.disable());
+        http.authorizeHttpRequests(authz -> {
+            authz
+                    .requestMatchers("/api/**").authenticated()
+                    .anyRequest().permitAll();
+        });
+        http.exceptionHandling(exception -> {
+            exception.authenticationEntryPoint(authenticationEntryPoint());
+        });
+        http.sessionManagement(session -> {
+            session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+        });
+        http.addFilterAfter(actorSessionFilter(), UsernamePasswordAuthenticationFilter.class);
+        if (props.isCors()) {
+            http.addFilterAt(corsWebFilter(), CorsFilter.class);
+        }
+
+        // login/logout
+        http.formLogin(login -> login
+                .loginPage("/api/login")
+                .usernameParameter("loginId")
+                .passwordParameter("password")
+                .successHandler(loginSuccessHandler())
+                .failureHandler(loginFailureHandler())
+                .permitAll());
+        http.logout(logout -> logout
+                .logoutUrl("/api/logout")
+                .logoutSuccessHandler(logoutSuccessHandler())
+                .permitAll());
+        return http.build();
+    }
+
+    /** Actor to thread local */
+    private Filter actorSessionFilter() {
+        return (req, res, chain) -> {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                if (auth instanceof UsernamePasswordAuthenticationToken) {
+                    ActorSession.bind((Actor) auth.getPrincipal());
+                } else {
+                    throw new IllegalStateException("Not Support Authentication type. ["
+                            + auth.getClass().getCanonicalName() + "]");
+                }
+                try {
+                    chain.doFilter(req, res);
+                } finally {
+                    ActorSession.unbind();
+                }
+            } else {
+                ActorSession.unbind();
+                chain.doFilter(req, res);
+            }
+        };
+    }
+
+    /** CORS Support Filter */
+    private CorsFilter corsWebFilter() {
+        var cors = new CorsConfiguration();
+        cors.setAllowedOriginPatterns(List.of("http://localhost*"));
+        cors.setAllowCredentials(true);
+        cors.setAllowedHeaders(List.of("*"));
+        cors.setAllowedMethods(List.of("*"));
+        cors.setMaxAge(Duration.ofSeconds(3600));
+
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cors);
         return new CorsFilter(source);
     }
 
-    /** Spring Security を用いた API 認証/認可定義を表現します。 */
-    @Configuration
-    @EnableWebSecurity
-    @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
-    @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.BASIC_AUTH_ORDER)
-    static class AuthSecurityConfig {
-
-        /** Spring Security 全般の設定 ( 認証/認可 ) を定義します。 */
-        @Bean
-        @Order(org.springframework.boot.autoconfigure.security.SecurityProperties.BASIC_AUTH_ORDER)
-        SecurityConfigurer securityConfigurer() {
-            return new SecurityConfigurer();
-        }
-
-        /** Spring Security のカスタム認証プロセス管理コンポーネント。 */
-        @Bean
-        @SuppressWarnings("deprecation")
-        AuthenticationManager authenticationManager() throws Exception {
-            return securityConfigurer().authenticationManagerBean();
-        }
-
-        /** Spring Security のカスタム認証プロバイダ。 */
-        @Bean
-        SecurityProvider securityProvider() {
-            return new SecurityProvider();
-        }
-
-        /** Spring Security のカスタムエントリポイント。 */
-        @Bean
-        SecurityEntryPoint securityEntryPoint() {
-            return new SecurityEntryPoint();
-        }
-
-        /** Spring Security におけるログイン/ログアウト時の振る舞いを拡張するHandler。 */
-        @Bean
-        LoginHandler loginHandler() {
-            return new LoginHandler();
-        }
-
-        /** Spring Security で利用される認証/認可対象となるユーザ情報を提供します。 */
-        @Bean
-        SecurityActorFinder securityActorFinder() {
-            return new SecurityActorFinder();
-        }
+    private AuthenticationEntryPoint authenticationEntryPoint() {
+        return (req, res, ex) -> {
+            var status = HttpStatus.UNAUTHORIZED;
+            if (ex instanceof AuthenticationCredentialsNotFoundException) {
+                status = HttpStatus.FORBIDDEN;
+            }
+            res.setStatus(status.value());
+        };
     }
+
+    private AuthenticationSuccessHandler loginSuccessHandler() {
+        return (req, res, auth) -> {
+            var actor = (Actor) auth.getPrincipal();
+            log.info("Success Authentication. [{}]", actor.id());
+            res.setStatus(HttpStatus.OK.value());
+        };
+    }
+
+    private AuthenticationFailureHandler loginFailureHandler() {
+        return (req, res, ex) -> {
+            log.warn("Failure Authentication. cause={}", ex.getMessage());
+            res.setStatus(HttpStatus.BAD_REQUEST.value());
+        };
+    }
+
+    private LogoutSuccessHandler logoutSuccessHandler() {
+        return (req, res, auth) -> {
+            var actor = (Actor) auth.getPrincipal();
+            log.info("Success Logout. [{}]", actor.id());
+            res.setStatus(HttpStatus.OK.value());
+        };
+    }
+
+    @Bean
+    SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
 }

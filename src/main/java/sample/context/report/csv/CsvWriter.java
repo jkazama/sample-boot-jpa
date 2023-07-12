@@ -1,56 +1,45 @@
 package sample.context.report.csv;
 
-import java.io.*;
-import java.util.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.*;
-import sample.InvocationException;
+import lombok.RequiredArgsConstructor;
+import sample.context.InvocationException;
 
 /**
- * CSVの書き出し処理をサポートするユーティリティ。
+ * A utility that supports the CSV export process.
  */
-@Data
-@AllArgsConstructor
+@RequiredArgsConstructor(staticName = "of")
 public class CsvWriter {
 
-    private File file;
-    private OutputStream out;
-    private CsvLayout layout = new CsvLayout();
+    private final File file;
+    private final OutputStream out;
+    private final CsvLayout layout;
 
-    public static CsvWriter of(final File file) {
-        return new CsvWriter(file, null, new CsvLayout());
-    }
-
-    public static CsvWriter of(final File file, final CsvLayout layout) {
-        return new CsvWriter(file, null, layout);
-    }
-
-    public static CsvWriter of(final OutputStream out) {
-        return new CsvWriter(null, out, new CsvLayout());
-    }
-
-    public static CsvWriter of(final OutputStream out, final CsvLayout layout) {
-        return new CsvWriter(null, out, layout);
-    }
-
-    /** ファイルリソース経由での読み込み時にtrue */
+    /** true when reading via file resource */
     public boolean fromFile() {
         return file != null;
     }
 
     /**
-     * CSV書出処理(上書き)を行います。
-     * <p>CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
-     * @param logic
+     * CSV export process (overwrite).
+     * <p>
+     * CsvWrite#appendRow Writing is performed as needed to the file at the time of
+     * the call.
      */
     public void write(final CsvWrite logic) {
         OutputStream out = null;
         try {
             out = fromFile() ? FileUtils.openOutputStream(file) : this.out;
-            CsvStream stream = new CsvStream(layout, out);
+            var stream = new CsvStream(layout, out);
             logic.execute(stream);
         } catch (RuntimeException e) {
             throw e;
@@ -62,7 +51,7 @@ public class CsvWriter {
             }
         }
     }
-    
+
     private void closeQuietly(final Closeable closeable) {
         try {
             if (closeable != null) {
@@ -73,18 +62,20 @@ public class CsvWriter {
     }
 
     /**
-     * CSV書出処理(追記)を行います。
-     * <p>CsvWrite#appendRow 呼び出すタイミングでファイルへ随時書き出しが行われます。
-     * <p>ファイル出力時のみ利用可能です。
-     * @param logic
+     * CSV export process (append).
+     * <p>
+     * CsvWrite#appendRow Writing is performed as needed to the file at the time of
+     * the call.
+     * <p>
+     * Available only for file output.
      */
     public void writeAppend(final CsvWrite logic) {
         if (!fromFile())
-            throw new UnsupportedOperationException("CSV書出処理の追記はファイル出力時のみサポートされます");
+            throw new UnsupportedOperationException("CSV export process is only supported for file output");
         FileOutputStream out = null;
         try {
             out = FileUtils.openOutputStream(file, true);
-            CsvStream stream = new CsvStream(layout, out);
+            var stream = new CsvStream(layout, out);
             logic.execute(stream);
         } catch (RuntimeException e) {
             throw e;
@@ -107,10 +98,10 @@ public class CsvWriter {
             }
         }
 
-        public CsvStream appendRow(List<Object> cols) {
+        public CsvStream appendRow(List<?> cols) {
             try {
-                out.write(row(cols).getBytes(layout.getCharset()));
-                out.write(layout.getEolSymbols().getBytes());
+                out.write(row(cols).getBytes(layout.charset()));
+                out.write(layout.eolSymbols().getBytes());
                 return this;
             } catch (RuntimeException e) {
                 throw e;
@@ -119,7 +110,7 @@ public class CsvWriter {
             }
         }
 
-        public String row(List<Object> cols) {
+        public String row(List<?> cols) {
             List<String> row = new ArrayList<>();
             for (Object col : cols) {
                 if (col instanceof String) {
@@ -136,13 +127,13 @@ public class CsvWriter {
         }
 
         private String escape(String s) {
-            if (layout.isNonQuote()) {
+            if (layout.nonQuote()) {
                 return s;
             }
-            char delim = layout.getDelim();
-            char quote = layout.getQuote();
+            char delim = layout.delim();
+            char quote = layout.quote();
             String quoteStr = String.valueOf(quote);
-            String eol = layout.getEolSymbols();
+            String eol = layout.eolSymbols();
             if (StringUtils.containsNone(s, delim, quote) && StringUtils.containsNone(s, eol)) {
                 return quoteStr + s + quoteStr;
             } else {
@@ -151,12 +142,25 @@ public class CsvWriter {
         }
     }
 
-    /** CSV出力処理を表現します。  */
+    /** Represents a CSV output process. */
     public static interface CsvWrite {
-        /**
-         * @param stream 出力CSVインスタンス
-         */
         void execute(final CsvStream stream);
+    }
+
+    public static CsvWriter of(final File file) {
+        return CsvWriter.of(file, null, CsvLayout.simple());
+    }
+
+    public static CsvWriter of(final File file, final CsvLayout layout) {
+        return CsvWriter.of(file, null, layout);
+    }
+
+    public static CsvWriter of(final OutputStream out) {
+        return CsvWriter.of(null, out, CsvLayout.simple());
+    }
+
+    public static CsvWriter of(final OutputStream out, final CsvLayout layout) {
+        return CsvWriter.of(null, out, layout);
     }
 
 }

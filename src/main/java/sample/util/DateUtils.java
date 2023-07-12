@@ -1,126 +1,248 @@
 package sample.util;
 
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.*;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQuery;
+import java.util.Date;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 /**
- * 頻繁に利用される日時ユーティリティを表現します。
+ * Represents a frequently used date/time utility.
  */
 public abstract class DateUtils {
 
     private static WeekendQuery WeekendQuery = new WeekendQuery();
 
-    /** 指定された文字列(YYYY-MM-DD)を元に日付へ変換します。 */
+    /** Converts a given string (YYYY-MM-DD) to LocalDate. */
     public static LocalDate day(String dayStr) {
         return dayOpt(dayStr).orElse(null);
     }
 
+    /** Converts to LocalDate based on the specified string and format type. */
+    public static LocalDate day(String dateStr, DateTimeFormatter formatter) {
+        return dayOpt(dateStr, formatter).orElse(null);
+    }
+
+    /** Converts to LocalDate based on the specified string and format string. */
+    public static LocalDate day(String dateStr, String format) {
+        return day(dateStr, DateTimeFormatter.ofPattern(format));
+    }
+
+    /** Converts a given string (YYYYY-MM-DD) to LocalDate. */
     public static Optional<LocalDate> dayOpt(String dayStr) {
-        if (StringUtils.isBlank(dayStr))
+        if (StringUtils.isBlank(dayStr)) {
             return Optional.empty();
+        }
         return Optional.of(LocalDate.parse(dayStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
-    /** 指定された文字列とフォーマット型を元に日時へ変換します。 */
+    /** Converts to LocalDate based on the specified string and format type. */
+    public static Optional<LocalDate> dayOpt(String dateStr, DateTimeFormatter formatter) {
+        if (StringUtils.isBlank(dateStr)) {
+            return Optional.empty();
+        }
+        return Optional.of(LocalDate.parse(dateStr.trim(), formatter));
+    }
+
+    /** Converts to LocalDate based on the specified string and format type. */
+    public static Optional<LocalDate> dayOpt(String dateStr, String format) {
+        return dayOpt(dateStr, DateTimeFormatter.ofPattern(format));
+    }
+
+    /** Converts from Date to LocalDateTime. */
+    public static LocalDateTime date(Date date) {
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    /** Converts from LocalDateTime to Date. */
+    public static Date date(LocalDateTime date) {
+        return Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    /** Converts to LocalDateTime based on the specified string and format type. */
     public static LocalDateTime date(String dateStr, DateTimeFormatter formatter) {
         return dateOpt(dateStr, formatter).orElse(null);
     }
 
+    /**
+     * Converts to LocalDateTime based on the specified string and format string.
+     */
+    public static LocalDateTime date(String dateStr, String format) {
+        return date(dateStr, DateTimeFormatter.ofPattern(format));
+    }
+
+    /** Converts from Date to LocalDateTime. */
+    public static Optional<LocalDateTime> dateOpt(Date date) {
+        return date == null ? Optional.empty() : Optional.of(date(date));
+    }
+
+    /** Converts from LocalDateTime to Date. */
+    public static Optional<Date> dateOpt(LocalDateTime date) {
+        return date == null ? Optional.empty() : Optional.of(date(date));
+    }
+
+    /** Converts to LocalDateTime based on the specified string and format type. */
     public static Optional<LocalDateTime> dateOpt(String dateStr, DateTimeFormatter formatter) {
         if (StringUtils.isBlank(dateStr))
             return Optional.empty();
         return Optional.of(LocalDateTime.parse(dateStr.trim(), formatter));
     }
 
-    /** 指定された文字列とフォーマット文字列を元に日時へ変換します。 */
-    public static LocalDateTime date(String dateStr, String format) {
-        return date(dateStr, DateTimeFormatter.ofPattern(format));
-    }
-
+    /** Converts to LocalDateTime based on the specified string and format type. */
     public static Optional<LocalDateTime> dateOpt(String dateStr, String format) {
         return dateOpt(dateStr, DateTimeFormatter.ofPattern(format));
     }
 
-    /** 指定された日付を日時へ変換します。*/
+    /** Converts the given date to LocalDateTime. */
     public static LocalDateTime dateByDay(LocalDate day) {
         return dateByDayOpt(day).orElse(null);
     }
 
+    /** Converts the given date to LocalDateTime. */
     public static Optional<LocalDateTime> dateByDayOpt(LocalDate day) {
         return Optional.ofNullable(day).map((v) -> v.atStartOfDay());
     }
 
-    /** 指定した日付の翌日から1msec引いた日時を返します。 */
+    /**
+     * Returns the date and time one millisecond subtracted from the day after the
+     * specified date.
+     */
     public static LocalDateTime dateTo(LocalDate day) {
         return dateToOpt(day).orElse(null);
     }
 
+    /**
+     * Returns the date and time one millisecond subtracted from the day after the
+     * specified date.
+     */
     public static Optional<LocalDateTime> dateToOpt(LocalDate day) {
         return Optional.ofNullable(day).map((v) -> v.atTime(23, 59, 59));
     }
 
-    /** 指定された日時型とフォーマット型を元に文字列(YYYY-MM-DD)へ変更します。 */
+    /**
+     * Changes to a string (YYYYY-MM-DD) based on the specified date/time type and
+     * format type.
+     */
     public static String dayFormat(LocalDate day) {
         return dayFormatOpt(day).orElse(null);
     }
 
+    /**
+     * Changes to a string (YYYYY-MM-DD) based on the specified date/time type and
+     * format type.
+     */
     public static Optional<String> dayFormatOpt(LocalDate day) {
         return Optional.ofNullable(day).map((v) -> v.format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
-    /** 指定された日時型とフォーマット型を元に文字列へ変更します。 */
+    /**
+     * Changes to a string based on the specified LocalDateTime type and format
+     * type.
+     */
     public static String dateFormat(LocalDateTime date, DateTimeFormatter formatter) {
         return dateFormatOpt(date, formatter).orElse(null);
     }
 
+    /**
+     * Changes to a string based on the specified LocalDateTime type and format
+     * type.
+     */
     public static Optional<String> dateFormatOpt(LocalDateTime date, DateTimeFormatter formatter) {
         return Optional.ofNullable(date).map((v) -> v.format(formatter));
     }
 
-    /** 指定された日時型とフォーマット文字列を元に文字列へ変更します。 */
+    /**
+     * Changes the specified LocalDateTime type and format string to a string based
+     * on the specified date/time type and format string.
+     */
     public static String dateFormat(LocalDateTime date, String format) {
         return dateFormatOpt(date, format).orElse(null);
     }
 
+    /**
+     * Changes the specified LocalDateTime type and format string to a string based
+     * on the specified date/time type and format string.
+     */
     public static Optional<String> dateFormatOpt(LocalDateTime date, String format) {
         return Optional.ofNullable(date).map((v) -> v.format(DateTimeFormatter.ofPattern(format)));
     }
 
-    /** 日付の間隔を取得します。 */
+    /** Get the date interval. */
     public static Optional<Period> between(LocalDate start, LocalDate end) {
-        if (start == null || end == null)
+        if (start == null || end == null) {
             return Optional.empty();
+        }
         return Optional.of(Period.between(start, end));
     }
 
-    /** 日時の間隔を取得します。 */
+    /** Get the interval between LocalDateTime. */
     public static Optional<Duration> between(LocalDateTime start, LocalDateTime end) {
-        if (start == null || end == null)
+        if (start == null || end == null) {
             return Optional.empty();
+        }
         return Optional.of(Duration.between(start, end));
     }
 
-    /** 指定営業日が週末(土日)か判定します。(引数は必須) */
+    /** true if targetDay <= baseDay */
+    public static boolean isBeforeEquals(LocalDate baseDay, LocalDate targetDay) {
+        return targetDay.isBefore(baseDay) || targetDay.isEqual(baseDay);
+    }
+
+    /** true if baseDay <= targetDay */
+    public static boolean isAfterEquals(LocalDate baseDay, LocalDate targetDay) {
+        return targetDay.isAfter(baseDay) || targetDay.isEqual(baseDay);
+    }
+
+    /** true if targetDate <= baseDate */
+    public static boolean isBeforeEquals(LocalDateTime baseDate, LocalDateTime targetDate) {
+        return targetDate.isBefore(baseDate) || targetDate.isEqual(baseDate);
+    }
+
+    /** true if baseDate <= targetDate */
+    public static boolean isAfterEquals(LocalDateTime baseDate, LocalDateTime targetDate) {
+        return targetDate.isAfter(baseDate) || targetDate.isEqual(baseDate);
+    }
+
+    /** true if targetDay is included in the period */
+    public static boolean includes(LocalDate targetDay, LocalDate fromDay, LocalDate toDay) {
+        return isAfterEquals(fromDay, targetDay) && isBeforeEquals(toDay, targetDay);
+    }
+
+    /** true if targetDate is included in the period */
+    public static boolean includes(LocalDateTime targetDate, LocalDateTime fromDate, LocalDateTime toDate) {
+        return isAfterEquals(fromDate, targetDate) && isBeforeEquals(toDate, targetDate);
+    }
+
+    /**
+     * Determines if the specified business day is a weekend (Saturday or Sunday).
+     * (Argument is required)
+     */
     public static boolean isWeekend(LocalDate day) {
         Assert.notNull(day, "day is required.");
         return day.query(WeekendQuery);
     }
 
-    /** 指定年の最終日を取得します。 */
+    /** Get the last day of the designated year. */
     public static LocalDate dayTo(int year) {
         return LocalDate.ofYearDay(year, Year.of(year).isLeap() ? 366 : 365);
     }
 
-    /** 週末判定用のTemporalQuery&gt;Boolean&lt;を表現します。 */
+    /** TemporalQuery&gt;Boolean&lt; for weekend decisions. */
     public static class WeekendQuery implements TemporalQuery<Boolean> {
         @Override
         public Boolean queryFrom(TemporalAccessor temporal) {
-            DayOfWeek dayOfWeek = DayOfWeek.of(temporal.get(ChronoField.DAY_OF_WEEK));
+            var dayOfWeek = DayOfWeek.of(temporal.get(ChronoField.DAY_OF_WEEK));
             return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY;
         }
     }

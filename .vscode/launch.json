@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "DdlExporter",
+            "request": "launch",
+            "mainClass": "sample.model.DdlExporter",
+            "projectName": "sample-boot-jpa"
+        },
+        {
+            "type": "java",
+            "name": "Run sample-boot-jpa",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "sample.Application",
+            "projectName": "sample-boot-jpa",
+            "args": "--spring.profiles.active=developer -Xmx128m",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

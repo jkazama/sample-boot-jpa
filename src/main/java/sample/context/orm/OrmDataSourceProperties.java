@@ -4,7 +4,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.jdbc.*;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.util.StringUtils;
 
 import com.zaxxer.hikari.HikariDataSource;
@@ -12,34 +13,41 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Data;
 
 /**
- * DataSource生成用の設定クラス。
- * <p>継承先で@ConfigurationProperties定義を行ってapplication.ymlと紐付してください。
- * <p>ベース実装にHikariCPを利用しています。必要に応じて設定可能フィールドを増やすようにしてください。
+ * Configuration class for DataSource generation.
+ * <p>
+ * Please define @ConfigurationProperties in your inheritance and tie it to
+ * application.yml.
+ * <p>
+ * HikariCP is used for the base implementation. Please increase the number of
+ * configurable fields as needed.
  */
 @Data
 public class OrmDataSourceProperties {
 
-    /** ドライバクラス名称 ( 未設定時は url から自動登録 ) */
+    /** Driver class name (automatically registered from url if not set) */
     private String driverClassName;
     private String url;
     private String username;
     private String password;
     private Properties props = new Properties();
 
-    /** 最低接続プーリング数 */
+    /** Minimum number of connection poolings */
     private int minIdle = 1;
-    /** 最大接続プーリング数 */
+    /** Maximum number of connection pooling */
     private int maxPoolSize = 20;
 
-    /** コネクション状態を確認する時は true */
+    /** true when checking connection status */
     private boolean validation = true;
-    /** コネクション状態確認クエリ ( 未設定時かつ Database が対応している時は自動設定 ) */
+    /**
+     * Connection status check query (automatically set if not set and Database
+     * supports it)
+     */
     private String validationQuery;
 
     public String name() {
         return this.getClass().getSimpleName().replaceAll("Properties", "");
     }
-    
+
     public DataSource dataSource() {
         HikariDataSource dataSource = (HikariDataSource) DataSourceBuilder.create()
                 .type(HikariDataSource.class)

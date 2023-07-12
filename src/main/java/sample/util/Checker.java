@@ -1,19 +1,20 @@
 package sample.util;
 
 /**
- * 簡易的な入力チェッカーを表現します。
+ * Represents a simple input checker.
  */
 public abstract class Checker {
 
     /**
-     * 正規表現に文字列がマッチするか。(nullは許容)
-     * <p>引数のregexにはRegex定数を利用する事を推奨します。
+     * Does the string match the regular expression. (null is acceptable)
+     * <p>
+     * It is recommended to use the Regex constant for the regex argument.
      */
     public static boolean match(String regex, Object v) {
         return v != null ? v.toString().matches(regex) : true;
     }
 
-    /** 文字桁数チェック、max以下の時はtrue。(サロゲートペア対応) */
+    /** Character digit check, true if max or less (surrogate pair support) */
     public static boolean len(String v, int max) {
         return wordSize(v) <= max;
     }

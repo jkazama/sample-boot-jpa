@@ -6,7 +6,7 @@
     xsi:schemaLocation="
         http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
         http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
-   
+
   <service>
     <jsr107:defaults enable-management="false" enable-statistics="false"/>
   </service>
@@ -23,7 +23,7 @@
   <!-- ### Component Method ### -->
 
   <!-- AppSettingHandler -->
-  <cache alias="AppSettingHandler.appSetting" uses-template="default"> 
+  <cache alias="AppSettingHandler.appSetting" uses-template="default">
     <expiry>
       <ttl unit="seconds">30</ttl>
     </expiry>
@@ -34,10 +34,6 @@
   <cache alias="HolidayAccessor.getHoliday" uses-template="default" />
 
   <!-- ### Service Method ### -->
-
-  <!-- AccountService -->
-  <cache alias="AccountService.getAccount" uses-template="default" />
-  <cache alias="AccountService.getLoginByLoginId" uses-template="default" />
 
   <!-- MasterAdminService -->
   <cache alias="MasterAdminService.getStaff" uses-template="default">

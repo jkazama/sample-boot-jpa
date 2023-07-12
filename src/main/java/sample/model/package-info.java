@@ -1,5 +1,7 @@
 /**
- * ドメイン層のコンポーネントやEntity、クラスなどを管理。
- * <p>ドメイン層のコンポーネントがUI層やアプリケーション層を呼び出す事は想定していません。
+ * Manage domain layer components, Entity, classes, etc.
+ * <p>
+ * It is not assumed that domain layer components will call the UI or
+ * application layers.
  */
 package sample.model;

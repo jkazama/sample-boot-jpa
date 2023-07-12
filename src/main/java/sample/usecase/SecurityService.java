@@ -1,72 +1,81 @@
 package sample.usecase;
 
-import java.util.*;
+import java.util.Optional;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import sample.ValidationException.ErrorKeys;
-import sample.context.security.SecurityActorFinder.*;
-import sample.util.ConvertUtils;
+import lombok.RequiredArgsConstructor;
+import sample.context.ErrorKeys;
+import sample.context.actor.Actor;
+import sample.context.actor.type.ActorRoleType;
+import sample.context.orm.OrmRepository;
+import sample.context.orm.TxTemplate;
+import sample.model.account.Account;
+import sample.model.master.Login;
+import sample.model.master.Staff;
 
 /**
- * SpringSecurityのユーザアクセスコンポーネントを定義します。
+ * Define the user access component of SpringSecurity.
  */
-@Configuration
-public class SecurityService {
+@Service
+@RequiredArgsConstructor
+public class SecurityService implements AuthenticationProvider {
+    private final OrmRepository rep;
+    private final PlatformTransactionManager txm;
+    private final PasswordEncoder encoder;
 
-    /** 一般利用者情報を提供します。(see SecurityActorFinder) */
-    @Bean
-    public SecurityUserService securityUserService(final AccountService service) {
-        return new SecurityUserService() {
-            /**
-             * 以下の手順で利用口座を特定します。
-             * <ul>
-             * <li>ログインID(全角は半角に自動変換)に合致するログイン情報があるか
-             * <li>口座IDに合致する有効な口座情報があるか
-             * </ul>
-             * <p>一般利用者には「ROLE_USER」の権限が自動で割り当てられます。
-             */
-            @Override
-            public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return (ActorDetails) Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan)
-                        .flatMap((loginId) -> service.getLoginByLoginId(loginId)
-                                .flatMap((login) -> service.getAccount(login.getId()).map((account) -> {
-                    List<GrantedAuthority> authorities = Arrays.asList(new GrantedAuthority[] {
-                            new SimpleGrantedAuthority("ROLE_USER") });
-                    return new ActorDetails(account.actor(), login.getPassword(), authorities);
-                }))).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
-            }
-        };
+    /** {@inheritDoc} */
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        if (authentication.getPrincipal() == null ||
+                authentication.getCredentials() == null) {
+            throw new BadCredentialsException(ErrorKeys.Login);
+        }
+        Login login = this.loadLoginByUsername(authentication.getPrincipal().toString());
+        String presentedPassword = authentication.getCredentials().toString();
+        if (!encoder.matches(presentedPassword, login.getPassword())) {
+            throw new BadCredentialsException(ErrorKeys.Login);
+        }
+        Actor actor = TxTemplate.of(txm).readOnly().tx(() -> {
+            return login.getRoleType().isUser()
+                    ? Account.load(rep, login.getActorId()).actor()
+                    : Staff.load(rep, login.getActorId()).actor();
+        });
+        return new UsernamePasswordAuthenticationToken(actor, "", actor.getAuthorities());
     }
 
-    /** 社内管理向けの利用者情報を提供します。(see SecurityActorFinder) */
-    @Bean
-    @ConditionalOnProperty(name = "extension.security.auth.admin", havingValue = "true", matchIfMissing = false)
-    public SecurityAdminService securityAdminService(final MasterAdminService service) {
-        return new SecurityAdminService() {
-            /**
-             * 以下の手順で社員を特定します。
-             * <ul>
-             * <li>社員ID(全角は半角に自動変換)に合致する社員情報があるか
-             * <li>社員情報に紐付く権限があるか
-             * </ul>
-             * <p>社員には「ROLE_ADMIN」の権限が自動で割り当てられます。
-             */
-            @Override
-            public ActorDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return (ActorDetails) Optional.ofNullable(username).map(ConvertUtils::zenkakuToHan)
-                        .flatMap((staffId) -> service.getStaff(staffId).map((staff) -> {
-                    List<GrantedAuthority> authorities = new ArrayList<>(Arrays.asList(new GrantedAuthority[] {
-                            new SimpleGrantedAuthority("ROLE_ADMIN") }));
-                    service.findStaffAuthority(staffId)
-                            .forEach((auth) -> authorities.add(new SimpleGrantedAuthority(auth.getAuthority())));
-                    return new ActorDetails(staff.actor(), staff.getPassword(), authorities);
-                })).orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
-            }
-        };
+    private Login loadLoginByUsername(String username) throws UsernameNotFoundException {
+        int idx = username.indexOf("-");
+        String roleTypeStr = "USER";
+        String loginId;
+        if (idx == -1) {
+            loginId = username;
+        } else {
+            roleTypeStr = username.substring(0, idx);
+            loginId = username.substring(idx + 1);
+        }
+        ActorRoleType roleType = Optional.of(roleTypeStr)
+                .filter(v -> ActorRoleType.has(v.toString()))
+                .map(v -> ActorRoleType.valueOf(v.toString()))
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
+        return TxTemplate.of(txm).readOnly().tx(() -> {
+            return Login.getByLoginId(rep, roleType, loginId)
+                    .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
+        });
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
 }

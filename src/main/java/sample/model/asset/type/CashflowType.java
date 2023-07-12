@@ -1,13 +1,16 @@
 package sample.model.asset.type;
 
-/** キャッシュフロー種別。 low: 各社固有です。摘要含めラベルはなるべくmessages.propertiesへ切り出し */
+/**
+ * Cash flow type. low: specific to each company. Labels, including Remarks,
+ * should be cut out to messages.properties as much as possible
+ */
 public enum CashflowType {
-    /** 振込入金 */
-    CashIn,
-    /** 振込出金 */
-    CashOut,
-    /** 振替入金 */
-    CashTransferIn,
-    /** 振替出金 */
-    CashTransferOut
+    /** Direct Deposit */
+    CASH_IN,
+    /** Direct Withdrawal */
+    CASH_OUT,
+    /** Account Transfer Deposit */
+    CASH_TRANSFER_IN,
+    /** Account Transfer Withdrawal */
+    CASH_TRANSFER_OUT
 }

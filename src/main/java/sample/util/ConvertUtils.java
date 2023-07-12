@@ -3,16 +3,10 @@ package sample.util;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import com.ibm.icu.text.Transliterator;
-
-/** 各種型/文字列変換をサポートします。(ICU4Jライブラリに依存しています) */
+/** Supports various type/string conversions. */
 public abstract class ConvertUtils {
-    private static Transliterator ZenkakuToHan = Transliterator.getInstance("Fullwidth-Halfwidth");
-    private static Transliterator HankakuToZen = Transliterator.getInstance("Halfwidth-Fullwidth");
-    private static Transliterator KatakanaToHira = Transliterator.getInstance("Katakana-Hiragana");
-    private static Transliterator HiraganaToKana = Transliterator.getInstance("Hiragana-Katakana");
 
-    /** 例外無しにLongへ変換します。(変換できない時はnull) */
+    /** Converts to Long without exception. (null if conversion is not possible) */
     public static Long quietlyLong(Object value) {
         try {
             return Optional.ofNullable(value).map(v -> Long.parseLong(v.toString())).orElse(null);
@@ -21,7 +15,9 @@ public abstract class ConvertUtils {
         }
     }
 
-    /** 例外無しにIntegerへ変換します。(変換できない時はnull) */
+    /**
+     * Converts to Integer without exception. (null if conversion is not possible)
+     */
     public static Integer quietlyInt(Object value) {
         try {
             return Optional.ofNullable(value).map(v -> Integer.parseInt(v.toString())).orElse(null);
@@ -30,7 +26,9 @@ public abstract class ConvertUtils {
         }
     }
 
-    /** 例外無しにBigDecimalへ変換します。(変換できない時はnull) */
+    /**
+     * Convert to BigDecimal without exception. (null if conversion is not possible)
+     */
     public static BigDecimal quietlyDecimal(Object value) {
         try {
             return Optional.ofNullable(value).map((v) -> new BigDecimal(v.toString())).orElse(null);
@@ -39,43 +37,14 @@ public abstract class ConvertUtils {
         }
     }
 
-    /** 例外無しBooleanへ変換します。(変換できない時はfalse) */
+    /**
+     * Converts to Boolean without exception. (false if conversion is not possible)
+     */
     public static Boolean quietlyBool(Object value) {
         return Optional.ofNullable(value).map((v) -> Boolean.parseBoolean(v.toString())).orElse(false);
     }
 
-    /** 全角文字を半角にします。 */
-    public static String zenkakuToHan(String text) {
-        return Optional.ofNullable(text).map((v) -> ZenkakuToHan.transliterate(v)).orElse(null);
-    }
-
-    /** 半角文字を全角にします。 */
-    public static String hankakuToZen(String text) {
-        return Optional.ofNullable(text).map((v) -> HankakuToZen.transliterate(v)).orElse(null);
-    }
-
-    /** カタカナをひらがなにします。 */
-    public static String katakanaToHira(String text) {
-        return Optional.ofNullable(text).map((v) -> KatakanaToHira.transliterate(v)).orElse(null);
-    }
-
-    /**
-     * ひらがな/半角カタカナを全角カタカナにします。
-     * <p>low: 実際の挙動は厳密ではないので単体検証(ConvertUtilsTest)などで事前に確認して下さい。
-     */
-    public static String hiraganaToZenKana(String text) {
-        return Optional.ofNullable(text).map((v) -> HiraganaToKana.transliterate(v)).orElse(null);
-    }
-
-    /**
-     * ひらがな/全角カタカナを半角カタカナにします。
-     * <p>low: 実際の挙動は厳密ではないので単体検証(ConvertUtilsTest)などで事前に確認して下さい。
-     */
-    public static String hiraganaToHanKana(String text) {
-        return zenkakuToHan(hiraganaToZenKana(text));
-    }
-
-    /** 指定した文字列を抽出します。(サロゲートペア対応) */
+    /** Extracts the specified string. (Surrogate pairs supported) */
     public static String substring(String text, int start, int end) {
         if (text == null)
             return null;
@@ -84,12 +53,15 @@ public abstract class ConvertUtils {
         return text.substring(spos, text.offsetByCodePoints(spos, epos - start));
     }
 
-    /** 文字列を左から指定の文字数で取得します。(サロゲートペア対応) */
+    /**
+     * Obtains a string with a specified number of characters from the left.
+     * (Surrogate pairs supported)
+     */
     public static String left(String text, int len) {
         return substring(text, 0, len);
     }
 
-    /** 文字列を左から指定のバイト数で取得します。 */
+    /** Obtains a string with the specified number of bytes from the left. */
     public static String leftStrict(String text, int lenByte, String charset) {
         StringBuilder sb = new StringBuilder();
         try {

@@ -1,5 +1,6 @@
 /**
- * ORM(Object Relational Mapping)関連のインフラ層コンポーネント。
- * <p>主にDB永続化をサポートしています。
+ * ORM (Object Relational Mapping) related infrastructure layer components.
+ * <p>
+ * Mainly supports DB persistence.
  */
 package sample.context.orm;

@@ -1,37 +1,52 @@
 package sample.context.report.csv;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import lombok.Data;
+import lombok.Builder;
 
 /**
- * CSVレイアウトを表現します。
+ * Represents a CSV layout.
  */
-@Data
-public class CsvLayout {
-    /** 区切り文字 */
-    private char delim = ',';
-    /** クオート文字 */
-    private char quote = '"';
-    /** クオート文字を付与しない時はtrue */
-    private boolean nonQuote = false;
-    /** 改行文字 */
-    private String eolSymbols = "\r\n";
-    /** ヘッダ文字列 */
-    private String header = null;
-    /** 文字エンコーディング */
-    private String charset = "UTF-8";
+@Builder
+public record CsvLayout(
+        /** delimiter */
+        char delim,
+        /** quoted character */
+        char quote,
+        /** true when no quote character is given */
+        boolean nonQuote,
+        /** newline character */
+        String eolSymbols,
+        /** header string */
+        String header,
+        /** character encoding */
+        String charset) {
 
     public boolean hasHeader() {
         return header != null;
     }
 
     public List<Object> headerCols() {
-        List<Object> list = new ArrayList<>();
+        var list = new ArrayList<>();
         for (String col : header.split(String.valueOf(delim))) {
             list.add(col.trim());
         }
         return list;
+    }
+
+    public static CsvLayoutBuilder builderDefault() {
+        return CsvLayout.builder()
+                .delim(',')
+                .quote('"')
+                .nonQuote(false)
+                .eolSymbols("\n")
+                .header(null)
+                .charset("UTF-8");
+    }
+
+    public static CsvLayout simple() {
+        return CsvLayout.builderDefault().build();
     }
 
 }

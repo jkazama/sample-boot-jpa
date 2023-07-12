@@ -1,242 +1,149 @@
-[[English Version](https://github.com/jkazama/sample-boot-hibernate/tree/en)]
-
-sample-boot-hibernate
+sample-boot-jpa
 ---
 
-### はじめに
+### Preface
 
-[Spring Boot](http://projects.spring.io/spring-boot/) / [Spring Security](http://projects.spring.io/spring-security/) / [Hibernate ORM](http://hibernate.org/orm/) を元にした DDD サンプル実装です。  
-ベーシックな基盤は [ddd-java](https://github.com/jkazama/ddd-java) から流用しています。  
-フレームワークではないので、 Spring Boot を利用するプロジェクトを立ち上げる際に元テンプレートとして利用して下さい。
+It is DDD sample implementation from [Spring Boot](https://spring.io/projects/spring-boot) / [Spring Security](https://spring.io/projects/spring-security) / [Spring Data JPA](https://spring.io/projects/spring-data-jpa).
+It is not a framework, please use it as a base template when you start a project using Spring Boot.
 
-考え方の骨子については以前発表した資料 ( [Spring Bootを用いたドメイン駆動設計](http://www.slideshare.net/jkazama/jsug-20141127) ) を参照してください。
+#### Concept of Layering
 
-UI 側の実装サンプルについては [sample-ui-vue](https://github.com/jkazama/sample-ui-vue) / [sample-ui-react](https://github.com/jkazama/sample-ui-react) を参照してください。
+It is three levels of famous models, but considers the infrastructure layer as cross-sectional interpretation.
 
----
-
-本サンプルは Spring Boot を用いたドメインモデリングの実装例としても利用できます。実際にそれなりの規模の案件で運用されていた実装アプローチなので、モデリングする際の参考事例としてみてもらえればと思います。  
-
-*※ JavaDoc に記載をしていますが参考実装レベルです。製品水準のコードが含まれているわけではありません。*
-
-#### レイヤリングの考え方
-
-オーソドックスな三層モデルですが、横断的な解釈としてインフラ層を考えています。
-
-| レイヤ          | 特徴                                                        |
+| Layer          |                                                            |
 | -------------- | ----------------------------------------------------------- |
-| UI             | ユースケース処理を公開 ( 必要に応じてリモーティングや外部サイトを連携 ) |
-| アプリケーション | ユースケース処理を集約 ( 外部リソースアクセスも含む )                 |
-| ドメイン        | 純粋なドメイン処理 ( 外部リソースに依存しない )                      |
-| インフラ        | DI コンテナや ORM 、各種ライブラリ、メッセージリソースの提供          |
+| UI             | Receive use case request                                    |
+| Application    | Use case processing (including the outside resource access) |
+| Domain         | Pure domain logic (not depend on the outside resource) |
+| Infrastructure | DI container and ORM, various libraries |
 
-UI 層の公開処理は通常 JSP や Thymeleaf を用いて行いますが、本サンプルでは異なる種類のクライアント利用を想定して RESTfulAPI での API 提供のみをおこないます。 ( 利用クライアントは別途用意する必要があります )
+Usually perform public handling of UI layer using Thymeleaf, but this sample assume use of different types of clients and perform only API offer in RESTfulAPI.
 
-#### Spring Boot の利用方針
+#### Use policy of Spring Boot
 
-Spring Boot は様々な利用方法が可能ですが、本サンプルでは以下のポリシーで利用します。
+Spring Boot is available for various usage, but uses it in the following policy with this sample.
 
-- 設定ファイルは yml を用いる。 Bean 定義に xml 等の拡張ファイルは用いない。
-- コンポーネントスキャンは UI 層とアプリケーション層のパッケージ配下に限定する
-    - スキャン対象軽減による起動時間の短縮と意図せぬ自動登録がおこなわれるリスクを避けるため
-    - 自動スキャン対象はなるべくコンストラクタインジェクションを前提に実装
-- インフラ層やドメイン層のコンポーネントは @Bean 等でベタに登録していく。
+- Components that require extended definitions are registered with @Bean. register other component in @Component.
     - `ApplicationConfig` / `ApplicationDbConfig` / `ApplicationSecurityConfig`
-- 例外処理は終端 ( RestErrorAdvice / RestErrorCotroller ) で定義。 whitelabel 機能は無効化。
-- JPA 実装として Hibernate に特化。
-    - JpaRepository ではなく Entity との 1-n を可能にするスキーマ単位の Repository を利用
-- RESTfulAPI の受付は昔からよくある `application/x-www-form-urlencoded` で。
-    - 純粋なAPIアプリケーションであれば `application/json` の方が望ましい
-- Spring Security の認証方式はベーシック認証でなく、昔からよくある HttpSession で。
-    - `SecurityConfigurer` の定義を参照
-- 基礎的なユーティリティで Spring がサポートしていないものは簡易な実装を用意。
-    - `util` や `context` パッケージ配下を参照
+- The exception handling defines it in a endpoint (`RestErrorAdvice`). The whitelabel function disabled it.
+- Specialized in Hibernate as JPA implementation.
+- The certification method of Spring Security is HttpSession not the basic certification.
+- Easily prepare for the basic utility that Spring does not support.
 
-#### Java コーディング方針
+#### Use policy of Java coding
 
-Java11 以上を前提としていますが、従来の Java で推奨される記法と異なっている観点も多いです。  
-以下は保守性を意識した上で簡潔さを重視した方針となっています。
+- Java17 over
+- The concept / notation added in Java17 is used positively.
+- Use Lombok positively and remove diffuseness.
+- The name as possible briefly.
+- Do not abuse the interface.
+- DTO becoming a part of the domain defines it in an internal class.
 
-- Lombok を積極的に利用して冗長さを排除。
-- 名称も既存クラスと重複しても良いのでなるべく簡潔に。
-- インターフェースの濫用をしない。
-- ドメインの一部となる DTO などは内部クラスで表現。
-- Java8 以降で追加された概念/記法は積極的に利用。
+#### Resource
 
-#### パッケージ構成
-
-パッケージ/リソース構成については以下を参照してください。
+Refer to the following for the package / resource constitution.
 
 ```
 main
   java
     sample
-      context                         … インフラ層
-      controller                      … UI 層
-      model                           … ドメイン層
-      usecase                         … アプリケーション層
-      util                            … 汎用ユーティリティ
-      - Application.java              … 実行可能な起動クラス
+      context                         … Infrastructure Layer
+      controller                      … UI Layer
+      model                           … Domain Layer
+      usecase                         … Application Layer
+      util                            … Utilities
+      - Application.java              … Bootstrap
   resources
-    - application.yml                 … 設定ファイル
-    - ehcache.xml                     … Spring Cache 設定ファイル
-    - logback-spring.xml              … ロギング設定ファイル
-    - messages-validation.properties  … 例外メッセージリソース
-    - messages.properties             … メッセージリソース
+    - application.yml                 … Spring Boot Configuration
+    - ehcache.xml                     … Spring Cache Configuration
+    - logback-spring.xml              … Logging Configuration
+    - messages-validation.properties  … Validation Message Resources
+    - messages.properties             … Label Message Resources
 ```
 
-### サンプルユースケース
+## Use Case
 
-サンプルユースケースとしては以下のようなシンプルな流れを想定します。
+Consider the following as a sample use case.
 
-- **口座残高 100 万円を持つ顧客**が出金依頼 ( 発生 T, 受渡 T + 3 ) をする。
-- **システム**が営業日を進める。
-- **システム**が出金依頼を確定する。(確定させるまでは依頼取消行為を許容)
-- **システム**が受渡日を迎えた入出金キャッシュフローを口座残高へ反映する。
+- A customer with an account balance requests withdrawal. (Event T, Delivery T + 3)
+- The system closes the withdrawal request. (Allows cancellation of request until closing)
+- The system sets the business day to the forward day.
+- The system reflects the cash flow on delivery date to the account balance.
 
-### 動作確認
+### Getting Started
 
-本サンプルは [Gradle](https://gradle.org/) を利用しているので、 IDE やコンソールで手間なく動作確認を行うことができます。
+This sample uses [Gradle](https://gradle.org/), you can check the operation without trouble with IDE and a console.
 
-*※ライブラリダウンロードなどが自動で行われるため、インターネット接続が可能な端末で実行してください。*
+#### Server Start (VSCode DevContainer)
 
-#### サーバ起動 （ Eclipse ）
+It is necessary to do the following step.
 
-開発IDEである[Eclipse](https://eclipse.org/)で本サンプルを利用するには、事前に以下の手順を行っておく必要があります。
+- Check Instablled Docker.
+- Check Instablled VSCode with DevContainer Extension.
 
-- JDK11 以上のインストール
-- [Lombok](http://projectlombok.org/download.html) のパッチ当て ( .jar を実行してインストーラの指示通りに実行 )
+Do the preparations for this sample in the next step.
 
-> 以降は Gradle Plugin [ Buildship ] の利用を前提としているため、 Eclipse Mars 以降を推奨します。
+1. You move to the cloned *sample-boot-jpa* directory.
+1. Run command `code .`.
+1. Choose *Open Container*
 
-次の手順で本サンプルをプロジェクト化してください。  
+Do the server start in the next step.
 
-1. パッケージエクスプローラから 「 右クリック -> Import -> Project 」 で *Gradle Project* を選択して *Next* を押下
-1. *Project root directory* にダウンロードした *sample-boot-hibernate* ディレクトリを指定して *Next* を押下
-1. *Import Options* で *Next* を押下
-1. *Gradle project structure* に *sample-boot-hibernate* が表示されたら *Finish* を押下 ( 依存ライブラリダウンロードがここで行われます )
+1. Open VSCode "Run And Debug".
+1. Choose `Run sample-boot-jpa`.
+1. If console show "Started Application", start is completed in port 8080.
+1. Run command `curl http://localhost:8080/actuator/health`
 
-次の手順で本サンプルを実行してください。
+#### Server Start (Console)
 
-1. *Application.java* に対し 「 右クリック -> Run As -> Java Application 」
-1. *Console* タブに 「 Started Application 」 という文字列が出力されればポート 8080 で起動が完了
-1. ブラウザを立ち上げて 「 http://localhost:8080/management/health 」 で状態を確認
+Run application from a console of Windows / Mac in Gradle.
 
-> STS (Spring Tool Suite) のプラグインを利用すると上記 main クラスを GUI の Boot Dashboard 経由で簡単に実行できます。
+It is necessary to do the following step.
 
-#### サーバ起動 （ コンソール ）
+- Check Instablled JDK17+.
+- Prepare PostgreSQL and change JDBC connection destination in application.yml.
+    - DDL/DML are placed under `data/db`.
 
-Windows / Mac のコンソールから実行するには Gradle のコンソールコマンドで行います。  
+Do the server start in the next step.
 
-*※事前に JDK8 以上のインストールが必要です。*
+1. You move to the cloned *sample-boot-jpa* directory.
+1. Run command `gradlew bootRun`.
+1. If console show "Started Application", start is completed in port 8080
+1. Run command `curl http://localhost:8080/actuator/health`
 
-1. ダウンロードした *sample-boot-hibernate* ディレクトリ直下へコンソールで移動
-1. 「 gradlew bootRun 」 を実行
-1. コンソールに 「 Started Application 」 という文字列が出力されればポート 8080 で起動が完了
-1. ブラウザを立ち上げて 「 http://localhost:8080/management/health 」 で状態を確認
+### Check Use Case
 
-#### クライアント検証
+After launching the server on port 8080, you can test execution of RESTful API by accessing the following URL from console.
 
-Eclipse またはコンソールでサーバを立ち上げた後、 test パッケージ配下にある `SampleClient` の各検証メソッドをユニットテストで実行してください。
+#### Customer Use Case
 
-##### 顧客向けユースケース
+- `curl -X POST -c cookie.txt -d 'loginId=sample&password=sample' http://localhost:8080/api/login`
+- `curl -X POST -b cookie.txt -H "Content-Type: application/json" -d '{"accountId"  : "sample" , "currency" : "USD", "absAmount": 1000}' http://localhost:8080/api/asset/cio/withdraw`
+    - Request for withdrawal.
+- `curl -b cookie.txt 'http://localhost:8080/api/asset/cio/unprocessedOut'`
+    - Search for outstanding withdrawal requests
 
-| URL                              | 処理                 | 実行引数 |
-| -------------------------------- | ------------------- | ------------- |
-| `/api/asset/cio/withdraw`        | 振込出金依頼          | [`accountId`: sample, `currency`: JPY, `absAmount`: 依頼金額] |
-| `/api/asset/cio/unprocessedOut/` | 振込出金依頼未処理検索 | -       |
+#### Internal Use Case
 
-*※振込出金依頼はPOST、それ以外はGET*
+- `curl -X POST -c cookie.txt -d 'loginId=ADMINISTRATOR-admin&password=admin' http://localhost:8080/api/login`
+- `curl -b cookie.txt 'http://localhost:8080/api/admin/asset/cio?updFromDay=yyyy-MM-dd&updToDay=yyyy-MM-dd'`
+    - Search for deposit and withdrawal requests.
+    - Please set real date for upd\*Day
 
-##### 社内向けユースケース
+#### Batch Use Case
 
-| URL                     | 処理             | 実行引数                                           |
-| ----------------------- | --------------- | ------------------------------------------------- |
-| `/api/admin/asset/cio/` | 振込入出金依頼検索 | [`updFromDay`: yyyy-MM-dd, `updToDay`: yyyy-MM-dd]|
+- `curl -X POST -c cookie.txt -d 'loginId=ADMINISTRATOR-admin&password=admin' http://localhost:8080/api/login`
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/closingCashOut`
+    - Close the withdrawal request.
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/forwardDay`
+    - Set the business day to the next day.
+- `curl -b cookie.txt -X POST http://localhost:8080/api/system/job/daily/realizeCashflow`
+    - Realize cash flow. (Reflected to the balance on the delivery date)
 
-*※GET*
-
-##### バッチ向けユースケース
-
-| URL                                     | 処理                                          | 実行引数 |
-| --------------------------------------- | --------------------------------------------- | ------ |
-| `/api/system/job/daily/processDay`      | 営業日を進める(単純日回しのみ)                    | -      |
-| `/api/system/job/daily/closingCashOut`  | 当営業日の出金依頼を締める                        | -      |
-| `/api/system/job/daily/realizeCashflow` | 入出金キャッシュフローを実現する(受渡日に残高へ反映) | -      |
-
-*※POST*
-
-### 配布用jarの作成
-
-Spring Boot では Executable Jar ( ライブラリや静的リソースなども内包する jar ) を作成する事で単一の配布ファイルでアプリケーションを実行することができます。
-
-1. コンソールから 「 gradlew build 」 を実行
-1. `build/libs` 直下に jar が出力されるので Java8 以降の実行環境へ配布
-1. 実行環境でコンソールから 「 java -jar xxx.jar 」 を実行して起動
-
-> 実行引数に 「 --spring.profiles.active=[プロファイル名]」 を追加する事で application.yml の設定値をプロファイル単位に変更できます。
-
-### 本サンプルを元にしたプロジェクトリソースの作成
-
-本サンプルを元にしたプロジェクトリソースを作成したい場合は以下の手順を実行してください。
-
-1. build.gradle 内の拡張タスク ( copyProject ) の上部に定義されている変数を修正
-1. コンソールから 「 gradlew copyProject 」 を実行
-
-以降のプロジェクトインポート手順は前述のものと同様となります。
-
-### 依存ライブラリ
-
-| ライブラリ               | バージョン | 用途/追加理由 |
-| ----------------------- | -------- | ------------- |
-| `spring-boot-starter-*` | 2.2.+    | Spring Boot 基盤 (actuator/security/aop/cache/data-jpa/web) |
-| `hibernate-*`           | 5.+    | DB 永続化サポート (core/java8) |
-
-> 実際の詳細な定義は `build.gradle` を参照してください
-
-### 補足解説（インフラ層）
-
-インフラ層の簡単な解説です。
-
-※細かい概要は実際にコードを読むか、 「 `gradlew javadoc` 」 を実行して 「 `build/docs` 」 に出力されるドキュメントを参照してください
-
-#### DB / トランザクション
-
-`sample.context.orm` 直下。ドメイン実装をより Entity に寄せるための ORM サポート実装です。 Repository ( スキーマ単位で定義 ) にドメイン処理を記載しないアプローチのため、 Spring Boot が提供する JpaRepository は利用していません。  
-トランザクション定義はトラブルの種となるのでアプリケーション層でのみ許し、なるべく狭く限定した形で付与しています。トランザクションは AOP を利用せず、全て `TxTemplate` を用いたプログラマティックなアプローチで実装しています。
-
-スキーマは標準のビジネスロジック用途 ( `DefaultRepository` ) とシステム用途 ( `SystemRepository` ) の2種類を想定しています。 Entity 実装ではスキーマに依存させず、引数に渡す側 ( 主にアプリケーション層 ) で判断させます。
-
-> Spring Data JPA が提供する JpaRepository を利用することも可能です。 ( 標準で DefaultRepository が管理しているスキーマへ接続します )
-
-#### 認証/認可
-
-`sample.context.security` 直下。顧客 ( ROLE_USER ) / 社員 ( ROLE_ADMIN ) の 2 パターンを想定しています。それぞれのユーザ情報 ( UserDetails ) 提供手段は `sample.usecase.SecurityService` において定義しています。
-
-認証 / 認可の機能を有効にするには `application.yml` の `extension.security.auth.enabled` に `true` を設定してください ( 標準ではテスト用途にfalse ) 。顧客 / 社員それぞれ同一 VM での相乗りは考えていません。社員専用モードで起動する時は起動時のプロファイル切り替え等で `extension.security.auth.admin` を `true` に設定してください。
-
-#### 利用者監査
-
-`sample.context.audit` 直下。 「いつ」 「誰が」 「何をしたか」 の情報を顧客 /システムそれぞれの視点で取得します。アプリケーション層での利用を想定しています。ログインした `Actor` の種別 ( User / System ) によって書き出し先と情報を切り替えています。運用時に行動証跡を取る際に利用可能です。
-
-#### 例外
-
-汎用概念としてフィールド単位にスタックした例外を持つ `ValidationException` を提供します。  
-例外は末端の UI 層でまとめて処理します。具体的にはアプリケーション層、ドメイン層では用途別の実行時例外をそのまま上位に投げるだけとし、例外捕捉は `sample.controller.RestErrorAdvise` において AOP を用いた暗黙的差し込みを行っています。
-
-#### 日付/日時
-
-`sample.context.Timestamper` を経由して Java8 で追加された `time` ライブラリを利用します。休日等を考慮した営業日算出はドメイン概念が含まれるので `sample.model.BusinessDayHandler` で別途定義しています。
-
-#### キャッシング
-
-`AccountService` 等で Spring が提供する @Cacheable を利用しています。 UI 層かアプリケーション層のどちらかに統一した方が良いですが、本サンプルではアプリケーション層だけ付与しています。 JPA のキャッシュ機構は Entity 内で必要となるケース以外では、利用しないことを推奨します。
-
-#### テスト
-
-パターンとしては Hibernate だけに閉じた実行時間に優れたテスト ( Entity のみが対象 ) のみを考えます。 （基底クラスは `EntityTestSupport` ）  
+> Please execute according to the business day appropriately
+> When executing from a job agent, change the port or block the path with L/B, etc. Here is an example based on the assumption that the administrator executes from the UI
 
 ### License
 
-本サンプルのライセンスはコード含めて全て *MIT License* です。  
-Spring Boot を用いたプロジェクト立ち上げ時のベース実装サンプルとして気軽にご利用ください。
+The license of this sample includes a code and is all *MIT License*.
+Use it as a base implementation at the time of the project start using Spring Boot.

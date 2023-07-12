@@ -1,243 +1,294 @@
 package sample.model.asset;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.StringUtils;
 
-import lombok.*;
-import sample.ActionStatusType;
-import sample.ValidationException.ErrorKeys;
-import sample.context.*;
-import sample.context.orm.*;
-import sample.model.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
+import sample.context.ActionStatusType;
+import sample.context.DomainHelper;
+import sample.context.DomainMetaEntity;
+import sample.context.Dto;
+import sample.context.orm.JpqlBuilder;
+import sample.context.orm.OrmRepository;
+import sample.model.BusinessDayHandler;
+import sample.model.DomainErrorKeys;
 import sample.model.account.FiAccount;
 import sample.model.asset.Cashflow.RegCashflow;
 import sample.model.asset.type.CashflowType;
-import sample.model.constraints.*;
+import sample.model.constraints.AbsAmount;
+import sample.model.constraints.Currency;
+import sample.model.constraints.CurrencyEmpty;
+import sample.model.constraints.ISODate;
+import sample.model.constraints.ISODateTime;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.IdStrEmpty;
 import sample.model.master.SelfFiAccount;
-import sample.util.*;
+import sample.util.AppValidator;
+import sample.util.DateUtils;
+import sample.util.TimePoint;
 
 /**
- * 振込入出金依頼を表現するキャッシュフローアクション。
- * <p>相手方/自社方の金融機関情報は依頼後に変更される可能性があるため、依頼時点の状態を
- * 保持するために非正規化して情報を保持しています。
- * low: 相手方/自社方の金融機関情報は項目数が多いのでサンプル用に金融機関コードのみにしています。
- * 実際の開発ではそれぞれ複合クラス(FinantialInstitution)に束ねるアプローチを推奨します。
+ * A cash flow action that expresses a account transfer deposit/withdrawal
+ * request.
+ * <p>
+ * Since the financial institution information of the counterparty/owner may be
+ * changed after the request, the information is de-normalized to maintain the
+ * status at the time of the request.
+ * low: It is a sample, a branch and a name, and considerably originally omit
+ * required information.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
-    private static final long serialVersionUID = 1L;
+public class CashInOut implements DomainMetaEntity {
 
-    /** ID(振込依頼No) */
+    /**
+     * ID (account transfer deposit/withdrawal request No.)
+     * low: Make it a meaningful ID as it will be the ID used to respond to customer
+     * inquiries
+     */
     @Id
-    @GeneratedValue
-    private Long id;
-    /** 口座ID */
+    @IdStr
+    private String cashInOutId;
     @IdStr
     private String accountId;
-    /** 通貨 */
     @Currency
     private String currency;
-    /** 金額(絶対値) */
     @AbsAmount
     private BigDecimal absAmount;
-    /** 出金時はtrue */
+    /** true at the time of withdrawal */
     private boolean withdrawal;
-    /** 依頼日/日時 */
     @ISODate
     private LocalDate requestDay;
     @ISODateTime
     private LocalDateTime requestDate;
-    /** 発生日 */
+    /** Amount Accrual date */
     @ISODate
     private LocalDate eventDay;
-    /** 受渡日 */
+    /** Amount Delivery Date */
     @ISODate
     private LocalDate valueDay;
-    /** 相手方金融機関コード */
+    /** Counterparty Financial Institution Code */
     @IdStr
     private String targetFiCode;
-    /** 相手方金融機関口座ID */
+    /** Counterparty Financial Institution Account ID */
     @IdStr
     private String targetFiAccountId;
-    /** 自社方金融機関コード */
+    /** Own Financial Institution Code */
     @IdStr
     private String selfFiCode;
-    /** 自社方金融機関口座ID */
+    /** Own financial institution account ID */
     @IdStr
     private String selfFiAccountId;
-    /** 処理種別 */
     @NotNull
-    @Enumerated(EnumType.STRING)
+    @Enumerated
     private ActionStatusType statusType;
-    /** キャッシュフローID。処理済のケースでのみ設定されます。low: 実際は調整CFや消込CFの概念なども有 */
+    /**
+     * Cash flow ID, set only for cases that have been processed. low: actually, the
+     * concepts of adjusting CF, erasing CF, etc. need to be added.
+     */
     private Long cashflowId;
-    /** 登録日時 */
     @ISODateTime
     private LocalDateTime createDate;
-    /** 登録者ID */
     @IdStr
     private String createId;
-    /** 更新日時 */
     @ISODateTime
     private LocalDateTime updateDate;
-    /** 更新者ID */
     @IdStr
     private String updateId;
 
     /**
-     * 依頼を処理します。
-     * <p>依頼情報を処理済にしてキャッシュフローを生成します。
+     * Processed status.
+     * <p>
+     * Processed CashInOut and generate Cashflow.
      */
     public CashInOut process(final OrmRepository rep) {
-        //low: 出金営業日の取得。ここでは単純な営業日を取得
+        // low: the business day of the disbursement. Get a simple business day here.
         TimePoint now = rep.dh().time().tp();
-        // 事前審査
-        validate((v) -> {
-            v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing);
-            v.verify(now.afterEqualsDay(eventDay), AssetErrorKeys.CashInOutAfterEqualsDay);
+        // business validation
+        AppValidator.validate(v -> {
+            v.verify(statusType.isUnprocessed(), DomainErrorKeys.StatusType);
+            v.verify(now.afterEqualsDay(eventDay), AssetErrorKeys.BeforeEventDay);
         });
-        // 処理済状態を反映
-        setStatusType(ActionStatusType.Processed);
-        setCashflowId(Cashflow.register(rep, regCf()).getId());
-        return update(rep);
+        Long cashflowId = Cashflow.register(rep, this.toRegCasflow()).getCashflowId();
+        // Reflects processed status
+        this.setStatusType(ActionStatusType.PROCESSED);
+        this.setCashflowId(cashflowId);
+        return rep.update(this);
     }
 
-    private RegCashflow regCf() {
-        BigDecimal amount = withdrawal ? absAmount.negate() : absAmount;
-        CashflowType cashflowType = withdrawal ? CashflowType.CashOut : CashflowType.CashIn;
-        // low: 摘要はとりあえずシンプルに。実際はCashInOutへ用途フィールドをもたせた方が良い(生成元メソッドに応じて摘要を変える)
-        String remark = withdrawal ? Remarks.CashOut : Remarks.CashIn;
-        return new RegCashflow(accountId, currency, amount, cashflowType, remark, eventDay, valueDay);
+    private RegCashflow toRegCasflow() {
+        BigDecimal amount = this.withdrawal ? this.absAmount.negate() : this.absAmount;
+        var cashflowType = this.withdrawal ? CashflowType.CASH_OUT : CashflowType.CASH_IN;
+        // low: The abstract is simple for now. In fact, it is better to have a usage
+        // field to CashInOut (change the abstract according to the source method).
+        String remark = this.withdrawal ? Remarks.CashOut : Remarks.CashIn;
+        return RegCashflow.builder()
+                .accountId(this.accountId)
+                .currency(this.currency)
+                .amount(amount)
+                .cashflowType(cashflowType)
+                .remark(remark)
+                .eventDay(this.eventDay)
+                .valueDay(this.valueDay)
+                .build();
     }
 
     /**
-     * 依頼を取消します。
-     * <p>"処理済みでない"かつ"発生日を迎えていない"必要があります。
+     * Cancel the request.
+     * <p>
+     * The "not yet processed" and "not yet accrual date" are required.
      */
     public CashInOut cancel(final OrmRepository rep) {
         TimePoint now = rep.dh().time().tp();
-        // 事前審査
-        validate((v) -> {
-            v.verify(statusType.isUnprocessing(), ErrorKeys.ActionUnprocessing);
-            v.verify(now.beforeDay(eventDay), AssetErrorKeys.CashInOutBeforeEqualsDay);
+        // business validation
+        AppValidator.validate((v) -> {
+            v.verify(statusType.isUnprocessing(), DomainErrorKeys.StatusType);
+            v.verify(now.beforeDay(eventDay), AssetErrorKeys.AfterEqualsEventDay);
         });
-        // 取消状態を反映
-        setStatusType(ActionStatusType.Cancelled);
-        return update(rep);
+        // Reflects canceled status
+        this.setStatusType(ActionStatusType.CANCELLED);
+        return rep.update(this);
     }
 
     /**
-     * 依頼をエラー状態にします。
-     * <p>処理中に失敗した際に呼び出してください。
-     * low: 実際はエラー事由などを引数に取って保持する
+     * Put the request in an error state.
+     * <p>
+     * Call it when it fails during processing.
+     * low: In actuality, error reasons, etc., are taken as arguments and retained.
      */
     public CashInOut error(final OrmRepository rep) {
-        validate((v) -> v.verify(statusType.isUnprocessed(), ErrorKeys.ActionUnprocessing));
-
-        setStatusType(ActionStatusType.Error);
-        return update(rep);
+        // business validation
+        AppValidator.validate((v) -> {
+            v.verify(statusType.isUnprocessed(), DomainErrorKeys.StatusType);
+        });
+        // Reflects error status
+        this.setStatusType(ActionStatusType.ERROR);
+        return rep.update(this);
     }
 
-    /** 振込入出金依頼を返します。 */
-    public static CashInOut load(final OrmRepository rep, Long id) {
-        return rep.load(CashInOut.class, id);
+    public static String formatId(long v) {
+        // low: Correct code formatting
+        return "C" + StringUtils.leftPad(String.valueOf(v), 10, '0');
     }
 
-    /** 未処理の振込入出金依頼一覧を検索します。  low: criteriaベース実装例 */
-    public static List<CashInOut> find(final OrmRepository rep, final FindCashInOut p) {
-        // low: 通常であれば事前にfrom/toの期間チェックを入れる
-        return rep.tmpl().find(CashInOut.class, (criteria) -> criteria
-                .equal("currency", p.getCurrency())
-                .in("statusType", p.getStatusTypes())
-                .between("updateDate", p.getUpdFromDay().atStartOfDay(), DateUtils.dateTo(p.getUpdToDay()))
-                .sortDesc("updateDate")
-                .result());
+    public static CashInOut load(final OrmRepository rep, String cashInOutId) {
+        return rep.load(CashInOut.class, cashInOutId);
     }
 
-    /** 当日発生で未処理の振込入出金一覧を検索します。 */
+    public static List<CashInOut> find(final OrmRepository rep, final FindCashInOut param) {
+        // low: Normally, put a from/to time period check in advance.
+        var jpql = JpqlBuilder.of("SELECT cio FROM CashInOut cio")
+                .equal("cio.currency", param.currency())
+                .in("cio.statusType", param.statusTypes())
+                .between("cio.updateDate", param.updFromDay().atStartOfDay(), DateUtils.dateTo(param.updToDay()))
+                .orderBy("cio.updateDate DESC");
+        return rep.tmpl().find(jpql.build(), jpql.args());
+    }
+
+    /**
+     * Search parameter for account transfer deposit/withdrawal requests.
+     * low: Usually different usage conditions from customer perspective/internal
+     * perspective.
+     */
+    @Builder
+    public static record FindCashInOut(
+            @CurrencyEmpty String currency,
+            Collection<ActionStatusType> statusTypes,
+            @ISODate LocalDate updFromDay,
+            @ISODate LocalDate updToDay) implements Dto {
+    }
+
+    /**
+     * Searches for listings that occurred on the same day and have not yet been
+     * processed.
+     */
     public static List<CashInOut> findUnprocessed(final OrmRepository rep) {
-        return rep.tmpl().find("from CashInOut c where c.eventDay=?1 and c.statusType in ?2 order by c.id",
-                rep.dh().time().day(), ActionStatusType.unprocessedTypes);
+        var jpql = """
+                SELECT cio
+                FROM CashInOut cio
+                WHERE cio.eventDay=?1 AND cio.statusType IN (?2)
+                ORDER BY cio.cashInOutId
+                """;
+        return rep.tmpl().find(jpql, rep.dh().time().day(), ActionStatusType.UNPROCESSED_TYPES);
     }
 
-    /** 未処理の振込入出金一覧を検索します。(口座別) */
-    public static List<CashInOut> findUnprocessed(final OrmRepository rep, String accountId, String currency,
-            boolean withdrawal) {
-        return rep.tmpl().find(
-                "from CashInOut c where c.accountId=?1 and c.currency=?2 and c.withdrawal=?3 and c.statusType in ?4 order by c.id",
-                accountId, currency, withdrawal,
-                ActionStatusType.unprocessedTypes);
+    /** Searches for listings that have not yet been processed. (by account) */
+    public static List<CashInOut> findUnprocessed(
+            final OrmRepository rep, String accountId, String currency, boolean withdrawal) {
+        var jpql = """
+                SELECT cio
+                FROM CashInOut cio
+                WHERE cio.accountId=?1 AND cio.currency=?2 AND cio.withdrawal=?3 AND cio.statusType IN (?4)
+                ORDER BY cio.cashInOutId
+                """;
+        return rep.tmpl().find(jpql, accountId, currency, withdrawal, ActionStatusType.UNPROCESSED_TYPES);
     }
 
-    /** 未処理の振込入出金一覧を検索します。(口座別) */
+    /** Searches for listings that have not yet been processed. (by account) */
     public static List<CashInOut> findUnprocessed(final OrmRepository rep, String accountId) {
-        return rep.tmpl().find(
-                "from CashInOut c where c.accountId=?1 and c.statusType in ?2 order by c.updateDate desc", accountId,
-                ActionStatusType.unprocessedTypes);
+        var jpql = """
+                SELECT cio
+                FROM CashInOut cio
+                WHERE cio.accountId=?1 AND cio.statusType IN (?2)
+                ORDER BY cio.updateDate DESC
+                """;
+        return rep.tmpl().find(jpql, accountId, ActionStatusType.UNPROCESSED_TYPES);
     }
 
-    /** 出金依頼をします。 */
+    /** Request a withdrawal. */
     public static CashInOut withdraw(final OrmRepository rep, final BusinessDayHandler day, final RegCashOut p) {
         DomainHelper dh = rep.dh();
         TimePoint now = dh.time().tp();
-        // low: 発生日は締め時刻等の兼ね合いで営業日と異なるケースが多いため、別途DB管理される事が多い
+        // low: In many cases, the date of occurrence differs from the business day due
+        // to a combination of closing time, etc., so it is often managed in a separate
+        // DB.
         LocalDate eventDay = day.day();
-        // low: 実際は各金融機関/通貨の休日を考慮しての T+N 算出が必要
+        // low: In reality, T+N calculations must take into account holidays of each
+        // financial institution/currency
         LocalDate valueDay = day.day(3);
 
-        // 事前審査
-        Validator.validate((v) -> {
-            v.verifyField(0 < p.getAbsAmount().signum(), "absAmount", DomainErrorKeys.AbsAmountZero);
-            boolean canWithdraw = Asset.by(p.getAccountId()).canWithdraw(rep, p.getCurrency(), p.getAbsAmount(),
-                    valueDay);
-            v.verifyField(canWithdraw, "absAmount", AssetErrorKeys.CashInOutWithdrawAmount);
+        // business validation
+        AppValidator.validate((v) -> {
+            v.verifyField(0 < p.absAmount().signum(), "absAmount", DomainErrorKeys.AbsAmountZero);
+            boolean canWithdraw = Asset.of(p.accountId())
+                    .canWithdraw(rep, p.currency(), p.absAmount(), valueDay);
+            v.verifyField(canWithdraw, "absAmount", AssetErrorKeys.WithdrawAmount);
         });
 
-        // 出金依頼情報を登録
-        FiAccount acc = FiAccount.load(rep, p.getAccountId(), Remarks.CashOut, p.getCurrency());
-        SelfFiAccount selfAcc = SelfFiAccount.load(rep, Remarks.CashOut, p.getCurrency());
-        String updateActor = dh.actor().getId();
-        return p.create(now, eventDay, valueDay, acc, selfAcc, updateActor).save(rep);
+        // Register withdrawal request information
+        String cashInOutId = rep.dh().uid().generate(CashInOut.class);
+        var acc = FiAccount.load(rep, p.accountId(), Remarks.CashOut, p.currency());
+        var selfAcc = SelfFiAccount.load(rep, Remarks.CashOut, p.currency());
+        String updateActor = dh.actor().id();
+        return rep.save(p.create(cashInOutId, now, eventDay, valueDay, acc, selfAcc, updateActor));
     }
 
-    /** 振込入出金依頼の検索パラメタ。 low: 通常は顧客視点/社内視点で利用条件が異なる */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FindCashInOut implements Dto {
-        private static final long serialVersionUID = 1L;
-        @CurrencyEmpty
-        private String currency;
-        private ActionStatusType[] statusTypes;
-        @ISODate
-        private LocalDate updFromDay;
-        @ISODate
-        private LocalDate updToDay;
-    }
+    @Builder
+    public static record RegCashOut(
+            @IdStrEmpty String accountId,
+            @Currency String currency,
+            @AbsAmount BigDecimal absAmount) implements Dto {
 
-    /** 振込出金の依頼パラメタ。  */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegCashOut implements Dto {
-        private static final long serialVersionUID = 1L;
-        @IdStrEmpty
-        private String accountId;
-        @Currency
-        private String currency;
-        @AbsAmount
-        private BigDecimal absAmount;
-
-        public CashInOut create(final TimePoint now, LocalDate eventDay, LocalDate valueDay, final FiAccount acc,
-                final SelfFiAccount selfAcc, String updActor) {
+        public CashInOut create(
+                String cashInOutId,
+                final TimePoint now,
+                LocalDate eventDay,
+                LocalDate valueDay,
+                final FiAccount acc,
+                final SelfFiAccount selfAcc,
+                String updActor) {
             CashInOut m = new CashInOut();
+            m.setCashInOutId(cashInOutId);
             m.setAccountId(accountId);
             m.setCurrency(currency);
             m.setAbsAmount(absAmount);
@@ -250,7 +301,7 @@ public class CashInOut extends OrmActiveMetaRecord<CashInOut> {
             m.setTargetFiAccountId(acc.getFiAccountId());
             m.setSelfFiCode(selfAcc.getFiCode());
             m.setSelfFiAccountId(selfAcc.getFiAccountId());
-            m.setStatusType(ActionStatusType.Unprocessed);
+            m.setStatusType(ActionStatusType.UNPROCESSED);
             return m;
         }
     }

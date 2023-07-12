@@ -1,18 +1,26 @@
 package sample.model.constraints;
 
-import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.*;
-
-import javax.validation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
+import jakarta.validation.Payload;
+import jakarta.validation.ReportAsSingleViolation;
+
 /**
- * ISOフォーマットの日時を表現する制約注釈。
- * <p>yyyy-MM-dd'T'HH:mm:ss.SSSZを想定します。
+ * Constraint annotation expressing the ISO format date and time.
+ * <p>
+ * Assume yyyy-MM-dd'T'HH:mm:ss.SSSXXX.
  */
 @Documented
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })

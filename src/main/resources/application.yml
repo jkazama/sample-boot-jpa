@@ -10,61 +10,46 @@ spring:
     max-file-size: 20MB
     max-request-size: 20MB
   jpa.open-in-view: false
+  security:
+    user.password: unused
 
-logging.config: classpath:logback-spring.xml
+logging.config: ${LOGGING_CONFIG_XML:classpath:logback-spring-production.xml}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  servlet.session.timeout: ${SERVER_SESSION_TIMEOUT:60m}
 
 management:
   endpoints.web:
-    base-path: /management
-    exposure.include: "*"
+    base-path: ${MANAGEMENT_BASE_PATH:/actuator}
+    exposure.include: ${MANAGEMENT_INCLUDE:info,health}
 
-extension:
-  security:
-    cors.enabled: true
-    auth:
-      enabled: false
-      admin: false
+sample:
   datasource:
-    default:
-      url: ${DB_DEFAULT_JDBC_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-      username: ${DB_DEFAULT_JDBC_USERNAME:}
-      password: ${DB_DEFAULT_JDBC_PASSWORD:}
+    app:
+      url: ${APP_JDBC_URL:jdbc:postgresql://db:5432/postgres}
+      username: ${APP_JDBC_USERNAME:postgres}
+      password: ${APP_JDBC_PASSWORD:postgres}
       jpa:
         package-to-scan: sample.model
-        hibernate.ddl-auto: create-drop
     system:
-      url: ${DB_SYSTEM_JDBC_URL:jdbc:h2:mem:system;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-      username: ${DB_SYSTEM_JDBC_USERNAME:}
-      password: ${DB_SYSTEM_JDBC_PASSWORD:}
+      url: ${SYSTEM_JDBC_URL:jdbc:postgresql://db:5432/postgres}
+      username: ${SYSTEM_JDBC_USERNAME:postgres}
+      password: ${SYSTEM_JDBC_PASSWORD:postgres}
       jpa:
         package-to-scan: sample.context
-        hibernate.ddl-auto: create-drop
+  mail.enabled: true
+
+---
+spring.config.activate:
+  on-profile: developer
+
+logging.config: classpath:logback-spring.xml
+
+management.endpoints.web.exposure.include: "*"
+
+springdoc.swagger-ui.enabled: true
+
+sample:
+  cors: true
   mail.enabled: false
-  datafixture.enabled: true
-
----
-spring.config.activate.on-profile: production
-
-extension:
-  datasource:
-    default:
-      jpa:
-        hibernate.ddl-auto: none
-    system:
-      jpa:
-        hibernate.ddl-auto: none
-  security:
-    auth.enabled: true
-    cors.enabled: false
-  datafixture.enabled: false
-
----
-spring.config.activate.on-profile: admin
-
-server.port: 8081
-
-extension: 
-  security.auth.admin: true

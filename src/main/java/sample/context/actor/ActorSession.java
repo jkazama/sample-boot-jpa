@@ -1,28 +1,27 @@
 package sample.context.actor;
 
 /**
- * スレッドローカルスコープの利用者セッション。
+ * Thread Local Scope User Session.
  */
 public class ActorSession {
+    private static ThreadLocal<Actor> actorLocal = new ThreadLocal<>();
 
-    private ThreadLocal<Actor> actorLocal = new ThreadLocal<>();
-
-    /** 利用者セッションへ利用者を紐付けます。 */
-    public ActorSession bind(final Actor actor) {
+    /** Connect users to the user session. */
+    public static void bind(final Actor actor) {
         actorLocal.set(actor);
-        return this;
     }
 
-    /** 利用者セッションを破棄します。 */
-    public ActorSession unbind() {
+    /** Discard the user session. */
+    public static void unbind() {
         actorLocal.remove();
-        return this;
     }
 
-    /** 有効な利用者を返します。紐付けされていない時は匿名者が返されます。 */
-    public Actor actor() {
+    /** Returns a valid user. If not associated, an anonymous user is returned. */
+    public static Actor actor() {
         Actor actor = actorLocal.get();
-        return actor != null ? actor : Actor.Anonymous;
+        if (actor == null) {
+            return Actor.ANONYMOUS;
+        }
+        return actor;
     }
-
 }

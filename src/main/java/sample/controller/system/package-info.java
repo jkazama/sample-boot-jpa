@@ -1,4 +1,4 @@
 /**
- * システム管理向けのUI層コンポーネント。
+ * UI layer component for system management.
  */
 package sample.controller.system;

@@ -1,44 +1,54 @@
 package sample.model.account;
 
-import javax.persistence.*;
-
-import lombok.*;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import lombok.Data;
+import sample.context.DomainEntity;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.Category;
+import sample.model.constraints.Currency;
+import sample.model.constraints.IdStr;
 
 /**
- * 口座に紐づく金融機関口座を表現します。
- * <p>口座を相手方とする入出金で利用します。
- * low: サンプルなので支店や名称、名義といった本来必須な情報をかなり省略しています。(通常は全銀仕様を踏襲します)
+ * Represents the financial institution account associated with the account.
+ * <p>
+ * Used for deposits and withdrawals with an account as the counterparty.
+ * low: Since this is a sample, much of the originally required information such
+ * as branches, names, and names are omitted.
  */
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
-public class FiAccount extends OrmActiveRecord<FiAccount> {
-    private static final long serialVersionUID = 1L;
+public class FiAccount implements DomainEntity {
+    private static final String SequenceId = "fi_account_id_seq";
 
-    /** ID */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
     private Long id;
-    /** 口座ID */
+    /** account ID */
     @IdStr
     private String accountId;
-    /** 利用用途カテゴリ */
+    /** Usage Categories */
     @Category
     private String category;
-    /** 通貨 */
     @Currency
     private String currency;
-    /** 金融機関コード */
+    /** Financial Institution Code */
     @IdStr
     private String fiCode;
-    /** 金融機関口座ID */
+    /** Financial Institution Account No. */
     @IdStr
     private String fiAccountId;
 
     public static FiAccount load(final OrmRepository rep, String accountId, String category, String currency) {
-        return rep.tmpl().load("from FiAccount a where a.accountId=?1 and a.category=?2 and a.currency=?3", accountId,
-                category, currency);
+        String jpql = """
+                SELECT a
+                FROM FiAccount a
+                WHERE a.accountId=?1 AND a.category=?2 AND a.currency=?3
+                """;
+        return rep.tmpl().load(jpql, accountId, category, currency);
     }
 }

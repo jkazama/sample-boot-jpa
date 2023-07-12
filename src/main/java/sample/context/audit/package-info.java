@@ -1,5 +1,6 @@
 /**
- * 監査証跡関連のインフラ層コンポーネント。
- * <p>ユースケース実行時の証跡管理をします。
+ * Audit trail related infrastructure layer components.
+ * <p>
+ * Manage use case execution trails.
  */
 package sample.context.audit;

@@ -1,138 +1,120 @@
 package sample.model.master;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-import javax.persistence.*;
-
-import org.hibernate.criterion.MatchMode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import lombok.*;
-import sample.ValidationException.ErrorKeys;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lombok.Builder;
+import lombok.Data;
+import sample.context.DomainEntity;
 import sample.context.Dto;
 import sample.context.actor.Actor;
-import sample.context.actor.Actor.ActorRoleType;
-import sample.context.orm.*;
-import sample.model.constraints.*;
-import sample.util.Validator;
+import sample.context.actor.type.ActorRoleType;
+import sample.context.orm.JpqlBuilder;
+import sample.context.orm.OrmMatchMode;
+import sample.context.orm.OrmRepository;
+import sample.model.DomainErrorKeys;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
+import sample.model.constraints.OutlineEmpty;
+import sample.model.constraints.Password;
+import sample.model.master.Login.RegLogin;
+import sample.util.AppValidator;
 
 /**
- * 社員を表現します。
+ * Representation of staffs.
  */
 @Entity
 @Data
-@ToString(callSuper = false, exclude = { "password" })
-@EqualsAndHashCode(callSuper = false)
-public class Staff extends OrmActiveRecord<Staff> {
-    private static final long serialVersionUID = 1l;
+public class Staff implements DomainEntity {
 
-    /** ID */
+    /** staff ID */
     @Id
     @IdStr
-    private String id;
-    /** 名前 */
+    private String staffId;
+    /** staff name */
     @Name
     private String name;
-    /** パスワード(暗号化済) */
-    @Password
-    private String password;
+    /** staff role type (INTERNAL or ADMINISTRATOR) */
+    private ActorRoleType roleType;
 
     public Actor actor() {
-        return new Actor(id, name, ActorRoleType.Internal);
+        return Actor.of(this.staffId, this.name, this.roleType);
     }
 
-    /** パスワードを変更します。 */
-    public Staff change(final OrmRepository rep, final PasswordEncoder encoder, final ChgPassword p) {
-        return p.bind(this, encoder.encode(p.plainPassword)).update(rep);
+    /** Change staff information. */
+    public Staff change(final OrmRepository rep, final ChgStaff param) {
+        return rep.update(param.bind(this));
     }
 
-    /** 社員情報を変更します。 */
-    public Staff change(final OrmRepository rep, ChgStaff p) {
-        return p.bind(this).update(rep);
-    }
+    @Builder
+    public static record ChgStaff(
+            @Name String name) implements Dto {
 
-    /** 社員を取得します。 */
-    public static Optional<Staff> get(final OrmRepository rep, final String id) {
-        return rep.get(Staff.class, id);
-    }
-
-    /** 社員を取得します。(例外付) */
-    public static Staff load(final OrmRepository rep, final String id) {
-        return rep.load(Staff.class, id);
-    }
-
-    /** 社員を検索します。 */
-    public static List<Staff> find(final OrmRepository rep, final FindStaff p) {
-        return rep.tmpl().find(Staff.class,
-                (criteria) -> criteria.like(new String[] { "id", "name" }, p.keyword, MatchMode.ANYWHERE)
-                        .sort("id").result());
-    }
-
-    /** 社員の登録を行います。 */
-    public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, RegStaff p) {
-        Validator.validate((v) -> v.checkField(!get(rep, p.id).isPresent(), "id", ErrorKeys.DuplicateId));
-        return p.create(encoder.encode(p.plainPassword)).save(rep);
-    }
-
-    /** 検索パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class FindStaff implements Dto {
-        private static final long serialVersionUID = 1l;
-        @OutlineEmpty
-        private String keyword;
-    }
-
-    /** 登録パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegStaff implements Dto {
-        private static final long serialVersionUID = 1l;
-
-        @IdStr
-        private String id;
-        @Name
-        private String name;
-        /** パスワード(未ハッシュ) */
-        @Password
-        private String plainPassword;
-
-        public Staff create(String password) {
-            Staff m = new Staff();
-            m.setId(id);
-            m.setName(name);
-            m.setPassword(password);
-            return m;
+        public Staff bind(final Staff current) {
+            current.setName(name);
+            return current;
         }
     }
 
-    /** 変更パラメタ */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ChgStaff implements Dto {
-        private static final long serialVersionUID = 1l;
-        @Name
-        private String name;
-
-        public Staff bind(final Staff m) {
-            m.setName(name);
-            return m;
-        }
+    public static Optional<Staff> get(final OrmRepository rep, final String staffId) {
+        return rep.get(Staff.class, staffId);
     }
 
-    /** パスワード変更パラメタ */
-    @Value
-    public static class ChgPassword implements Dto {
-        private static final long serialVersionUID = 1l;
-        @Password
-        private String plainPassword;
+    public static Staff load(final OrmRepository rep, final String staffId) {
+        return rep.load(Staff.class, staffId);
+    }
 
-        public Staff bind(final Staff m, String password) {
-            m.setPassword(password);
+    public static List<Staff> find(final OrmRepository rep, final FindStaff param) {
+        var jpql = JpqlBuilder.of("SELECT s FROM Staff s")
+                .like(List.of("s.id", "s.name"), param.keyword, OrmMatchMode.ANYWHERE)
+                .orderBy("s.staffId");
+        return rep.tmpl().find(jpql.build(), jpql.args());
+    }
+
+    @Builder
+    public static record FindStaff(
+            @OutlineEmpty String keyword) implements Dto {
+    }
+
+    /**
+     * Staff registration.
+     * <p>
+     * Login information will be registered at the same time.
+     */
+    public static Staff register(final OrmRepository rep, final PasswordEncoder encoder, final RegStaff param) {
+        AppValidator.validate((v) -> {
+            v.checkField(!get(rep, param.staffId).isPresent(), "staffId", DomainErrorKeys.DuplicateId);
+        });
+        Login.register(rep, encoder, param.createLogin());
+        return rep.save(param.create());
+    }
+
+    @Builder
+    public static record RegStaff(
+            @IdStr String staffId,
+            @Name String name,
+            boolean administrator,
+            /** Password (unhashed) */
+            @Password String plainPassword) implements Dto {
+
+        public Staff create() {
+            var m = new Staff();
+            m.setStaffId(staffId);
+            m.setName(name);
+            m.setRoleType(administrator ? ActorRoleType.ADMINISTRATOR : ActorRoleType.INTERNAL);
             return m;
+        }
+
+        public RegLogin createLogin() {
+            return RegLogin.builder()
+                    .actorId(staffId)
+                    .roleType(administrator ? ActorRoleType.ADMINISTRATOR : ActorRoleType.INTERNAL)
+                    .plainPassword(plainPassword)
+                    .build();
         }
     }
 

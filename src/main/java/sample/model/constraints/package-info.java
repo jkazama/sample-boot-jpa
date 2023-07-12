@@ -1,5 +1,6 @@
 /**
- * ドメインで汎用的に利用される制約定義。
- * <p>JSR303(Bean Valildation)の用途で利用される想定です。
+ * Constraint definitions used universally in the domain.
+ * <p>
+ * It is assumed to be used for JSR303 (Bean Valildation).
  */
 package sample.model.constraints;

@@ -2,31 +2,33 @@ package sample.context.lock;
 
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-import lombok.Value;
-import sample.InvocationException;
+import org.springframework.stereotype.Component;
+
+import sample.context.ErrorKeys;
+import sample.context.InvocationException;
 
 /**
- * ID単位のロックを表現します。
- * low: ここではシンプルに口座単位のIDロックのみをターゲットにします。
- * low: 通常はDBのロックテーブルに"for update"要求で悲観的ロックをとったりしますが、サンプルなのでメモリロックにしてます。
+ * Represents an ID lock.
+ * low: Here we will simply target only account-by-account ID locks.
+ * low: Normally, a pessimistic lock is obtained by a "for update" request to
+ * the DB lock table, but since this is a sample, a memory lock is used.
  */
-public class IdLockHandler {
+public interface IdLockHandler {
 
-    private ConcurrentMap<Serializable, ReentrantReadWriteLock> lockMap = new ConcurrentHashMap<>();
-
-    /** IDロック上で処理を実行します。 */
-    public void call(Serializable id, LockType lockType, final Runnable command) {
+    /** Execute the process on the ID lock. */
+    default void call(Serializable id, LockType lockType, final Runnable command) {
         call(id, lockType, () -> {
             command.run();
             return true;
         });
     }
 
-    public <T> T call(Serializable id, LockType lockType, final Supplier<T> callable) {
+    default <T> T call(Serializable id, LockType lockType, final Supplier<T> callable) {
         if (lockType.isWrite()) {
             writeLock(id);
         } else {
@@ -37,62 +39,66 @@ public class IdLockHandler {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new InvocationException("error.Exception", e);
+            throw InvocationException.of(ErrorKeys.Exception, e);
         } finally {
             unlock(id);
         }
     }
 
-    public void writeLock(final Serializable id) {
-        Optional.of(id).ifPresent((v) -> {
-            idLock(v).writeLock().lock();
-        });
-    }
+    void writeLock(Serializable id);
 
-    private ReentrantReadWriteLock idLock(final Serializable id) {
-        return lockMap.computeIfAbsent(id, v -> new ReentrantReadWriteLock());
-    }
+    void readLock(Serializable id);
 
-    public void readLock(final Serializable id) {
-        Optional.of(id).ifPresent((v) -> {
-            idLock(v).readLock().lock();
-        });
-    }
+    void unlock(final Serializable id);
 
-    public void unlock(final Serializable id) {
-        Optional.of(id).ifPresent((v) -> {
-            ReentrantReadWriteLock idLock = idLock(v);
-            if (idLock.isWriteLockedByCurrentThread()) {
-                idLock.writeLock().unlock();
-            } else {
-                idLock.readLock().unlock();
-            }
-        });
-    }
-
-    /**
-     * ロック種別を表現するEnum。
-     */
     public static enum LockType {
-        /** 読み取り専用ロック */
-        Read,
-        /** 読み書き専用ロック */
-        Write;
+        READ,
+        WRITE;
 
         public boolean isRead() {
             return !isWrite();
         }
 
         public boolean isWrite() {
-            return this == Write;
+            return this == WRITE;
         }
     }
 
-    /** IdLock の対象と種別のペアを表現します。 */
-    @Value
-    public static class IdLockPair {
-        private Serializable id;
-        private LockType lockType;
+    /** Represents a pair of IdLock targets and types. */
+    public static record IdLockPair(
+            Serializable id, LockType lockType) {
     }
-    
+
+    @Component
+    public static class IdLockHandlerImpl implements IdLockHandler {
+        private final ConcurrentMap<Serializable, ReentrantReadWriteLock> lockMap = new ConcurrentHashMap<>();
+
+        public void writeLock(final Serializable id) {
+            Optional.of(id).ifPresent((v) -> {
+                idLock(v).writeLock().lock();
+            });
+        }
+
+        private ReentrantReadWriteLock idLock(final Serializable id) {
+            return lockMap.computeIfAbsent(id, v -> new ReentrantReadWriteLock());
+        }
+
+        public void readLock(final Serializable id) {
+            Optional.of(id).ifPresent((v) -> {
+                idLock(v).readLock().lock();
+            });
+        }
+
+        public void unlock(final Serializable id) {
+            Optional.of(id).ifPresent((v) -> {
+                ReentrantReadWriteLock idLock = idLock(v);
+                if (idLock.isWriteLockedByCurrentThread()) {
+                    idLock.writeLock().unlock();
+                } else {
+                    idLock.readLock().unlock();
+                }
+            });
+        }
+
+    }
 }

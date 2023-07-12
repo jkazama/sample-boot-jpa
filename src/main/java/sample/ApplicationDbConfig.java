@@ -1,89 +1,87 @@
 package sample;
 
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
-import org.springframework.orm.jpa.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
-import sample.context.orm.*;
-import sample.context.orm.DefaultRepository.DefaultDataSourceProperties;
-import sample.context.orm.SystemRepository.SystemDataSourceProperties;
+import jakarta.persistence.EntityManagerFactory;
+import sample.context.DomainHelper;
+import sample.context.orm.OrmInterceptor;
+import sample.context.orm.OrmRepository;
+import sample.context.orm.repository.DefaultRepository;
+import sample.context.orm.repository.SystemRepository;
 
 /**
- * アプリケーションのデータベース接続定義を表現します。
+ * Represents a database connection definition for an application.
  */
 @Configuration
-@EnableConfigurationProperties({ DefaultDataSourceProperties.class, SystemDataSourceProperties.class })
 public class ApplicationDbConfig {
 
-    /** 永続化時にメタ情報の差込を行うインターセプタ */
-    @Bean
-    OrmInterceptor ormInterceptor() {
-        return new OrmInterceptor();
-    }
-
-    /** 標準スキーマへの接続定義を表現します。 */
+    /** Represents a connection definition to a standard schema. */
     @Configuration
     static class DefaultDbConfig {
 
         @Bean
-        DefaultRepository defaultRepository() {
-            return new DefaultRepository();
+        @Primary
+        OrmRepository defaultRepository(DomainHelper dh, OrmInterceptor interceptor) {
+            return DefaultRepository.of(dh, interceptor);
         }
 
         @Bean(name = DefaultRepository.BeanNameDs, destroyMethod = "close")
         @Primary
-        DataSource dataSource(DefaultDataSourceProperties props) {
-            return props.dataSource();
+        DataSource dataSource(ApplicationProperties props) {
+            return props.getDatasource().getApp().dataSource();
         }
 
         @Bean(name = DefaultRepository.BeanNameEmf)
         @Primary
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(
-                DefaultDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(DefaultRepository.BeanNameDs) final DataSource dataSource) {
-            return props.entityManagerFactoryBean(dataSource);
+            return props.getDatasource().getApp().entityManagerFactoryBean(dataSource);
         }
 
         @Bean(name = DefaultRepository.BeanNameTx)
         @Primary
         JpaTransactionManager transactionManager(
-                DefaultDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(DefaultRepository.BeanNameEmf) final EntityManagerFactory emf) {
-            return props.transactionManager(emf);
+            return props.getDatasource().getApp().transactionManager(emf);
         }
 
     }
 
-    /** システムスキーマへの接続定義を表現します。 */
+    /** Represents a connection definition to the system schema. */
     @Configuration
     static class SystemDbConfig {
 
         @Bean
-        SystemRepository systemRepository() {
-            return new SystemRepository();
+        SystemRepository systemRepository(DomainHelper dh, OrmInterceptor interceptor) {
+            return SystemRepository.of(dh, interceptor);
         }
 
         @Bean(name = SystemRepository.BeanNameDs, destroyMethod = "close")
-        DataSource systemDataSource(SystemDataSourceProperties props) {
-            return props.dataSource();
+        DataSource systemDataSource(ApplicationProperties props) {
+            return props.getDatasource().getSystem().dataSource();
         }
 
         @Bean(name = SystemRepository.BeanNameEmf)
         LocalContainerEntityManagerFactoryBean systemEntityManagerFactoryBean(
-                SystemDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(SystemRepository.BeanNameDs) final DataSource dataSource) {
-            return props.entityManagerFactoryBean(dataSource);
+            return props.getDatasource().getSystem().entityManagerFactoryBean(dataSource);
         }
 
         @Bean(name = SystemRepository.BeanNameTx)
         JpaTransactionManager systemTransactionManager(
-                SystemDataSourceProperties props,
+                ApplicationProperties props,
                 @Qualifier(SystemRepository.BeanNameEmf) final EntityManagerFactory emf) {
-            return props.transactionManager(emf);
+            return props.getDatasource().getSystem().transactionManager(emf);
         }
 
     }

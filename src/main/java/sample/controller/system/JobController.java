@@ -1,46 +1,54 @@
 package sample.controller.system;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+import sample.context.actor.type.ActorRoleType;
 import sample.controller.ControllerUtils;
-import sample.usecase.*;
+import sample.usecase.admin.AssetAdminService;
+import sample.usecase.admin.SystemAdminService;
 
 /**
- * システムジョブのUI要求を処理します。
- * <p>/api/system 以降の URL はジョブスケジューラから実行される事を想定しているため、 L/B 等で外部からアクセス不可にしておく必要があります。
- * ( よりベターなアプローチは該当処理のみを持ったバッチプロセスとして切り出すか個別認証をかける )
- * low: 通常はバッチプロセス(または社内プロセスに内包)を別途作成して、ジョブスケジューラから実行される方式になります。
- * ジョブの負荷がオンライン側へ影響を与えないよう事前段階の設計が重要になります。
- * low: 社内/バッチプロセス切り出す場合はVM分散時の情報/排他同期を意識する必要があります。(DB同期/メッセージング同期/分散製品の利用 等)
+ * Processes UI requests for system jobs.
+ * <p>
+ * URLs after /api/system are assumed to be executed by the job scheduler, so
+ * they must be made inaccessible from the outside by L/B or other means. (A
+ * better approach would be to cut it out as a batch process with only the
+ * relevant process or apply individual authentication.)
+ * low: Usually, a batch process (or internal process) is created separately and
+ * executed from the job scheduler.
+ * It is important to design the job in advance so that the load of the job does
+ * not affect the online side.
+ * low: When cutting out internal/batch processes, it is necessary to be aware
+ * of information/exclusive synchronization when distributing VMs. (DB
+ * synchronization / messaging synchronization / use of distributed products,
+ * etc.)
  */
 @RestController
 @RequestMapping("/api/system/job")
+@PreAuthorize(ActorRoleType.AUTHORIZE_ADMINISTRATOR)
+@RequiredArgsConstructor
 public class JobController {
-
     private final AssetAdminService asset;
     private final SystemAdminService system;
-    
-    public JobController(
-            AssetAdminService asset,
-            SystemAdminService system) {
-        this.asset = asset;
-        this.system = system;
+
+    /** Move forward with the business day. */
+    @PostMapping("/daily/forwardDay")
+    public ResponseEntity<Void> forwardDay() {
+        return ControllerUtils.resultEmpty(() -> system.forwardDay());
     }
 
-    /** 営業日を進めます。 */
-    @PostMapping("/daily/processDay")
-    public ResponseEntity<Void> processDay() {
-        return ControllerUtils.resultEmpty(() -> system.processDay());
-    }
-
-    /** 振込出金依頼を締めます。 */
+    /** Close the withdrawal request. */
     @PostMapping("/daily/closingCashOut")
     public ResponseEntity<Void> closingCashOut() {
         return ControllerUtils.resultEmpty(() -> asset.closingCashOut());
     }
 
-    /** キャッシュフローを実現します。 */
+    /** Realize cash flow. */
     @PostMapping("/daily/realizeCashflow")
     public ResponseEntity<Void> realizeCashflow() {
         return ControllerUtils.resultEmpty(() -> asset.realizeCashflow());

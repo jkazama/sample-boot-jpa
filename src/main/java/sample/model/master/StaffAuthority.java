@@ -2,37 +2,39 @@ package sample.model.master;
 
 import java.util.List;
 
-import javax.persistence.*;
-
-import lombok.*;
-import sample.context.orm.*;
-import sample.model.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import lombok.Data;
+import sample.context.DomainEntity;
+import sample.context.orm.OrmRepository;
+import sample.model.constraints.IdStr;
+import sample.model.constraints.Name;
 
 /**
- * 社員に割り当てられた権限を表現します。
+ * Represents the authority assigned to an staff.
  */
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class StaffAuthority extends OrmActiveRecord<StaffAuthority> {
-    private static final long serialVersionUID = 1l;
+public class StaffAuthority implements DomainEntity {
+    private static final String SequenceId = "staff_authority_id_seq";
 
-    /** ID */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceId)
+    @SequenceGenerator(name = SequenceId, sequenceName = SequenceId, allocationSize = 1)
     private Long id;
-    /** 社員ID */
     @IdStr
     private String staffId;
-    /** 権限名称。(「プリフィックスにROLE_」を付与してください) */
+    /** Authority Name. */
     @Name
     private String authority;
 
-    /** 口座IDに紐付く権限一覧を返します。 */
+    /** Returns a list of privileges associated with the staff ID. */
     public static List<StaffAuthority> find(final OrmRepository rep, String staffId) {
-        return rep.tmpl().find("from StaffAuthority where staffId=?1", staffId);
+        var jpql = "SELECT sa FROM StaffAuthority sa WHERE sa.staffId=?1";
+        return rep.tmpl().find(jpql, staffId);
     }
 
 }

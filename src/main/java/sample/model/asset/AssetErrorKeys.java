@@ -1,19 +1,24 @@
 package sample.model.asset;
 
+import sample.model.DomainErrorKeys;
+
 /**
- * 資産の審査例外で用いるメッセージキー定数。
+ * Message key constants used in the asset domain.
  */
 public interface AssetErrorKeys {
+    /** key prefix */
+    String Prefix = DomainErrorKeys.Prefix + "asset.";
 
-    /** 受渡日を迎えていないため実現できません */
-    String CashflowRealizeDay = "error.Cashflow.realizeDay";
-    /** 既に受渡日を迎えています */
-    String CashflowBeforeEqualsDay = "error.Cashflow.beforeEqualsDay";
+    /** This cannot be realized because the delivery date has not been reached. */
+    String RealizeDay = Prefix + "realizeDay";
+    /** The delivery date has already been reached. */
+    String AfterValueDay = Prefix + "afterValueDay";
 
-    /** 未到来の受渡日です */
-    String CashInOutAfterEqualsDay = "error.CashInOut.afterEqualsDay";
-    /** 既に発生日を迎えています */
-    String CashInOutBeforeEqualsDay = "error.CashInOut.beforeEqualsDay";
-    /** 出金可能額を超えています */
-    String CashInOutWithdrawAmount = "error.CashInOut.withdrawAmount";
+    /** The date of accrual that has not yet arrived. */
+    String BeforeEventDay = Prefix + "beforeEventDay";
+    /** The date of accrual has already been reached. */
+    String AfterEqualsEventDay = Prefix + "afterEqualsEventDay";
+    /** The amount available for withdrawal has been exceeded. */
+    String WithdrawAmount = Prefix + "withdrawAmount";
+
 }
