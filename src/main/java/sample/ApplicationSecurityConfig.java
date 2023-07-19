@@ -146,8 +146,8 @@ public class ApplicationSecurityConfig {
 
     private LogoutSuccessHandler logoutSuccessHandler() {
         return (req, res, auth) -> {
-            var actor = (Actor) auth.getPrincipal();
-            log.info("Success Logout. [{}]", actor.id());
+            var actorId = auth != null ? ((Actor) auth.getPrincipal()).id() : "unknown";
+            log.info("Success Logout. [{}]", actorId);
             res.setStatus(HttpStatus.OK.value());
         };
     }

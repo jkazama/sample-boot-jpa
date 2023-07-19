@@ -1,6 +1,7 @@
 package sample.usecase;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -67,7 +68,10 @@ public class SecurityService implements AuthenticationProvider {
                 .map(v -> ActorRoleType.valueOf(v.toString()))
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
         return TxTemplate.of(txm).readOnly().tx(() -> {
-            return Login.getByLoginId(rep, roleType, loginId)
+            var roleTypes = roleType.isUser()
+                    ? Set.of(ActorRoleType.USER)
+                    : Set.of(ActorRoleType.INTERNAL, ActorRoleType.ADMINISTRATOR);
+            return Login.getByLoginId(rep, roleTypes, loginId)
                     .orElseThrow(() -> new UsernameNotFoundException(ErrorKeys.Login));
         });
     }

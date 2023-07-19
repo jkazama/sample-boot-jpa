@@ -1,6 +1,7 @@
 package sample.model.master;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -92,6 +93,11 @@ public class Login implements DomainEntity {
     public static Optional<Login> getByLoginId(final OrmRepository rep, ActorRoleType roleType, String loginId) {
         var jpql = "SELECT l FROM Login l WHERE l.roleType=?1 AND l.loginId=?2";
         return rep.tmpl().get(jpql, roleType, loginId);
+    }
+
+    public static Optional<Login> getByLoginId(final OrmRepository rep, Set<ActorRoleType> roleTypes, String loginId) {
+        var jpql = "SELECT l FROM Login l WHERE l.roleType IN (?1) AND l.loginId=?2";
+        return rep.tmpl().get(jpql, roleTypes, loginId);
     }
 
     public static Login load(final OrmRepository rep, LoginId id) {
