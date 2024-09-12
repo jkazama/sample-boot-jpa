@@ -100,7 +100,7 @@ Run application from a console of Windows / Mac in Gradle.
 
 It is necessary to do the following step.
 
-- Check Instablled JDK17+.
+- Check Instablled JDK 21+.
 - Prepare PostgreSQL and change JDBC connection destination in application.yml.
     - DDL/DML are placed under `data/db`.
 
