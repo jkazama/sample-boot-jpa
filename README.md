@@ -32,8 +32,8 @@ Spring Boot is available for various usage, but uses it in the following policy 
 
 #### Use policy of Java coding
 
-- Java17 over
-- The concept / notation added in Java17 is used positively.
+- Java 21 over
+- The concept / notation added in Java 21 is used positively.
 - Use Lombok positively and remove diffuseness.
 - The name as possible briefly.
 - Do not abuse the interface.
@@ -107,7 +107,7 @@ It is necessary to do the following step.
 Do the server start in the next step.
 
 1. You move to the cloned *sample-boot-jpa* directory.
-1. Run command `gradlew bootRun`.
+1. Run command `./gradlew bootRun --args='--spring.profiles.active=developer'`.
 1. If console show "Started Application", start is completed in port 8080
 1. Run command `curl http://localhost:8080/actuator/health`
 

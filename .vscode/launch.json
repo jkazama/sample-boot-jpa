@@ -1,16 +1,16 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Run sample-boot-jpa",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
-            "mainClass": "sample.Application",
-            "projectName": "sample-boot-jpa",
-            "args": "--spring.profiles.active=developer -Xmx128m",
-            "envFile": "${workspaceFolder}/.env"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run sample-boot-jpa",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "mainClass": "sample.Application",
+      "projectName": "workspace",
+      "args": "--spring.profiles.active=developer -Xmx128m",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
 }
