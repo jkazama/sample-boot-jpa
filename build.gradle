@@ -1,10 +1,10 @@
 plugins {
   id "java"
-  id 'org.springframework.boot' version '3.3.3'
+  id 'org.springframework.boot' version '3.4.0'
   id 'io.spring.dependency-management' version '1.1.6'
 }
 
-version = "3.3.3"
+version = "3.4.0"
 
 java {
   toolchain {
@@ -34,7 +34,6 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor"
     compileOnly "org.projectlombok:lombok"
-    implementation "org.springdoc:springdoc-openapi-ui:1.8.0"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-aop"
@@ -43,7 +42,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6"
-    implementation "commons-io:commons-io:2.16.1"
+    implementation "commons-io:commons-io:2.18.0"
     implementation "org.apache.commons:commons-lang3"
     runtimeOnly "net.logstash.logback:logstash-logback-encoder:8.0"
     runtimeOnly "org.postgresql:postgresql:42.7.4"
@@ -54,5 +53,5 @@ dependencies {
 }
 
 wrapper {
-    gradleVersion = "8.10.1"
+    gradleVersion = "8.11.1"
 }

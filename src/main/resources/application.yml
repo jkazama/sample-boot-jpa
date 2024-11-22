@@ -48,8 +48,6 @@ logging.config: classpath:logback-spring.xml
 
 management.endpoints.web.exposure.include: "*"
 
-springdoc.swagger-ui.enabled: true
-
 sample:
   cors: true
   mail.enabled: false
