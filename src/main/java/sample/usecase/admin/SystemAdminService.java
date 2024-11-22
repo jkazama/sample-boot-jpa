@@ -3,7 +3,6 @@ package sample.usecase.admin;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -14,8 +13,8 @@ import sample.context.audit.AuditActor.FindAuditActor;
 import sample.context.audit.AuditEvent;
 import sample.context.audit.AuditEvent.FindAuditEvent;
 import sample.context.audit.AuditHandler;
+import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.SystemRepository;
 import sample.context.support.AppSetting;
 import sample.context.support.AppSetting.FindAppSetting;
 import sample.model.BusinessDayHandler;
@@ -26,8 +25,7 @@ import sample.model.BusinessDayHandler;
 @Service
 @RequiredArgsConstructor
 public class SystemAdminService {
-    private final SystemRepository rep;
-    @Qualifier(SystemRepository.BeanNameTx)
+    private final OrmRepository rep;
     private final PlatformTransactionManager txm;
     private final AuditHandler audit;
     private final BusinessDayHandler businessDay;

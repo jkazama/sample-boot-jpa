@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -23,8 +22,8 @@ import sample.context.actor.Actor;
 import sample.context.actor.ActorSession;
 import sample.context.audit.AuditActor.RegAuditActor;
 import sample.context.audit.AuditEvent.RegAuditEvent;
+import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.SystemRepository;
 
 /**
  * this component handle user audits and system audits (regular jobs, daily
@@ -220,8 +219,7 @@ public class AuditHandler {
     @Component
     @RequiredArgsConstructor(staticName = "of")
     public static class AuditPersister {
-        private final SystemRepository rep;
-        @Qualifier(SystemRepository.BeanNameTx)
+        private final OrmRepository rep;
         private final PlatformTransactionManager txm;
 
         public AuditActor start(final RegAuditActor p) {

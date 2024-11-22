@@ -30,12 +30,11 @@ import sample.context.Timestamper;
 import sample.context.orm.OrmInterceptor;
 import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.DefaultRepository;
 
 public class DomainTester {
 
     private final EntityManagerFactory emf;
-    private final DefaultRepository rep;
+    private final OrmRepository rep;
     private final PlatformTransactionManager txm;
     private final MockDomainHelper dh = new MockDomainHelper();
 
@@ -65,8 +64,8 @@ public class DomainTester {
         return emfBean.getObject();
     }
 
-    private DefaultRepository setupRepository(EntityManagerFactory emf) {
-        var rep = DefaultRepository.of(dh, OrmInterceptor.of(dh.time()));
+    private OrmRepository setupRepository(EntityManagerFactory emf) {
+        var rep = OrmRepository.of(dh, OrmInterceptor.of(dh.time()));
         rep.em(SharedEntityManagerCreator.createSharedEntityManager(emf));
         return rep;
     }

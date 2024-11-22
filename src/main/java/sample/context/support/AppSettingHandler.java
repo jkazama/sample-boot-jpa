@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
-import sample.context.orm.repository.SystemRepository;
+import sample.context.orm.OrmRepository;
 
 /**
  * Provides access to application configuration information.
@@ -30,16 +30,16 @@ public interface AppSettingHandler {
     public static class AppSettingHandlerImpl implements AppSettingHandler {
         public static final String CacheItemKey = "AppSettingHandler.appSetting";
         private static final String UIDKeyPrefix = "uid.";
-        private final SystemRepository rep;
+        private final OrmRepository rep;
 
-        public AppSettingHandlerImpl(SystemRepository rep) {
+        public AppSettingHandlerImpl(OrmRepository rep) {
             this.rep = rep;
         }
 
         /** {@inheritDoc} */
         @Override
         @Cacheable(cacheNames = CacheItemKey, key = "#id")
-        @Transactional(SystemRepository.BeanNameTx)
+        @Transactional
         public AppSetting setting(String id) {
             Optional<AppSetting> setting = rep.get(AppSetting.class, id);
             if (setting.isEmpty()) {
@@ -53,14 +53,14 @@ public interface AppSettingHandler {
         /** {@inheritDoc} */
         @Override
         @CacheEvict(cacheNames = CacheItemKey, key = "#id")
-        @Transactional(SystemRepository.BeanNameTx)
+        @Transactional
         public AppSetting change(String id, String value) {
             return AppSetting.load(rep, id).change(rep, value);
         }
 
         /** {@inheritDoc} */
         @Override
-        @Transactional(transactionManager = SystemRepository.BeanNameTx, propagation = Propagation.REQUIRES_NEW)
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public synchronized long nextId(String id) {
             String uidKey = UIDKeyPrefix + id;
             if (rep.get(AppSetting.class, uidKey).isEmpty()) {

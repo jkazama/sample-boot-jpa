@@ -66,12 +66,12 @@ public class Encryptor {
 
     /** Generates a random string. */
     public static String generateRandom(int count) {
-        return RandomStringUtils.randomAlphabetic(count);
+        return RandomStringUtils.secure().nextAlphabetic(count);
     }
 
     /** Generates a random string. */
     public static String generateRandom(int count, String chars) {
-        return RandomStringUtils.random(count, chars);
+        return RandomStringUtils.secure().next(count, chars);
     }
 
     /** Encryption Utility Generation Builder */

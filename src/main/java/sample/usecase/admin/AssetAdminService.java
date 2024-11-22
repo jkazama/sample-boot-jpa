@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import sample.context.audit.AuditHandler;
 import sample.context.lock.IdLockHandler;
 import sample.context.lock.IdLockHandler.LockType;
+import sample.context.orm.OrmRepository;
 import sample.context.orm.TxTemplate;
-import sample.context.orm.repository.DefaultRepository;
 import sample.model.asset.CashInOut;
 import sample.model.asset.CashInOut.FindCashInOut;
 import sample.model.asset.Cashflow;
@@ -26,7 +26,7 @@ import sample.model.asset.Cashflow;
 @RequiredArgsConstructor
 @Slf4j
 public class AssetAdminService {
-    private final DefaultRepository rep;
+    private final OrmRepository rep;
     private final PlatformTransactionManager txm;
     private final AuditHandler audit;
     private final IdLockHandler idLock;

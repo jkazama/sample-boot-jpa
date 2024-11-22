@@ -6,6 +6,7 @@ import java.util.Optional;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import sample.context.DomainEntity;
 import sample.context.DomainHelper;
@@ -163,4 +164,28 @@ public abstract class OrmRepository implements GenericRepository {
         return this;
     }
 
+    public static OrmRepository of(DomainHelper dh, OrmInterceptor interceptor) {
+        return new DefaultRepository(dh, interceptor);
+    }
+
+    /** Repository of the standard schema. */
+    public static class DefaultRepository extends OrmRepository {
+
+        @PersistenceContext
+        private EntityManager em;
+
+        public DefaultRepository(DomainHelper dh, OrmInterceptor interceptor) {
+            super(dh, interceptor);
+        }
+
+        @Override
+        public EntityManager em() {
+            return em;
+        }
+
+        @Override
+        public void em(EntityManager em) {
+            this.em = em;
+        }
+    }
 }
