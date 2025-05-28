@@ -18,80 +18,88 @@ public interface GenericRepository {
 
     /**
      * Returns {@link DomainEntity} matching the primary key.
+     *
+     * @param <T>   Return value type
+     * @param clazz Class of the instance to retrieve
+     * @param id    Primary key
+     * @return {@link DomainEntity} matching the primary key. Throws exception if
+     *         not found.
      */
     <T extends DomainEntity> Optional<T> get(final Class<T> clazz, final Object id);
 
     /**
-     * プライマリキーに一致する{@link DomainEntity}を返します。
+     * Returns {@link DomainEntity} matching the primary key.
      *
-     * @param <T>   戻り値の型
-     * @param clazz 取得するインスタンスのクラス
-     * @param id    プライマリキー
-     * @return プライマリキーに一致した{@link DomainEntity}。一致しない時は例外。
+     * @param <T>   Return value type
+     * @param clazz Class of the instance to retrieve
+     * @param id    Primary key
+     * @return {@link DomainEntity} matching the primary key. Throws exception if
+     *         not found.
      */
     <T extends DomainEntity> T load(final Class<T> clazz, final Object id);
 
     /**
-     * プライマリキーに一致する{@link DomainEntity}を返します。
+     * Returns {@link DomainEntity} matching the primary key.
      * <p>
-     * ロック付(for update)で取得を行うため、デッドロック回避を意識するようにしてください。
+     * Acquires with lock (for update), so please be mindful of deadlock avoidance.
      *
-     * @param <T>   戻り値の型
-     * @param clazz 取得するインスタンスのクラス
-     * @param id    プライマリキー
-     * @return プライマリキーに一致した{@link DomainEntity}。一致しない時は例外。
+     * @param <T>   Return value type
+     * @param clazz Class of the instance to retrieve
+     * @param id    Primary key
+     * @return {@link DomainEntity} matching the primary key. Throws exception if
+     *         not found.
      */
     <T extends DomainEntity> T loadForUpdate(final Class<T> clazz, final Object id);
 
     /**
-     * プライマリキーに一致する{@link DomainEntity}が存在するか返します。
+     * Returns whether a {@link DomainEntity} matching the primary key exists.
      *
-     * @param <T>   確認型
-     * @param clazz 対象クラス
-     * @param id    プライマリキー
-     * @return 存在する時はtrue
+     * @param <T>   Verification type
+     * @param clazz Target class
+     * @param id    Primary key
+     * @return true if exists
      */
     <T extends DomainEntity> boolean exists(final Class<T> clazz, final Object id);
 
     /**
-     * 管理する{@link DomainEntity}を全件返します。
-     * 条件検索などは#templateを利用して実行するようにしてください。
+     * Returns all managed {@link DomainEntity} instances.
+     * For conditional searches, please use #template.
      *
-     * @param <T>   戻り値の型
-     * @param clazz 取得するインスタンスのクラス
-     * @return {@link DomainEntity}一覧
+     * @param <T>   Return value type
+     * @param clazz Class of the instance to retrieve
+     * @return List of {@link DomainEntity}
      */
     <T extends DomainEntity> List<T> findAll(final Class<T> clazz);
 
     /**
-     * {@link DomainEntity}を新規追加します。
+     * Adds a new {@link DomainEntity}.
      *
-     * @param entity 追加対象{@link DomainEntity}
-     * @return 追加した{@link DomainEntity}のプライマリキー
+     * @param entity {@link DomainEntity} to add
+     * @return Primary key of the added {@link DomainEntity}
      */
     <T extends DomainEntity> T save(final T entity);
 
     /**
-     * {@link DomainEntity}を新規追加または更新します。
+     * Adds a new {@link DomainEntity} or updates an existing one.
      * <p>
-     * 既に同一のプライマリキーが存在するときは更新。
-     * 存在しない時は新規追加となります。
+     * Updates if the same primary key already exists.
+     * Creates new if it doesn't exist.
      *
-     * @param entity 追加対象{@link DomainEntity}
+     * @param entity {@link DomainEntity} to add
      */
     <T extends DomainEntity> T saveOrUpdate(final T entity);
 
     /**
-     * {@link DomainEntity}を更新します。
+     * Updates a {@link DomainEntity}.
      *
-     * @param entity 更新対象{@link DomainEntity}
+     * @param entity {@link DomainEntity} to update
      */
     <T extends DomainEntity> T update(final T entity);
 
     /**
-     * {@link DomainEntity}を削除します。
+     * Deletes a {@link DomainEntity}.
      *
-     * @param entity 削除対象{@link DomainEntity}
+     * @param entity {@link DomainEntity} to delete
      */
     <T extends DomainEntity> T delete(final T entity);
 

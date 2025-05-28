@@ -138,7 +138,7 @@ public class AuditHandler {
     public <T> T callAudit(String category, String message, Supplier<T> callable) {
         Optional<AuditActor> audit = Optional.empty();
         try {
-            try { // Failure of the system schema should not affect the intrinsic errorに
+            try { // Failure of the system schema should not affect the intrinsic error
                 audit = Optional.of(persister.start(RegAuditActor.of(category, message)));
             } catch (Exception e) {
                 log.error(e.getMessage(), e);

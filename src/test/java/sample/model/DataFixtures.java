@@ -153,7 +153,7 @@ public abstract class DataFixtures {
     public static Holiday holiday(String dayStr) {
         Holiday m = new Holiday();
         m.setCategory(Holiday.CategoryDefault);
-        m.setName("休日サンプル");
+        m.setName("Holiday Sample");
         m.setDay(DateUtils.day(dayStr));
         return m;
     }

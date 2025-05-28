@@ -25,11 +25,11 @@ public class ConvertUtilsTest {
 
     @Test
     public void checkSubstring() {
-        assertEquals("あ𠮷い", ConvertUtils.substring("あ𠮷い", 0, 3));
-        assertEquals("𠮷", ConvertUtils.substring("あ𠮷い", 1, 2));
-        assertEquals("𠮷い", ConvertUtils.substring("あ𠮷い", 1, 3));
-        assertEquals("い", ConvertUtils.substring("あ𠮷い", 2, 3));
-        assertEquals("あ𠮷", ConvertUtils.left("あ𠮷い", 2));
-        assertEquals("あ𠮷", ConvertUtils.leftStrict("あ𠮷い", 6, "UTF-8"));
+        assertEquals("A𠮷B", ConvertUtils.substring("A𠮷B", 0, 3));
+        assertEquals("𠮷", ConvertUtils.substring("A𠮷B", 1, 2));
+        assertEquals("𠮷B", ConvertUtils.substring("A𠮷B", 1, 3));
+        assertEquals("B", ConvertUtils.substring("A𠮷B", 2, 3));
+        assertEquals("A𠮷", ConvertUtils.left("A𠮷B", 2));
+        assertEquals("A𠮷", ConvertUtils.leftStrict("A𠮷B", 6, "UTF-8"));
     }
 }

@@ -62,7 +62,7 @@ public class HolidayTest {
         List<RegHolidayItem> items = Stream.of("2016-09-21", "2016-09-22", "2016-09-23")
                 .map(s -> RegHolidayItem.builder()
                         .holiday(DateUtils.day(s))
-                        .name("休日")
+                        .name("Holiday")
                         .build())
                 .toList();
         tester.tx(rep -> {

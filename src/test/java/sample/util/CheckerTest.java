@@ -17,12 +17,12 @@ public class CheckerTest {
 
     @Test
     public void len() {
-        assertTrue(Checker.len("テスト文字列", 6));
-        assertFalse(Checker.len("テスト文字列超", 6));
+        assertTrue(Checker.len("Test String", 11));
+        assertFalse(Checker.len("Test String Extra", 11));
 
         // surrogate pair check
-        assertTrue("テスト文字𩸽".length() == 7);
-        assertTrue(Checker.len("テスト文字𩸽", 6));
+        assertTrue("Test String𩸽".length() == 13);
+        assertTrue(Checker.len("Test String��", 12));
     }
 
 }
